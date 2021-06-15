@@ -1,5 +1,5 @@
-# Created by https://www.toptal.com/developers/gitignore/api/python,macos,jupyternotebooks,text,visualstudiocode
-# Edit at https://www.toptal.com/developers/gitignore?templates=python,macos,jupyternotebooks,text,visualstudiocode
+# Created by https://www.toptal.com/developers/gitignore/api/python,macos,jupyternotebooks,visualstudiocode
+# Edit at https://www.toptal.com/developers/gitignore?templates=python,macos,jupyternotebooks,visualstudiocode
 
 ### JupyterNotebooks ###
 # gitignore template for Jupyter Notebooks
@@ -190,16 +190,6 @@ Thumbs.db
 .prof
 
 
-### Text ###
-*.doc
-*.docx
-*.msg
-*.pages
-*.rtf
-*.txt
-*.wpd
-*.wps
-
 ### VisualStudioCode ###
 .vscode/*
 !.vscode/settings.json
@@ -213,4 +203,4 @@ Thumbs.db
 .history
 .ionide
 
-# End of https://www.toptal.com/developers/gitignore/api/python,macos,jupyternotebooks,text,visualstudiocode
+# End of https://www.toptal.com/developers/gitignore/api/python,macos,jupyternotebooks,visualstudiocode
