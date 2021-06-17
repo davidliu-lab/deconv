@@ -1,3 +1,5 @@
 GEOparse
+kaleido
 plotly>=4.14
+speedtest-cli
 version_information
