@@ -1,0 +1,7 @@
+name: r
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - conda-forge::r-essentials
+  - conda-forge::r-irkernel

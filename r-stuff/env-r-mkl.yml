@@ -1,0 +1,8 @@
+name: r-mkl
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - conda-forge::r-essentials
+  - conda-forge::libblas=*=*mkl
+  - conda-forge::r-irkernel
