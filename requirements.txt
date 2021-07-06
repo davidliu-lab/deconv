@@ -3,4 +3,5 @@ kaleido
 plotly>=4.14
 speedtest-cli
 version_information
-dask
+pandas-profiling[notebook]
+altair
