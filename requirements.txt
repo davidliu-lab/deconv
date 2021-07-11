@@ -5,3 +5,6 @@ speedtest-cli
 version_information
 pandas-profiling[notebook]
 altair
+dbxfs
+xlrd>=1.0.0
+openpyxl
