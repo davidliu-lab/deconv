@@ -1,22 +1,26 @@
 #!/bin/bash
 
-export CSX_INPUT_DIR="/home/jupyter/csx/input"
-export CSX_OUTPUT_DIR="/home/jupyter/csx/output"
-mkdir $CSX_INPUT_DIR
-mkdir $CSX_OUTPUT_DIR
+# variables
+MIXTURE_FILE="Fig2b-WholeBlood_RNAseq.txt"
+REFSAMPLE_FILE="Fig2ab-NSCLC_PBMCs_scRNAseq_refsample.txt"
+CSX_DIR="/home/jupyter/csx"
 
-export MIXTURE_FILE="Fig2b-WholeBlood_RNAseq.txt"
-export REFSAMPLE_FILE="Fig2ab-NSCLC_PBMCs_scRNAseq_refsample.txt"
+# setup
+MIXTURE_FILE_PATH=$(find /mnt/liulab/ -name "$MIXTURE_FILE" | head -n 1)
+REFSAMPLE_FILE_PATH=$(find /mnt/liulab/ -name "$REFSAMPLE_FILE" | head -n 1)
+rm -r $CSX_DIR/*
+mkdir $CSX_DIR/in $CSX_DIR/out
+rsync -v $MIXTURE_FILE_PATH $CSX_DIR/in/mixture.txt
+rsync -v $REFSAMPLE_FILE_PATH $CSX_DIR/in/refsample.txt
 
-rsync -v $(find /mnt/liulab/ -name "$MIXTURE_FILE") $CSX_INPUT_DIR/mixture.txt
-rsync -v $(find /mnt/liulab/ -name "$REFSAMPLE_FILE") $CSX_INPUT_DIR/refsample.txt
+## verify setup
+tree -h $CSX_DIR
 
-ls -hl $CSX_INPUT_DIR
-
+# run csx
 docker run \
     --rm \
-    -v $CSX_INPUT_DIR:/src/data \
-    -v $CSX_OUTPUT_DIR:/src/outdir \
+    -v $CSX_DIR/in:/src/data \
+    -v $CSX_DIR/out:/src/outdir \
     --user "$(id -u):$(id -g)" \
     cibersortx/fractions:latest \
     --username lyronctk@stanford.edu \
@@ -30,3 +34,5 @@ docker run \
 #     --perm 10 \
 #     --fraction 0 \
 #     --sourceGEPs signature_matrix.txt
+
+tree -h $CSX_DIR
