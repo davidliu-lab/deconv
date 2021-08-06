@@ -10,3 +10,7 @@ xlrd>=1.0.0
 openpyxl
 biopython
 docker
+pandas-gbq
+yapf
+jupyterlab_github
+jupyterlab-git
