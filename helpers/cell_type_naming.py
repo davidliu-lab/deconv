@@ -2,10 +2,10 @@ nice_to_weirds = {
     'Malignant': ['Malignant.cell', 'Mal'],
     'Endothelial': ['Endothelial.cell', 'Endothelial cells', 'Endo.'],
     'CAF': [],
-    'T CD8': ['T.CD8', 'T cells CD8'],
+    'T CD8': ['T.CD8', 'T cells CD8', 'TCD8'],
     'NK': ['NK cells'],
     'Macrophage': ['Macrophages'],
-    'T CD4': ['T.CD4', 'T cells CD4'],
+    'T CD4': ['T.CD4', 'T cells CD4', 'TCD4'],
     'B': ['B.cell', 'B cells']
 }
 
