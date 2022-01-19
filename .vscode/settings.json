@@ -2,5 +2,9 @@
     "editor.fontSize": 14,
     "python.defaultInterpreterPath": "/opt/conda/bin/python",
     "github.copilot.autocomplete.enable": true,
-    "github.copilot.enable": { "python": true, "markdown": true}
+    "github.copilot.enable": {
+        "python": true,
+        "markdown": true
+    },
+    "editor.formatOnSave": true
 }
