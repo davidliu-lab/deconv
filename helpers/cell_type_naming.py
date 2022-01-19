@@ -6,7 +6,8 @@ nice_to_weirds = {
     'NK': ['NK cells'],
     'Macrophage': ['Macrophages'],
     'T CD4': ['T.CD4', 'T cells CD4', 'TCD4'],
-    'B': ['B.cell', 'B cells']
+    'B': ['B.cell', 'B cells'],
+    'T': ['T.cell'],
 }
 
 weird_to_nice = {

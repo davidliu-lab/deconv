@@ -25,7 +25,7 @@ class DockerJob:
         return commands
 
     def make_docker_command(self):
-        command = f'''docker run \
+        command = f"""docker run \
     --rm \
     -v {self.path}/in:/src/data \
     -v {self.path}:/src/outdir \
@@ -41,8 +41,9 @@ class DockerJob:
     --G.min 300 \
     --G.max 500 \
     --filter FALSE \
-    --QN FALSE \\'''\
-        .replace("     ", " \\\n    ")
+    --QN FALSE \\""".replace(
+            "     ", " \\\n    "
+        )
         for arg, input_file in self.csx_input_files.items():
             command += f"\n    --{arg} {input_file.target_filename} \\"
         for arg, value in self.other_args.items():
@@ -63,4 +64,3 @@ class Experiment:
     @property
     def local_path(self):
         return self.gcs_uri.replace("gs://", "/mnt/buckets/")
-        
