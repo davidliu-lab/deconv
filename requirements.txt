@@ -11,6 +11,6 @@ openpyxl
 biopython
 docker
 pandas-gbq
-yapf
 jupyterlab_github
 jupyterlab-git
+isort
