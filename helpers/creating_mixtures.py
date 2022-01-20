@@ -31,9 +31,13 @@ def make_mixtures(
         [f"sample_{j:0{len(str(n_samples))}d}" for j in range(n_samples)],
         name="Mixture",
     )
-    cell_types = list(sorted(sc_metadata["cell.types"].unique()))
-    fraction_values = rng.dirichlet(alpha=(0.5,) * len(cell_types), size=(n_samples,))
-    fractions = pd.DataFrame(fraction_values, index=samples, columns=cell_types)
+    cell_type_groups = sc_metadata.groupby("cell.types")
+    fraction_values = rng.dirichlet(
+        alpha=(0.5,) * cell_type_groups.ngroups, size=(n_samples,)
+    )
+    fractions = pd.DataFrame(
+        fraction_values, index=samples, columns=list(cell_type_groups.groups)
+    )
     cell_type_geps = {
         sample: make_a_cell_type_gep_matrix(sc_data, sc_metadata, n_cells_per_gep, rng)
         for sample in samples

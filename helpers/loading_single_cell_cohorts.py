@@ -11,7 +11,10 @@ def load_tirosh(n_genes_if_not_all=None):
     )
     sc_rna_seq = sc_rna_seq.rename_axis(index="GeneSymbol", columns="cells")
 
-    metadata = pd.read_csv("gs://liulab/ftp/GSE115978/GSE115978_cell.annotations.csv")
+    metadata = pd.read_csv(
+        "gs://liulab/ftp/GSE115978/GSE115978_cell.annotations.csv",
+        na_values={"cell.types": "?"},
+    )
     metadata = metadata.replace({"cell.types": weird_to_nice})
 
     return sc_rna_seq, metadata
