@@ -1,0 +1,31 @@
+name: py39
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python==3.9
+  - pip
+  - anaconda
+  - mamba
+  - pandas>=1.4
+  - gcsfs
+  - google-cloud-storage
+  - pandas-profiling
+  - scipy
+  - scikit-learn
+  - seaborn
+  - matplotlib
+  - plotly>=4.14
+  - python-kaleido
+  - docker-py
+  - jupyterlab-lsp
+  - black
+  - isort
+  - pip:
+    - GEOparse
+
+# to create environment from this file:
+# conda env create --file <filename.yml>
+
+# to update the env if you change this file:
+# conda env update --name py39 --file <filename.yml>
