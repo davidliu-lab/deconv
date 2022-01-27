@@ -2,7 +2,12 @@ import numpy as np
 import pandas as pd
 
 
-def make_a_cell_type_gep_matrix(sc_data, sc_metadata, n_cells_per_gep, rng):
+def make_cell_type_geps(
+    sc_data: pd.DataFrame,
+    sc_metadata: pd.DataFrame,
+    n_cells_per_gep: int,
+    rng: np.random.Generator,
+):
     # for one in silico mixture...
     sampled_single_cells_per_type = (
         sc_metadata.groupby("cell.types")
@@ -16,16 +21,21 @@ def make_a_cell_type_gep_matrix(sc_data, sc_metadata, n_cells_per_gep, rng):
         },
         axis="columns",
     )
-    cell_type_geps *= 100_000 / cell_type_geps.sum()
+    cell_type_geps = normalize_to_tp100k(cell_type_geps)
     return cell_type_geps
 
 
-def make_mixtures(
+def make_cell_type_geps_with_malignant_from_one_tumor(
     sc_data: pd.DataFrame,
     sc_metadata: pd.DataFrame,
-    n_samples: int,
     n_cells_per_gep: int,
-    rng: np.random.RandomState,
+    rng: np.random.Generator,
+):
+    raise NotImplementedError
+
+
+def make_fractions_from_dirichlet(
+    n_samples: int, sc_metadata: pd.DataFrame, rng: np.random.Generator
 ):
     samples = pd.Series(
         [f"sample_{j:0{len(str(n_samples))}d}" for j in range(n_samples)],
@@ -38,14 +48,49 @@ def make_mixtures(
     fractions = pd.DataFrame(
         fraction_values, index=samples, columns=list(cell_type_groups.groups)
     )
+    return fractions
+
+
+def make_mixtures_from_fractions(
+    sc_data: pd.DataFrame,
+    sc_metadata: pd.DataFrame,
+    sample_fractions: pd.DataFrame,
+    n_cells_per_gep: int,
+    rng: np.random.Generator,
+):
     cell_type_geps = {
-        sample: make_a_cell_type_gep_matrix(sc_data, sc_metadata, n_cells_per_gep, rng)
-        for sample in samples
+        sample: make_cell_type_geps(sc_data, sc_metadata, n_cells_per_gep, rng)
+        for sample in sample_fractions.index
     }
     mixtures = pd.concat(
-        {sample: cell_type_geps[sample] @ fractions.loc[sample] for sample in samples},
+        {
+            sample: cell_type_geps[sample] @ sample_fractions.loc[sample]
+            for sample in sample_fractions.index
+        },
         axis=1,
     )
-    mixtures *= rng.uniform(0.9, 1.1, size=(mixtures.shape))
-    mixtures *= 100_000 / mixtures.sum()
+    mixtures = add_noise_multiplying_uniform(mixtures, rng)
+    mixtures = normalize_to_tp100k(mixtures)
+    return mixtures, cell_type_geps
+
+
+def add_noise_multiplying_uniform(mixtures: pd.DataFrame, rng: np.random.Generator):
+    return mixtures * rng.uniform(0.9, 1.1, size=(mixtures.shape))
+
+
+def normalize_to_tp100k(geps: pd.DataFrame):
+    return geps * 100_000 / geps.sum()
+
+
+def make_mixtures(
+    sc_data: pd.DataFrame,
+    sc_metadata: pd.DataFrame,
+    n_samples: int,
+    n_cells_per_gep: int,
+    rng: np.random.Generator,
+):
+    fractions = make_fractions_from_dirichlet(n_samples, sc_metadata, rng)
+    mixtures, cell_type_geps = make_mixtures_from_fractions(
+        sc_data, sc_metadata, fractions, n_cells_per_gep, rng
+    )
     return mixtures, fractions, cell_type_geps
