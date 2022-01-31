@@ -1,5 +1,9 @@
+import logging
+
 import numpy as np
 import pandas as pd
+
+logger = logging.getLogger(__name__)
 
 
 def make_cell_type_geps(
@@ -12,6 +16,7 @@ def make_cell_type_geps(
     if malignant_from_one_sample:
         malignant_cells = sc_metadata["cell.types"] == "Malignant"
         random_sample = rng.choice(sc_metadata[malignant_cells]["samples"].unique())
+        logger.debug(f"randomly chose {random_sample} for malignant cells")
         single_cells_to_exclude = malignant_cells and (
             sc_metadata["samples"] != random_sample
         )
@@ -57,6 +62,9 @@ def make_mixtures(
     malignant_from_one_sample: bool = True,
     rng: np.random.Generator = np.random.default_rng(),
 ):
+    logger.debug(
+        f"using np.random.Generator with BitGenerator state {rng.bit_generator.state['state']}"
+    )
     if sample_fractions is None:
         sample_fractions = make_fractions_from_dirichlet(n_samples, sc_metadata, rng)
     cell_type_geps = {
