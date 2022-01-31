@@ -5,8 +5,8 @@ import pandas as pd
 def make_cell_type_geps(
     sc_data: pd.DataFrame,
     sc_metadata: pd.DataFrame,
-    n_cells_per_gep: int,
-    rng: np.random.Generator,
+    n_cells_per_gep: int = 5,
+    rng: np.random.Generator = np.random.default_rng(),
 ):
     # for one in silico mixture...
     sampled_single_cells_per_type = (
@@ -51,13 +51,15 @@ def make_fractions_from_dirichlet(
     return fractions
 
 
-def make_mixtures_from_fractions(
+def make_mixtures(
     sc_data: pd.DataFrame,
     sc_metadata: pd.DataFrame,
-    sample_fractions: pd.DataFrame,
-    n_cells_per_gep: int,
-    rng: np.random.Generator,
+    sample_fractions: pd.DataFrame = None,
+    n_cells_per_gep: int = 5,
+    rng: np.random.Generator = np.random.default_rng(),
 ):
+    if sample_fractions is None:
+        sample_fractions = make_fractions_from_dirichlet(n_samples, sc_metadata, rng)
     cell_type_geps = {
         sample: make_cell_type_geps(sc_data, sc_metadata, n_cells_per_gep, rng)
         for sample in sample_fractions.index
@@ -74,23 +76,11 @@ def make_mixtures_from_fractions(
     return mixtures, cell_type_geps
 
 
-def add_noise_multiplying_uniform(mixtures: pd.DataFrame, rng: np.random.Generator):
+def add_noise_multiplying_uniform(
+    mixtures: pd.DataFrame, rng: np.random.Generator = np.random.default_rng()
+):
     return mixtures * rng.uniform(0.9, 1.1, size=(mixtures.shape))
 
 
 def normalize_to_tp100k(geps: pd.DataFrame):
     return geps * 100_000 / geps.sum()
-
-
-def make_mixtures(
-    sc_data: pd.DataFrame,
-    sc_metadata: pd.DataFrame,
-    n_samples: int,
-    n_cells_per_gep: int,
-    rng: np.random.Generator,
-):
-    fractions = make_fractions_from_dirichlet(n_samples, sc_metadata, rng)
-    mixtures, cell_type_geps = make_mixtures_from_fractions(
-        sc_data, sc_metadata, fractions, n_cells_per_gep, rng
-    )
-    return mixtures, fractions, cell_type_geps
