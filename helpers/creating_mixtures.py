@@ -6,9 +6,16 @@ def make_cell_type_geps(
     sc_data: pd.DataFrame,
     sc_metadata: pd.DataFrame,
     n_cells_per_gep: int = 5,
+    malignant_from_one_sample: bool = True,
     rng: np.random.Generator = np.random.default_rng(),
 ):
-    # for one in silico mixture...
+    if malignant_from_one_sample:
+        malignant_cells = sc_metadata["cell.types"] == "Malignant"
+        random_sample = rng.choice(sc_metadata[malignant_cells]["samples"].unique())
+        single_cells_to_exclude = malignant_cells and (
+            sc_metadata["samples"] != random_sample
+        )
+        sc_metadata = sc_metadata[not single_cells_to_exclude]
     sampled_single_cells_per_type = (
         sc_metadata.groupby("cell.types")
         .apply(lambda group: list(rng.choice(group["cells"], n_cells_per_gep)))
@@ -23,15 +30,6 @@ def make_cell_type_geps(
     )
     cell_type_geps = normalize_to_tp100k(cell_type_geps)
     return cell_type_geps
-
-
-def make_cell_type_geps_with_malignant_from_one_tumor(
-    sc_data: pd.DataFrame,
-    sc_metadata: pd.DataFrame,
-    n_cells_per_gep: int,
-    rng: np.random.Generator,
-):
-    raise NotImplementedError
 
 
 def make_fractions_from_dirichlet(
@@ -56,6 +54,7 @@ def make_mixtures(
     sc_metadata: pd.DataFrame,
     sample_fractions: pd.DataFrame = None,
     n_cells_per_gep: int = 5,
+    malignant_from_one_sample: bool = True,
     rng: np.random.Generator = np.random.default_rng(),
 ):
     if sample_fractions is None:
