@@ -5,7 +5,6 @@ channels:
 dependencies:
   - python==3.9
   - pip
-  - anaconda
   - mamba
   - pandas>=1.4
   - gcsfs
@@ -16,12 +15,12 @@ dependencies:
   - seaborn
   - matplotlib
   - plotly>=4.14
-  - python-kaleido
   - docker-py
   - jupyterlab-lsp
   - black
   - isort
   - pip:
+    - kaleido
     - GEOparse
 
 # to create environment from this file:
