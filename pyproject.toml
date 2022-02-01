@@ -1,0 +1,27 @@
+# configuration for black
+# source:
+# https://github.com/psf/black/blob/6bedb5c58a7d8c25aa9509f8217bc24e9797e90d/pyproject.toml#L9
+
+[tool.black]
+line-length = 125
+target-version = ['py37', 'py38', 'py39']
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  # The following are specific to Black, you probably don't want those.
+  | blib2to3
+  | tests/data
+  | profiling
+)/
+'''
+
