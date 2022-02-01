@@ -30,3 +30,21 @@ dependencies:
 # conda env update --name py39 --file <filename.yml>
 
 # - jupyterlab_code_formatter
+
+### from old requirements.txt:
+# GEOparse
+# kaleido
+# plotly>=4.14
+# speedtest-cli
+# version_information
+# pandas-profiling[notebook]
+# altair
+# dbxfs
+# xlrd>=1.0.0
+# openpyxl
+# biopython
+# docker
+# pandas-gbq
+# jupyterlab_github
+# jupyterlab-git
+# isort
