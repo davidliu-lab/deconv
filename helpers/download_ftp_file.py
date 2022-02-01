@@ -14,10 +14,10 @@ def download_gz_from_ftp(ftp_url, base_dir):
 
     os.makedirs(os.path.dirname(filepath), exist_ok=True)
 
-    with open(filepath, 'wb') as f, closing(request.urlopen(ftp_url)) as r:
+    with open(filepath, "wb") as f, closing(request.urlopen(ftp_url)) as r:
         shutil.copyfileobj(r, f)
 
-    with gzip.open(filepath, 'rb') as f_in:
+    with gzip.open(filepath, "rb") as f_in:
         filepath_txt = os.path.splitext(filepath)[0]  # remove .gz extension
-        with open(filepath_txt, 'wb') as f_out:
+        with open(filepath_txt, "wb") as f_out:
             shutil.copyfileobj(f_in, f_out)
