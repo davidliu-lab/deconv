@@ -17,14 +17,16 @@ dependencies:
   - plotly>=4.14
   - docker-py
   - jupyterlab-lsp
-  - black
-  - isort
   - pip:
     - kaleido
     - GEOparse
+    - black[jupyter]
+    - isort
 
 # to create environment from this file:
 # conda env create --file <filename.yml>
 
 # to update the env if you change this file:
 # conda env update --name py39 --file <filename.yml>
+
+# - jupyterlab_code_formatter
