@@ -10,6 +10,7 @@ def make_cell_type_geps(
     sc_data: pd.DataFrame,
     sc_metadata: pd.DataFrame,
     n_cells_per_gep: int = 5,
+    normalization_factor: int = 1_000_000,
     malignant_from_one_sample: bool = True,
     rng: np.random.Generator = np.random.default_rng(),
 ):
@@ -26,7 +27,7 @@ def make_cell_type_geps(
         {cell_type: sc_data[cells].sum(axis="columns") for cell_type, cells in sampled_single_cells_per_type.items()},
         axis="columns",
     )
-    cell_type_geps = normalize_to_tp100k(cell_type_geps)
+    cell_type_geps = normalize_expression(cell_type_geps, normalization_factor)
     return cell_type_geps
 
 
@@ -46,6 +47,7 @@ def make_mixtures(
     sc_metadata: pd.DataFrame,
     sample_fractions: pd.DataFrame = None,
     n_cells_per_gep: int = 5,
+    normalization_factor: int = 1_000_000,
     malignant_from_one_sample: bool = True,
     rng: np.random.Generator = np.random.default_rng(),
 ):
@@ -53,14 +55,14 @@ def make_mixtures(
     if sample_fractions is None:
         sample_fractions = make_fractions_from_dirichlet(n_samples, sc_metadata, rng)
     cell_type_geps = {
-        sample: make_cell_type_geps(sc_data, sc_metadata, n_cells_per_gep, rng) for sample in sample_fractions.index
+        sample: make_cell_type_geps(sc_data, sc_metadata, n_cells_per_gep, rng=rng) for sample in sample_fractions.index
     }
     mixtures = pd.concat(
         {sample: cell_type_geps[sample] @ sample_fractions.loc[sample] for sample in sample_fractions.index},
         axis=1,
     )
     mixtures = add_noise_multiplying_uniform(mixtures, rng)
-    mixtures = normalize_to_tp100k(mixtures)
+    mixtures = normalize_expression(mixtures, normalization_factor)
     return mixtures, cell_type_geps
 
 
@@ -68,5 +70,5 @@ def add_noise_multiplying_uniform(mixtures: pd.DataFrame, rng: np.random.Generat
     return mixtures * rng.uniform(0.9, 1.1, size=(mixtures.shape))
 
 
-def normalize_to_tp100k(geps: pd.DataFrame):
-    return geps * 100_000 / geps.sum()
+def normalize_expression(geps: pd.DataFrame, normalization_factor: int = 1_000_000):
+    return geps * normalization_factor / geps.sum()
