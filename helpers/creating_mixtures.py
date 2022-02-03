@@ -45,15 +45,13 @@ def make_fractions_from_dirichlet(n_samples: int, sc_metadata: pd.DataFrame, rng
 def make_mixtures(
     sc_data: pd.DataFrame,
     sc_metadata: pd.DataFrame,
-    sample_fractions: pd.DataFrame = None,
+    sample_fractions: pd.DataFrame,
     n_cells_per_gep: int = 5,
     normalization_factor: int = 1_000_000,
     malignant_from_one_sample: bool = True,
     rng: np.random.Generator = np.random.default_rng(),
 ):
     logger.debug(f"using np.random.Generator with BitGenerator state {rng.bit_generator.state['state']}")
-    if sample_fractions is None:
-        sample_fractions = make_fractions_from_dirichlet(n_samples, sc_metadata, rng)
     cell_type_geps = {
         sample: make_cell_type_geps(sc_data, sc_metadata, n_cells_per_gep, rng=rng) for sample in sample_fractions.index
     }
