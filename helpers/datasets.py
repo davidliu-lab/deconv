@@ -3,7 +3,15 @@ import pandas as pd
 from helpers.cell_type_naming import weird_to_nice
 
 
-def load_jerby_arnon(n_genes_if_not_all=None):
+def load_jerby_arnon(n_genes_if_not_all: int = None):
+    """Load Jerby-Arnon single cell data
+
+    Args:
+        n_genes_if_not_all (int, optional): Max number of genes to read. Defaults to None.
+
+    Returns:
+        tuple: two dataframes, one each of sc data and metadata
+    """
     sc_rna_seq = pd.read_csv(
         "gs://liulab/ftp/GSE115978/GSE115978_tpm.csv",
         index_col=0,
