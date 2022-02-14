@@ -22,6 +22,7 @@ dependencies:
     - GEOparse
     - black[jupyter]
     - isort
+    - rope
 
 # to create environment from this file:
 # conda env create --file <filename.yml>
