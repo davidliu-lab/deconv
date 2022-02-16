@@ -1,9 +1,10 @@
+from typing import Tuple
 import pandas as pd
 
 from helpers.cell_type_naming import weird_to_nice
 
 
-def load_jerby_arnon(n_genes_if_not_all: int = None):
+def load_jerby_arnon(n_genes_if_not_all: int = None) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """Load Jerby-Arnon single cell data
 
     Args:
