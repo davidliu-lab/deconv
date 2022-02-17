@@ -28,3 +28,16 @@ def load_jerby_arnon(n_genes_if_not_all: int = None) -> Tuple[pd.DataFrame, pd.D
     metadata = metadata.replace({"cell.types": weird_to_nice})
 
     return sc_rna_seq, metadata
+
+
+def load_tcga_skcm() -> pd.DataFrame:
+    """Load RNA-seq mixtures for the TCGA SKCM cohort, processed by Derek
+
+    Returns:
+        mixtures_tcga_skcm: pandas.DataFrame
+    """
+    path = "gs://liulab/downloaded_manually/derek_csx_tcga_skcm/skcm_rnaseqv2_normalized_clean.txt"
+
+    mixtures_tcga_skcm = pd.read_csv(path, sep="\t", index_col=0)
+
+    return mixtures_tcga_skcm
