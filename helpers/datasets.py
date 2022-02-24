@@ -4,6 +4,11 @@ import pandas as pd
 from helpers.cell_type_naming import weird_to_nice
 
 
+GENE_SYMBOL_COLUMN_NAME = "gene_symbol"
+SAMPLE_COLUMN_NAME = "sample_id"
+SINGLE_CELL_COLUMN_NAME = "single_cell_id"
+
+
 def load_jerby_arnon(n_genes: int = None) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """Load Jerby-Arnon single cell data
 
@@ -18,7 +23,7 @@ def load_jerby_arnon(n_genes: int = None) -> Tuple[pd.DataFrame, pd.DataFrame]:
         index_col=0,
         nrows=n_genes,
     )
-    sc_rna_seq.rename_axis(index="GeneSymbol", columns="cells", inplace=True)
+    sc_rna_seq.rename_axis(index=GENE_SYMBOL_COLUMN_NAME, columns=SINGLE_CELL_COLUMN_NAME, inplace=True)
     sc_rna_seq.sort_index(inplace=True)
 
     metadata = pd.read_csv(
@@ -39,5 +44,6 @@ def load_tcga_skcm(n_genes: int = None) -> pd.DataFrame:
     path = "gs://liulab/downloaded_manually/derek_csx_tcga_skcm/skcm_rnaseqv2_normalized_clean.txt"
 
     mixtures_tcga_skcm = pd.read_csv(path, sep="\t", index_col=0, nrows=n_genes)
+    mixtures_tcga_skcm.rename_axis(index=GENE_SYMBOL_COLUMN_NAME, columns=SAMPLE_COLUMN_NAME, inplace=True)
 
     return mixtures_tcga_skcm
