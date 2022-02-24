@@ -45,5 +45,6 @@ def load_tcga_skcm(n_genes: int = None) -> pd.DataFrame:
 
     mixtures_tcga_skcm = pd.read_csv(path, sep="\t", index_col=0, nrows=n_genes)
     mixtures_tcga_skcm.rename_axis(index=GENE_SYMBOL_COLUMN_NAME, columns=SAMPLE_COLUMN_NAME, inplace=True)
+    mixtures_tcga_skcm.sort_index(inplace=True)
 
     return mixtures_tcga_skcm
