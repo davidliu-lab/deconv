@@ -4,6 +4,7 @@ import pandas as pd
 from helpers.cell_type_naming import weird_to_nice
 
 
+CELL_TYPE_COLUMN_NAME = "cell_type"
 GENE_SYMBOL_COLUMN_NAME = "gene_symbol"
 SAMPLE_COLUMN_NAME = "sample_id"
 SINGLE_CELL_COLUMN_NAME = "single_cell_id"
@@ -48,3 +49,13 @@ def load_tcga_skcm(n_genes: int = None) -> pd.DataFrame:
     mixtures_tcga_skcm.sort_index(inplace=True)
 
     return mixtures_tcga_skcm
+
+
+def load_tcga_skcm_fractions_from_csx() -> pd.DataFrame:
+    path = "gs://liulab/downloaded_manually/derek_csx_tcga_skcm/CIBERSORTx_Job8_Results.txt"
+    fractions = pd.read_csv(path, sep="\t", index_col=0)
+    fractions = fractions.drop(fractions.columns[-3:], axis=1)
+    fractions = fractions.rename(columns=weird_to_nice)
+    fractions = fractions.reindex(sorted(fractions.columns), axis=1)
+    fractions = fractions.rename_axis(index=SAMPLE_COLUMN_NAME, columns=CELL_TYPE_COLUMN_NAME)
+    return fractions
