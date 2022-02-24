@@ -4,7 +4,7 @@ import pandas as pd
 from helpers.cell_type_naming import weird_to_nice
 
 
-def load_jerby_arnon(n_genes_if_not_all: int = None) -> Tuple[pd.DataFrame, pd.DataFrame]:
+def load_jerby_arnon(n_genes: int = None) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """Load Jerby-Arnon single cell data
 
     Args:
@@ -16,7 +16,7 @@ def load_jerby_arnon(n_genes_if_not_all: int = None) -> Tuple[pd.DataFrame, pd.D
     sc_rna_seq = pd.read_csv(
         "gs://liulab/ftp/GSE115978/GSE115978_tpm.csv",
         index_col=0,
-        nrows=n_genes_if_not_all,
+        nrows=n_genes,
     )
     sc_rna_seq.rename_axis(index="GeneSymbol", columns="cells", inplace=True)
     sc_rna_seq.sort_index(inplace=True)
