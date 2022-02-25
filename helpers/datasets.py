@@ -11,10 +11,10 @@ SINGLE_CELL_COLUMN_NAME = "single_cell_id"
 
 
 def load_jerby_arnon(n_genes: int = None) -> Tuple[pd.DataFrame, pd.DataFrame]:
-    """Load Jerby-Arnon single cell data
+    """Load Jerby-Arnon scRNA-seq data
 
     Args:
-        n_genes_if_not_all (int, optional): Max number of genes to read. Defaults to None.
+        n_genes (int, optional): Max number of genes to read. If None (default), read all genes.
 
     Returns:
         tuple: two dataframes, one each of sc data and metadata
