@@ -24,6 +24,7 @@ dependencies:
     - black[jupyter]
     - isort
     - rope
+    - gsea-api
 
 # to create environment from this file:
 # conda env create --file <filename.yml>
