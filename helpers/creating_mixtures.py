@@ -57,7 +57,10 @@ def make_mixtures(
 ):
     logger.debug(f"using np.random.Generator with BitGenerator state {rng.bit_generator.state['state']}")
     cell_type_geps = {
-        sample: make_cell_type_geps(sc_data, sc_metadata, n_cells_per_gep, rng=rng) for sample in sample_fractions.index
+        sample: make_cell_type_geps(
+            sc_data, sc_metadata, n_cells_per_gep, malignant_from_one_sample=malignant_from_one_sample, rng=rng
+        )
+        for sample in sample_fractions.index
     }
     mixtures = pd.concat(
         {sample: cell_type_geps[sample] @ sample_fractions.loc[sample] for sample in sample_fractions.index},
