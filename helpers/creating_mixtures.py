@@ -3,7 +3,7 @@ import logging
 import numpy as np
 import pandas as pd
 
-from helpers import constants
+from helpers import columns
 
 logger = logging.getLogger(__name__)
 
@@ -17,14 +17,14 @@ def make_cell_type_geps(
     rng: np.random.Generator = np.random.default_rng(),
 ):
     if malignant_from_one_sample:
-        malignant_cells = sc_metadata[constants.CELL_TYPE_COLUMN_NAME] == "Malignant"
+        malignant_cells = sc_metadata[columns.CELL_TYPE] == "Malignant"
         random_sample = rng.choice(sc_metadata[malignant_cells]["samples"].unique())
         logger.debug(f"randomly chose {random_sample} for malignant cells")
         single_cells_to_include = np.logical_not(np.logical_and(malignant_cells, sc_metadata["samples"] != random_sample))
         sc_metadata = sc_metadata[single_cells_to_include]
     sampled_single_cells_per_type = (
-        sc_metadata.groupby(constants.CELL_TYPE_COLUMN_NAME)
-        .apply(lambda group: list(rng.choice(group[constants.SINGLE_CELL_COLUMN_NAME], n_cells_per_gep)))
+        sc_metadata.groupby(columns.CELL_TYPE)
+        .apply(lambda group: list(rng.choice(group[columns.SINGLE_CELL_ID], n_cells_per_gep)))
         .to_dict()
     )
     cell_type_geps = pd.concat(
