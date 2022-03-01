@@ -21,8 +21,8 @@ def load_jerby_arnon(n_genes: int = None) -> Tuple[pd.DataFrame, pd.DataFrame]:
         nrows=n_genes,
     )
     sc_rna_seq = sc_rna_seq.rename_axis(index=constants.GENE_SYMBOL_COLUMN_NAME, columns=constants.SINGLE_CELL_COLUMN_NAME)
-    sc_rna_seq = sc_rna_seq.reindex(sorted(sc_rna_seq.columns), axis=1)
-    sc_rna_seq = sc_rna_seq.sort_index()
+    sc_rna_seq = sc_rna_seq.sort_index(axis="columns")
+    sc_rna_seq = sc_rna_seq.sort_index(axis="rows")
     metadata = pd.read_csv(
         "gs://liulab/ftp/GSE115978/GSE115978_cell.annotations.csv",
         na_values={"cell.types": "?"},
