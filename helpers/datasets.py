@@ -30,7 +30,7 @@ def load_jerby_arnon(n_genes: int = None) -> Tuple[pd.DataFrame, pd.DataFrame]:
     metadata = metadata.rename(
         columns={"cells": constants.SINGLE_CELL_COLUMN_NAME, "cell.types": constants.CELL_TYPE_COLUMN_NAME}
     )
-    metadata = metadata.replace({"cell.types": weird_to_nice})
+    metadata = metadata.replace({constants.CELL_TYPE_COLUMN_NAME: weird_to_nice})
     metadata = metadata.rename_axis(index=constants.SINGLE_CELL_COLUMN_NAME)
     metadata = metadata.set_index(constants.SINGLE_CELL_COLUMN_NAME, drop=False)
     metadata = metadata.sort_index()
