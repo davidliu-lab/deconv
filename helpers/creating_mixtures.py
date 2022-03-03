@@ -18,9 +18,9 @@ def make_cell_type_geps(
 ):
     if malignant_from_one_sample:
         malignant_cells = sc_metadata[columns.CELL_TYPE] == "Malignant"
-        random_sample = rng.choice(sc_metadata[malignant_cells]["samples"].unique())
+        random_sample = rng.choice(sc_metadata[malignant_cells][columns.SAMPLE_ID].unique())
         logger.debug(f"randomly chose {random_sample} for malignant cells")
-        single_cells_to_include = np.logical_not(np.logical_and(malignant_cells, sc_metadata["samples"] != random_sample))
+        single_cells_to_include = np.logical_not(np.logical_and(malignant_cells, sc_metadata[columns.SAMPLE_ID] != random_sample))
         sc_metadata = sc_metadata[single_cells_to_include]
     sampled_single_cells_per_type = (
         sc_metadata.groupby(columns.CELL_TYPE)
@@ -38,9 +38,9 @@ def make_cell_type_geps(
 def make_fractions_from_dirichlet(n_samples: int, sc_metadata: pd.DataFrame, rng: np.random.Generator):
     samples = pd.Series(
         [f"sample_{j:0{len(str(n_samples))}d}" for j in range(n_samples)],
-        name="Mixture",
+        name=columns.SAMPLE_ID,
     )
-    cell_type_groups = sc_metadata.groupby("cell.types")
+    cell_type_groups = sc_metadata.groupby(columns.CELL_TYPE)
     fraction_values = rng.dirichlet(alpha=(0.5,) * cell_type_groups.ngroups, size=(n_samples,))
     fractions = pd.DataFrame(fraction_values, index=samples, columns=list(cell_type_groups.groups))
     return fractions

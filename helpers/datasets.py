@@ -28,7 +28,7 @@ def load_jerby_arnon(n_genes: int = None) -> Tuple[pd.DataFrame, pd.DataFrame]:
         na_values={"cell.types": "?"},
     )
     metadata = metadata.rename(
-        columns={"cells": columns.SINGLE_CELL_ID, "cell.types": columns.CELL_TYPE}
+        columns={"cells": columns.SINGLE_CELL_ID, "cell.types": columns.CELL_TYPE, "samples": columns.SAMPLE_ID}
     )
     metadata = metadata.replace({columns.CELL_TYPE: weird_to_nice})
     metadata = metadata.rename_axis(index=columns.SINGLE_CELL_ID)
