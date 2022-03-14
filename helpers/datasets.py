@@ -45,18 +45,26 @@ def load_tcga_skcm(n_genes: int = None) -> pd.DataFrame:
     """
     path = "gs://liulab/downloaded_manually/derek_csx_tcga_skcm/skcm_rnaseqv2_normalized_clean.txt"
     bulk_rna_seq = pd.read_csv(path, sep="\t", index_col=0, nrows=n_genes)
-    bulk_rna_seq = bulk_rna_seq.reindex(sorted(bulk_rna_seq.columns), axis=1)
-    bulk_rna_seq = bulk_rna_seq.rename_axis(index=columns.GENE_SYMBOL, columns=columns.SAMPLE_ID)
+    # clean up index (gene symbols)
     bulk_rna_seq = bulk_rna_seq.sort_index()
+    # clean up columns (sample IDs)
+    bulk_rna_seq = bulk_rna_seq.rename(columns=lambda sample_id: sample_id.replace(".", "-"))
+    bulk_rna_seq = bulk_rna_seq.reindex(sorted(bulk_rna_seq.columns), axis=1)
+    # clean up everything else
+    bulk_rna_seq = bulk_rna_seq.rename_axis(index=columns.GENE_SYMBOL, columns=columns.SAMPLE_ID)
     return bulk_rna_seq
 
 
 def load_tcga_skcm_fractions_from_csx() -> pd.DataFrame:
     path = "gs://liulab/downloaded_manually/derek_csx_tcga_skcm/CIBERSORTx_Job8_Results.txt"
     fractions = pd.read_csv(path, sep="\t", index_col=0)
+    # clean up index (sample IDs)
+    fractions = fractions.rename(index=lambda sample_id: sample_id.replace(".", "-"))
+    fractions = fractions.sort_index()
+    # clean up columns (cell type names)
     fractions = fractions.drop(fractions.columns[-3:], axis=1)
     fractions = fractions.rename(columns=weird_to_nice)
     fractions = fractions.reindex(sorted(fractions.columns), axis=1)
+    # clean up everything else
     fractions = fractions.rename_axis(index=columns.SAMPLE_ID, columns=columns.CELL_TYPE)
-    fractions = fractions.sort_index()
     return fractions
