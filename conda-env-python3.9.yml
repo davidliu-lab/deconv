@@ -8,6 +8,7 @@ dependencies:
   - mamba
   - pandas>=1.4
   - pandas-gbq
+  - pyarrow
   - gcsfs
   - google-cloud-storage
   - pandas-profiling
