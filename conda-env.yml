@@ -15,12 +15,12 @@ dependencies:
   - jupyterlab-lsp
   - matplotlib
   - pandas>=1.4
-  - pandas-gbq
+  - pandas-gbq>=0.17.4
   - pandas-profiling
   - pip
-  - plotly>=4.14
+  - plotly>=5.6
   - pyarrow
-  - python==3.10
+  - python>=3.10
   - scikit-learn
   - scipy
   - seaborn
@@ -31,3 +31,6 @@ dependencies:
     - isort
     - kaleido
     - rope
+
+    # - git+https://github.com/googleapis/python-db-dtypes-pandas.git
+    # - git+https://github.com/googleapis/python-bigquery-pandas.git
