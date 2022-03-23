@@ -1,0 +1,33 @@
+# to create env:
+# conda env create --file conda-env.yml
+
+# to update env:
+# conda env update --name deconv --file conda-env.yml
+
+name: deconv
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - docker-py
+  - gcsfs
+  - google-cloud-storage
+  - jupyterlab-lsp
+  - matplotlib
+  - pandas>=1.4
+  - pandas-gbq
+  - pandas-profiling
+  - pip
+  - plotly>=4.14
+  - pyarrow
+  - python==3.10
+  - scikit-learn
+  - scipy
+  - seaborn
+  - pip:
+    - black[jupyter]
+    - GEOparse
+    - gsea-api
+    - isort
+    - kaleido
+    - rope
