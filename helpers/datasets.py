@@ -1,12 +1,14 @@
 import logging
 from typing import Tuple
 
+from google.cloud import bigquery
 import pandas as pd
 
 from helpers import columns
 from helpers.cell_type_naming import weird_to_nice
 
 logger = logging.getLogger(__name__)
+
 
 def load_jerby_arnon(n_genes: int = None) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """Load Jerby-Arnon scRNA-seq data
@@ -75,3 +77,27 @@ def load_tcga_skcm_fractions_from_csx() -> pd.DataFrame:
     # clean up everything else
     fractions = fractions.rename_axis(index=columns.SAMPLE_ID, columns=columns.CELL_TYPE)
     return fractions
+
+
+def load_tcga_skcm_bigquery() -> pd.DataFrame:
+    query_string = """
+    SELECT
+        aliquot_barcode,
+        gene_name,
+        sum(HTSeq__FPKM) as HTSeq__FPKM_sum
+    FROM `isb-cgc-bq.TCGA.RNAseq_hg38_gdc_current`
+    WHERE
+        project_short_name = "TCGA-SKCM"
+        and gene_type = 'protein_coding'
+    GROUP BY 1, 2
+    """
+    client = bigquery.Client()
+    logger.debug("loading TCGA SKCM bulk RNA-seq data from BigQuery")
+    logger.debug("making query job")
+    query_job = client.query(query_string)
+    logger.debug("reading data from query to dataframe")
+    bulk_rna_seq = query_job.to_dataframe(progress_bar_type="tqdm")
+    logger.debug("pivoting results")
+    bulk_rna_seq = bulk_rna_seq.pivot(index="gene_name", columns="aliquot_barcode", values="HTSeq__FPKM_sum")
+    bulk_rna_seq = bulk_rna_seq.rename_axis(index=columns.GENE_SYMBOL, columns=columns.SAMPLE_ID)
+    return bulk_rna_seq
