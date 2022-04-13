@@ -9,6 +9,7 @@ channels:
   - conda-forge
   - defaults
 dependencies:
+  - altair>=4
   - docker-py
   - gcsfs
   - google-cloud-storage
