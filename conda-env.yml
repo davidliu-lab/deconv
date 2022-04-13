@@ -12,7 +12,9 @@ dependencies:
   - docker-py
   - gcsfs
   - google-cloud-storage
+  - ipykernel
   - jupyterlab-lsp
+  - jupyterlab_code_formatter
   - matplotlib
   - pandas>=1.4
   - pandas-gbq>=0.17.4
