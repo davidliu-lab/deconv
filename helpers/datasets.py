@@ -10,15 +10,8 @@ from helpers.cell_type_naming import weird_to_nice
 logger = logging.getLogger(__name__)
 
 
-def load_jerby_arnon() -> Tuple[pd.DataFrame, pd.DataFrame]:
-    """Load Jerby-Arnon scRNA-seq data (hg19 tpm)
-
-    Args:
-        n_genes (int, optional): Max number of genes to read. If None (default), read all genes.
-
-    Returns:
-        tuple: two dataframes, one each of sc data and metadata
-    """
+def load_jerby_arnon_hg19_tpm() -> Tuple[pd.DataFrame, pd.DataFrame]:
+    """Load Jerby-Arnon scRNA-seq data (hg19 tpm) from GEO (GSE115978)"""
     logger.debug("loading Jerby-Arnon scRNA-seq data")
     sc_hg19_tpm = (
         pd.read_csv(
@@ -50,28 +43,22 @@ def load_jerby_arnon() -> Tuple[pd.DataFrame, pd.DataFrame]:
 
 
 def load_tcga_skcm_hg19_normalized_counts_dereks_file() -> pd.DataFrame:
-    """Load RNA-seq (hg19 normalized counts) for TCGA SKCM, processed by Derek
-    """
+    """Load RNA-seq (hg19 normalized counts) for TCGA SKCM, processed by Derek"""
     path = "gs://liulab/downloaded_manually/derek_csx_tcga_skcm/skcm_rnaseqv2_normalized_clean.txt"
     logger.debug(f"reading {path}")
     bulk_rna_seq = pd.read_csv(path, sep="\t", index_col=0, engine="pyarrow")
     # clean up index (gene symbols)
     bulk_rna_seq = bulk_rna_seq.sort_index()
     # clean up columns (sample IDs)
-    bulk_rna_seq = bulk_rna_seq.rename(
-        columns=lambda sample_id: sample_id.replace(".", "-")
-    )
+    bulk_rna_seq = bulk_rna_seq.rename(columns=lambda sample_id: sample_id.replace(".", "-"))
     bulk_rna_seq = bulk_rna_seq.reindex(sorted(bulk_rna_seq.columns), axis=1)
     # clean up everything else
-    bulk_rna_seq = bulk_rna_seq.rename_axis(
-        index=columns.GENE_SYMBOL, columns=columns.SAMPLE_ID
-    )
+    bulk_rna_seq = bulk_rna_seq.rename_axis(index=columns.GENE_SYMBOL, columns=columns.SAMPLE_ID)
     return bulk_rna_seq
 
 
-def load_tcga_skcm_hg19_scaled_estimate() -> pd.DataFrame:
-    """Load RNA-seq (hg19 scaled_estimate) for TCGA SKCM, from firebrowse
-    """
+def load_tcga_skcm_hg19_scaled_estimate_firebrowse() -> pd.DataFrame:
+    """Load RNA-seq (hg19 scaled_estimate) for TCGA SKCM, from firebrowse"""
     path = "gs://liulab/firebrowse.org/SKCM.rnaseqv2__illuminahiseq_rnaseqv2__unc_edu__Level_3__RSEM_genes__data.data.txt"
     logger.debug(f"reading {path}")
     df = pd.read_csv(
@@ -105,13 +92,11 @@ def load_tcga_skcm_fractions_from_csx() -> pd.DataFrame:
     fractions = fractions.rename(columns=weird_to_nice)
     fractions = fractions.reindex(sorted(fractions.columns), axis=1)
     # clean up everything else
-    fractions = fractions.rename_axis(
-        index=columns.SAMPLE_ID, columns=columns.CELL_TYPE
-    )
+    fractions = fractions.rename_axis(index=columns.SAMPLE_ID, columns=columns.CELL_TYPE)
     return fractions
 
 
-def load_tcga_skcm_bigquery() -> pd.DataFrame:
+def load_tcga_skcm_hg38_fpkm_bigquery() -> pd.DataFrame:
     query_string = """
     SELECT
         aliquot_barcode,
@@ -130,10 +115,6 @@ def load_tcga_skcm_bigquery() -> pd.DataFrame:
     logger.debug("reading data from query to dataframe")
     bulk_rna_seq = query_job.to_dataframe(progress_bar_type="tqdm")
     logger.debug("pivoting results")
-    bulk_rna_seq = bulk_rna_seq.pivot(
-        index="gene_name", columns="aliquot_barcode", values="HTSeq__FPKM_sum"
-    )
-    bulk_rna_seq = bulk_rna_seq.rename_axis(
-        index=columns.GENE_SYMBOL, columns=columns.SAMPLE_ID
-    )
+    bulk_rna_seq = bulk_rna_seq.pivot(index="gene_name", columns="aliquot_barcode", values="HTSeq__FPKM_sum")
+    bulk_rna_seq = bulk_rna_seq.rename_axis(index=columns.GENE_SYMBOL, columns=columns.SAMPLE_ID)
     return bulk_rna_seq
