@@ -17,6 +17,8 @@ dependencies:
   - jupyterlab-lsp
   - jupyterlab_code_formatter
   - matplotlib
+  - opentelemetry-api
+  - opentelemetry-instrumentation
   - pandas>=1.4
   - pandas-gbq>=0.17.4
   - pandas-profiling
