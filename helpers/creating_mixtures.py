@@ -20,7 +20,9 @@ def make_cell_type_geps(
         malignant_cells = sc_metadata[columns.CELL_TYPE] == "Malignant"
         random_sample = rng.choice(sc_metadata[malignant_cells][columns.SAMPLE_ID].unique())
         logger.debug(f"randomly chose {random_sample} for malignant cells")
-        single_cells_to_include = np.logical_not(np.logical_and(malignant_cells, sc_metadata[columns.SAMPLE_ID] != random_sample))
+        single_cells_to_include = np.logical_not(
+            np.logical_and(malignant_cells, sc_metadata[columns.SAMPLE_ID] != random_sample)
+        )
         sc_metadata = sc_metadata[single_cells_to_include]
     sampled_single_cells_per_type = (
         sc_metadata.groupby(columns.CELL_TYPE)
