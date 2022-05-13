@@ -2,7 +2,7 @@
 # conda env create --file conda-env.yml
 
 # to update env:
-# conda env update --name deconv --file conda-env.yml
+# conda env update --name deconv --file conda-env.yml --prune
 
 name: deconv
 channels:
@@ -16,6 +16,7 @@ dependencies:
   - ipykernel
   - jupyterlab-lsp
   - jupyterlab_code_formatter
+  - loompy>=3
   - matplotlib
   - opentelemetry-api
   - opentelemetry-instrumentation
