@@ -16,8 +16,6 @@ dependencies:
   - gcsfs
   - google-cloud-storage
   - ipykernel
-  - jupyterlab-lsp
-  - jupyterlab_code_formatter
   - matplotlib
   - opentelemetry-api
   - opentelemetry-instrumentation
