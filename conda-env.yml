@@ -10,7 +10,6 @@ channels:
   - defaults
 dependencies:
   - altair>=4
-  - altair_saver
   - cloudpathlib-all
   - docker-py
   - gcsfs
@@ -29,8 +28,6 @@ dependencies:
   - scikit-learn
   - scipy
   - seaborn
-  - vega-cli
-  - vega-lite-cli
   - pip:
     - black[jupyter]
     - GEOparse
