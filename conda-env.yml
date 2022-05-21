@@ -10,7 +10,6 @@ channels:
   - defaults
 dependencies:
   - altair>=4
-  - cloudpathlib-all
   - docker-py
   - gcsfs
   - google-cloud-storage
@@ -30,6 +29,7 @@ dependencies:
   - seaborn
   - pip:
     - black[jupyter]
+    - cloudpathlib[gs]
     - GEOparse
     - gsea-api
     - isort
