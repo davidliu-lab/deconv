@@ -10,6 +10,7 @@ channels:
   - defaults
 dependencies:
   - altair>=4
+  - dask
   - docker-py
   - gcsfs
   - google-cloud-storage
