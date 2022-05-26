@@ -56,7 +56,7 @@ def make_mixtures(
     normalization_factor: int = 1_000_000,
     malignant_from_one_sample: bool = True,
     rng: np.random.Generator = np.random.default_rng(),
-):
+) -> tuple[pd.DataFrame, dict[str, pd.DataFrame]]:
     logger.debug(f"using np.random.Generator with BitGenerator state {rng.bit_generator.state['state']}")
     cell_type_geps = {
         sample: make_cell_type_geps(
