@@ -18,6 +18,7 @@ mamba install -y -n base -c conda-forge \
     jupyterlab-lsp \
     jupyterlab_miami_nights \
     nbconvert \
+    nbresuse \
     pre-commit \
     python-lsp-server
 
