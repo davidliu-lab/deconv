@@ -3,7 +3,7 @@ import logging
 import numpy as np
 import pandas as pd
 
-from helpers import columns
+from . import columns
 
 logger = logging.getLogger(__name__)
 

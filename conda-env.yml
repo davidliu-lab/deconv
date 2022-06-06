@@ -1,8 +1,8 @@
 # to create env:
-# conda env create --file conda-env.yml
+# mamba env create --file conda-env.yml
 
 # to update env:
-# conda env update --name deconv --file conda-env.yml
+# mamba env update --name deconv --file conda-env.yml
 
 name: deconv
 channels:
@@ -12,6 +12,7 @@ dependencies:
   - altair>=4
   - dask
   - docker-py
+  - flit>=3.4
   - gcsfs
   - google-cloud-storage
   - ipykernel
@@ -36,6 +37,3 @@ dependencies:
     - isort
     - kaleido
     - rope
-
-    # - git+https://github.com/googleapis/python-db-dtypes-pandas.git
-    # - git+https://github.com/googleapis/python-bigquery-pandas.git

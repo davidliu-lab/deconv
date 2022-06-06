@@ -12,11 +12,12 @@ git config --global include.path ~/.gitalias
 conda install -y -n base -c conda-forge mamba
 mamba install -y -n base -c conda-forge \
     black \
+    flit \
     isort \
     jupyter-book \
     jupyterlab_code_formatter \
-    jupyterlab-lsp \
     jupyterlab_miami_nights \
+    jupyterlab-lsp \
     nbconvert \
     nbresuse \
     pre-commit \
