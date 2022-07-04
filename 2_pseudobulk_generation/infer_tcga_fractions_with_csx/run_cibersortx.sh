@@ -1,6 +1,4 @@
-# MIXTURE_FILE="gs://liulab/data/from_amy/tpm_df_combatseq/pivoted_by_william_for_csx.tsv"
 MIXTURE_FILE="gs://liulab/tmp/mixtures_tcga_skcm_hg19_tpm.txt"
-# REFSAMPLE_FILE="gs://liulab/csx_example_files/Single_Cell_RNA-Seq_Melanoma_SuppFig_3b-d/scRNA-Seq_reference_melanoma_Tirosh_SuppFig_3b-d.txt"
 REFSAMPLE_FILE="gs://liulab/tmp/refsample_jerby_arnon.txt"
 
 # setup
@@ -11,7 +9,6 @@ mkdir -p $CSX_DIR/in $CSX_DIR/out
 gsutil cp $MIXTURE_FILE $CSX_DIR/in/mymixture.txt
 gsutil cp $REFSAMPLE_FILE $CSX_DIR/in/myrefsample.txt
 
-## verify setup
 tree -h $CSX_DIR
 
 docker run \
@@ -27,5 +24,7 @@ docker run \
     --mixture mymixture.txt \
     --rmbatchBmode TRUE \
     --verbose TRUE
+
+tree -h $CSX_DIR
 
 gsutil rsync -r $CSX_DIR gs://liulab/tmp/csx_results
