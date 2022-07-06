@@ -10,7 +10,9 @@ from .cell_type_naming import weird_to_nice
 logger = logging.getLogger(__name__)
 
 
-def load_jerby_arnon(ref_genome="hg19", units="tpm") -> Tuple[pd.DataFrame, pd.DataFrame]:
+def load_jerby_arnon(
+    ref_genome="hg19", units="tpm"
+) -> Tuple[pd.DataFrame, pd.DataFrame]:
     if ref_genome == "hg19" and units == "tpm":
         return load_jerby_arnon_hg19_tpm()
     else:
@@ -57,10 +59,14 @@ def load_tcga_skcm_hg19_normalized_counts_dereks_file() -> pd.DataFrame:
     # clean up index (gene symbols)
     bulk_rna_seq = bulk_rna_seq.sort_index()
     # clean up columns (sample IDs)
-    bulk_rna_seq = bulk_rna_seq.rename(columns=lambda sample_id: sample_id.replace(".", "-"))
+    bulk_rna_seq = bulk_rna_seq.rename(
+        columns=lambda sample_id: sample_id.replace(".", "-")
+    )
     bulk_rna_seq = bulk_rna_seq.reindex(sorted(bulk_rna_seq.columns), axis=1)
     # clean up everything else
-    bulk_rna_seq = bulk_rna_seq.rename_axis(index=columns.GENE_SYMBOL, columns=columns.SAMPLE_ID)
+    bulk_rna_seq = bulk_rna_seq.rename_axis(
+        index=columns.GENE_SYMBOL, columns=columns.SAMPLE_ID
+    )
     return bulk_rna_seq
 
 
@@ -99,7 +105,9 @@ def load_tcga_skcm_fractions_from_csx() -> pd.DataFrame:
     fractions = fractions.rename(columns=weird_to_nice)
     fractions = fractions.reindex(sorted(fractions.columns), axis=1)
     # clean up everything else
-    fractions = fractions.rename_axis(index=columns.SAMPLE_ID, columns=columns.CELL_TYPE)
+    fractions = fractions.rename_axis(
+        index=columns.SAMPLE_ID, columns=columns.CELL_TYPE
+    )
     return fractions
 
 
@@ -122,6 +130,10 @@ def load_tcga_skcm_hg38_fpkm_bigquery() -> pd.DataFrame:
     logger.debug("reading data from query to dataframe")
     bulk_rna_seq = query_job.to_dataframe(progress_bar_type="tqdm")
     logger.debug("pivoting results")
-    bulk_rna_seq = bulk_rna_seq.pivot(index="gene_name", columns="aliquot_barcode", values="HTSeq__FPKM_sum")
-    bulk_rna_seq = bulk_rna_seq.rename_axis(index=columns.GENE_SYMBOL, columns=columns.SAMPLE_ID)
+    bulk_rna_seq = bulk_rna_seq.pivot(
+        index="gene_name", columns="aliquot_barcode", values="HTSeq__FPKM_sum"
+    )
+    bulk_rna_seq = bulk_rna_seq.rename_axis(
+        index=columns.GENE_SYMBOL, columns=columns.SAMPLE_ID
+    )
     return bulk_rna_seq
