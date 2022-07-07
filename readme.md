@@ -45,3 +45,16 @@ to install the `helpers` package in this repo:
 ```shell
 pip install --verbose --no-build-isolation --editable .
 ```
+
+### configuring access to google cloud storage with `gcloud auth`
+
+```
+gcloud auth application-default login
+```
+
+and maybe also
+
+```
+gcloud auth login
+gcloud config set project keen-dispatch-316219
+```
