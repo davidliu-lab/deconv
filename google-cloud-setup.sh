@@ -19,6 +19,7 @@ mamba install -y -n base -c conda-forge \
     jupyterlab_code_formatter \
     jupyterlab_miami_nights \
     jupyterlab-lsp \
+    nb_conda_kernels \
     nbconvert \
     nbresuse \
     pre-commit \
