@@ -11,8 +11,7 @@ git config --global include.path ~/.gitalias
 
 conda install -y -n base -c conda-forge mamba
 mamba install -y -n base -c conda-forge \
-    black \
-    black-jupyter \
+    black-jupyter=22.6.0 \
     flit \
     isort \
     jupyter-book \
