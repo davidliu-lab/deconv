@@ -9,6 +9,7 @@ sudo apt install -y \
 curl https://raw.githubusercontent.com/GitAlias/gitalias/master/gitalias.txt -o ~/.gitalias 
 git config --global include.path ~/.gitalias
 
+# adding stuff to base env
 conda install -y -n base -c conda-forge mamba
 mamba install -y -n base -c conda-forge \
     black-jupyter=22.6.0 \
@@ -24,4 +25,8 @@ mamba install -y -n base -c conda-forge \
     pre-commit \
     python-lsp-server
 
+# to create deconv env:
 mamba env create --file conda-env.yml
+
+# to update deconv env:
+mamba env update --file conda-env.yml

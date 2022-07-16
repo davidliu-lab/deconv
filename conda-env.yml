@@ -1,9 +1,3 @@
-# to create env:
-# mamba env create --file conda-env.yml
-
-# to update env:
-# mamba env update --name deconv --file conda-env.yml
-
 name: deconv
 channels:
   - conda-forge
