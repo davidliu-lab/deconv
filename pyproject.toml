@@ -12,3 +12,6 @@ Home = "https://github.com/grisaitis"
 
 [tool.isort]
 profile = "black"
+
+[tool.black]
+exclude = '(\.virtual_documents|\.ipynb_checkpoints|2\.1\ -\ run\ csx.*|2\ -\ run\ csx.*|.*txt\ files\.ipynb)'
