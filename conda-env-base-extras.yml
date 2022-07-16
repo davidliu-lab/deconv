@@ -1,0 +1,22 @@
+name: base
+channels:
+  - conda-forge
+dependencies:
+  - black-jupyter>=22.6
+  - flit>=3.7
+  - isort
+  - jupyter-book>=0.13
+  - mamba
+  - nb_conda_kernels
+  - nbconvert
+  - pip
+  - python-lsp-server
+  - pip:
+    - jupyterlab-code-formatter
+    - jupyterlab-lsp
+    - jupyterlab-markup
+    - jupyterlab-miami-nights
+    - jupyterlab-myst
+
+#  - pre-commit
+#  - nbresuse
