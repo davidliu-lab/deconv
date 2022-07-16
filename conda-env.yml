@@ -10,6 +10,7 @@ channels:
   - defaults
 dependencies:
   - altair>=4
+  - black-jupyter=22.6.0
   - dask
   - docker-py
   - flit>=3.4
@@ -29,7 +30,6 @@ dependencies:
   - scipy
   - seaborn
   - pip:
-    - black[jupyter]
     - cloudpathlib[gs]
     - GEOparse
     - gsea-api
