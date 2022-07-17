@@ -1,8 +1,8 @@
 import logging
 from typing import Tuple
 
-from google.cloud import bigquery
 import pandas as pd
+from google.cloud import bigquery
 
 from . import columns
 from .cell_type_naming import weird_to_nice

@@ -1,8 +1,8 @@
-from contextlib import closing
 import gzip
 import os
 import shutil
 import urllib.request as request
+from contextlib import closing
 
 
 def download_gz_from_ftp(ftp_url, base_dir):
