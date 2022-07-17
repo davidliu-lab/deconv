@@ -1,9 +1,33 @@
-### os dependencies
+# installation and machine setup
 
-nice things
+## os dependencies
+
+### a conda installation
+
+this project assumes you have a conda installation. for a good one, check out [conda-forge/miniforge](https://github.com/conda-forge/miniforge).
+
+### add git aliases
+
+```shell
+curl https://raw.githubusercontent.com/GitAlias/gitalias/master/gitalias.txt -o ~/.gitalias
+git config --global include.path ~/.gitalias
+```
+
+### add some jupyter-related dependencies to the base conda env
+
+```shell
+conda install -y -n base -c conda-forge mamba
+
+mamba env update --file conda-env-base-extras.yml
+
+mamba update -n base -c conda-forge --update-all
+```
+
+### others
 
 ```shell
 sudo apt update
+
 sudo apt install -y \
     pandoc \
     tree \
@@ -12,35 +36,17 @@ sudo apt install -y \
     texlive-plain-generic
 ```
 
-mamba
-
-```shell
-conda install -y -n base -c conda-forge mamba
-```
-
-### conda env
-
-create:
+## conda env for project code
 
 ```shell
 mamba env create --file conda-env.yml
-```
 
-update:
+mamba env update --file conda-env.yml
 
-```shell
-mamba env update --name deconv --file conda-env.yml
-```
-
-activate:
-
-```shell
 mamba activate deconv
 ```
 
 ### to install `helpers`
-
-to install the `helpers` package in this repo:
 
 ```shell
 pip install --verbose --no-build-isolation --editable .
@@ -48,13 +54,9 @@ pip install --verbose --no-build-isolation --editable .
 
 ### configuring access to google cloud storage with `gcloud auth`
 
-```
+```shell
 gcloud auth application-default login
-```
-
-and maybe also
-
-```
+# and maybe also...
 gcloud auth login
 gcloud config set project keen-dispatch-316219
 ```
