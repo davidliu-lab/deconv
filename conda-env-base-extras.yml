@@ -5,20 +5,20 @@ dependencies:
   - black-jupyter>=22.6
   - flit>=3.7
   - isort
+  - jupyterlab
   - jupyter-book>=0.13
+  - jupyterlab_code_formatter
+  - jupyterlab-lsp
+  - jupyterlab-markup
+  - jupyterlab_miami_nights
   - mamba
   - nb_conda_kernels
   - nbconvert
   - pip
   - python-lsp-server
   - pip:
-    - jupyterlab-code-formatter
-    - jupyterlab-lsp
-    - jupyterlab-markup
-    - jupyterlab-miami-nights
-    - jupyterlab-myst
-    - jupyterlab-dash
-    - jupyterlab-flake8
+    - myst-nb
+    - jupyterlab-myst[eval]
 
 #  - pre-commit
 #  - nbresuse
