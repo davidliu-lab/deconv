@@ -17,6 +17,9 @@ dependencies:
     - jupyterlab-markup
     - jupyterlab-miami-nights
     - jupyterlab-myst
+    - jupyterlab-dash
+    - jupyterlab-flake8
 
 #  - pre-commit
 #  - nbresuse
+#    - jupyterlab-plotly  # should work automatically with plotly>=5
