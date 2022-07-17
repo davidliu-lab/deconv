@@ -4,7 +4,7 @@ from statsmodels.stats.multitest import multipletests
 import numpy as np
 
 
-def compute_stats_single_gene(df):
+def compute_stats_single_gene(df: pd.DataFrame) -> pd.Series:
     """
     Compute differential expression stats for a single gene
 
@@ -14,10 +14,10 @@ def compute_stats_single_gene(df):
     immune_high_tpm = df[df["immune_high"]]["tpm"]
     pval = scipy.stats.mannwhitneyu(immune_high_tpm, immune_low_tpm)[1]
     fold_change = immune_high_tpm.mean() / immune_low_tpm.mean()
-    return pd.DataFrame({"pval": pval, "fold_change": fold_change})
+    return pd.Series({"pval": pval, "fold_change": fold_change})
 
 
-def adjust_pvals(df):
+def adjust_pvals(df: pd.DataFrame) -> pd.DataFrame:
     """
     Adjust p-values for multiple testing using Benjamini-Hochberg procedure
 
