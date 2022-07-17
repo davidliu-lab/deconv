@@ -1,9 +1,14 @@
 import logging
-import pandas as pd
-import scipy.stats
-from statsmodels.stats.multitest import multipletests
-import numpy as np
 
+import dask.dataframe as dd
+import numpy as np
+import pandas as pd
+import plotly.express as px
+import scipy.stats
+from google.cloud import bigquery
+from statsmodels.stats.multitest import multipletests
+
+from helpers.datasets import load_tcga_skcm_fractions_from_csx
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +37,7 @@ def make_labels_for_aliquots(df_cell_type_fractions, df_sample_metadata):
     return df_sample_metadata
 
 
-def add_immune_groups_to_rnaseq(ddf_bulk_rnaseq, df_sample_metadata):
+def compute_gene_stats_with_immune_groups(ddf_bulk_rnaseq, df_sample_metadata):
     df = ddf_bulk_rnaseq.join(
         df_sample_metadata.set_index("aliquot_barcode")[
             ["immune_fraction", "immune_low", "immune_high"]
@@ -81,3 +86,104 @@ def process_gene_level_results(df: pd.DataFrame) -> pd.DataFrame:
         df[f"-log10_{field_name}"] = -np.log10(df[field_name])
         df[f"-log10_{field_name}_signed"] = df[f"-log10_{field_name}"] * sign
     return df
+
+
+def get_metastatic_sample_barcodes():
+    bqclient = bigquery.Client()
+    query_string = """
+    SELECT * 
+    FROM `isb-cgc-bq.TCGA.biospecimen_gdc_current`
+    where project_short_name = "TCGA-SKCM"
+        and sample_type_name = "Metastatic"
+    order by sample_barcode
+    """
+    df_tcga_sample_metadata = (
+        bqclient.query(query_string).result().to_dataframe(progress_bar_type="tqdm")
+    )
+    return df_tcga_sample_metadata
+
+
+def get_tcga_skcm_metastatic_sample_metadata() -> pd.DataFrame:
+    df_tcga_skcm_fractions_from_csx = load_tcga_skcm_fractions_from_csx()
+    df_tcga_sample_metadata = get_metastatic_sample_barcodes()
+    df_sample_metadata = make_labels_for_aliquots(
+        df_tcga_skcm_fractions_from_csx, df_tcga_sample_metadata
+    )
+    return df_sample_metadata
+
+
+def compute_all_deg_results(
+    ddf_bulk_rnaseq: dd.DataFrame, df_sample_metadata: pd.DataFrame
+) -> pd.DataFrame:
+    logger.debug("computing stats")
+    df_gene_stats = compute_gene_stats_with_immune_groups(
+        ddf_bulk_rnaseq, df_sample_metadata
+    )
+    logger.debug("creating derived columns (e.g. -log10_pval...)")
+    df_gene_stats = process_gene_level_results(df_gene_stats)
+    return df_gene_stats
+
+
+def make_volcano_plot(df_gene_stats):
+    fig = px.scatter(
+        df_gene_stats,
+        x="log2_fold_change",
+        y="-log10_pval_adj_fdr=0.10",
+        hover_name="gene_symbol",
+        hover_data=["fold_change", "pval"],
+    )
+    fig.update_xaxes(range=(-12, 12))
+    fig.update_yaxes(range=(0, 25))
+    fig.update_traces(marker=dict(size=3))
+    return fig
+
+
+def make_scatter_of_signed_pvals(df_gene_stats_1, df_gene_stats_2):
+    fig = px.scatter(
+        df_gene_stats_1.merge(df_gene_stats_2, on="gene_symbol"),
+        x="-log10_pval_adj_fdr=0.10_signed_x",
+        y="-log10_pval_adj_fdr=0.10_signed_y",
+        trendline="ols",
+        hover_name="gene_symbol",
+    )
+    fig.update_xaxes(range=(-25, 25))
+    fig.update_yaxes(range=(-25, 25))
+    fig.update_traces(marker=dict(size=3))
+    return fig
+
+
+def make_scatter_of_log2_fold_changes(df_gene_stats_1, df_gene_stats_2):
+    fig = px.scatter(
+        df_gene_stats_1.merge(df_gene_stats_2, on="gene_symbol"),
+        x="log2_fold_change_x",
+        y="log2_fold_change_y",
+        trendline="ols",
+        hover_name="gene_symbol",
+    )
+    fig.update_xaxes(range=(-12, 12))
+    fig.update_yaxes(range=(-12, 12))
+    fig.update_traces(marker=dict(size=3))
+    return fig
+
+
+def analyze_gene_significance_overlap(
+    df_gene_stats_1: pd.DataFrame,
+    df_gene_stats_2: pd.DataFrame,
+    top_fraction_cutoff: float,
+):
+    special_genes_1 = (
+        df_gene_stats_1.set_index("gene_symbol")["-log10_pval_adj_fdr=0.10"].rank(
+            pct=True
+        )
+        > 1 - top_fraction_cutoff
+    ).rename("significant_in_cohort_1")
+    special_genes_2 = (
+        df_gene_stats_2.set_index("gene_symbol")["-log10_pval_adj_fdr=0.10"].rank(
+            pct=True
+        )
+        > 1 - top_fraction_cutoff
+    ).rename("significant_in_cohort_2")
+    special_genes_both = special_genes_1 & special_genes_2
+    crosstab = pd.crosstab(special_genes_1, special_genes_2)
+    odds_ratio, p_value = scipy.stats.fisher_exact(crosstab)
+    return crosstab, odds_ratio, p_value
