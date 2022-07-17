@@ -8,6 +8,7 @@ dependencies:
   - jupyterlab
   - jupyter-book>=0.13
   - jupyterlab_code_formatter
+  - jupyterlab-git
   - jupyterlab-lsp
   - jupyterlab-markup
   - jupyterlab_miami_nights
@@ -19,6 +20,7 @@ dependencies:
   - pip:
     - myst-nb
     - jupyterlab-myst[eval]
+    - jupyterlab-neon-theme
 
 #  - pre-commit
 #  - nbresuse
