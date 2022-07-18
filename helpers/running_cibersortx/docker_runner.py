@@ -50,7 +50,7 @@ def create_csx_refsample_tsv(
 
 def run_fractions_in_prepared_local_directory(csx_dir):
     run_kwargs = dict(
-        user=os.getuid(),
+        user=f"{os.getuid()}:{os.getgid()}",
         volumes=[
             f"{csx_dir}/in:/src/data",
             f"{csx_dir}/out:/src/outdir",
