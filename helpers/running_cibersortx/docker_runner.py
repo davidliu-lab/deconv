@@ -64,7 +64,7 @@ def run_high_resolution_in_prepared_local_directory(csx_dir):
             "--mixture inputbulkrnaseq.tsv",
             "--rmbatchBmode TRUE",
             "--verbose TRUE",
-            "--absolute TRUE\n",
+            "--absolute FALSE",
         ]
     )
     client = docker.from_env()
