@@ -1,6 +1,7 @@
 import logging
 import os
 import pathlib
+import shutil
 import tempfile
 
 import dask.dataframe as dd
@@ -77,6 +78,14 @@ def run_fractions_in_prepared_local_directory(csx_dir):
     # container.wait()
 
 
+def copy_file_maybe_in_the_cloud_to_local_path(source_uri: str, target_path: AnyPath):
+    path = AnyPath(source_uri)
+    try:
+        path.copy(target_path)
+    except AttributeError:
+        shutil.copy(path.resolve(), target_path.resolve())
+
+
 def run_fractions_and_upload(
     uri_bulk_rnaseq: str,
     uri_refsample_sc_rnaseq: str,
@@ -86,8 +95,12 @@ def run_fractions_and_upload(
         path = pathlib.Path(tmp_dir)
         (path / "in").mkdir()
         (path / "out").mkdir()
-        AnyPath(uri_bulk_rnaseq).copy(path / "in" / "inputbulkrnaseq.tsv")
-        AnyPath(uri_refsample_sc_rnaseq).copy(path / "in" / "inputrefscrnaseq.tsv")
+        copy_file_maybe_in_the_cloud_to_local_path(
+            uri_bulk_rnaseq, path / "in" / "inputbulkrnaseq.tsv"
+        )
+        copy_file_maybe_in_the_cloud_to_local_path(
+            uri_refsample_sc_rnaseq, path / "in" / "inputrefscrnaseq.tsv"
+        )
         run_fractions_in_prepared_local_directory(tmp_dir)
         storage_client = storage.Client()
         bucket = storage_client.bucket("liulab")
