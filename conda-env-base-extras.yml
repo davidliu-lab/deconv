@@ -15,12 +15,13 @@ dependencies:
   - mamba
   - nb_conda_kernels
   - nbconvert
+  - nbqa
   - pip
   - python-lsp-server
+  - pyupgrade
   - pip:
     - myst-nb
     - jupyterlab-myst[eval]
-    - jupyterlab-neon-theme
 
 #  - pre-commit
 #  - nbresuse
