@@ -57,7 +57,7 @@ def run_fractions_in_prepared_local_directory(csx_dir):
         ],
         auto_remove=True,
     )
-    command_arguments = " \\ \n".join(
+    command_arguments = " ".join(
         [
             "--username lyronctk@stanford.edu",
             "--token dfeba2c8b9d61daebee5fa87026b8e56",
