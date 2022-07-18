@@ -46,7 +46,7 @@ def create_csx_refsample_tsv(
     return uri_file
 
 
-def run_high_resolution_in_prepared_local_directory(csx_dir):
+def run_fractions_in_prepared_local_directory(csx_dir):
     run_kwargs = dict(
         user=os.getuid(),
         volumes=[
@@ -68,12 +68,16 @@ def run_high_resolution_in_prepared_local_directory(csx_dir):
         ]
     )
     client = docker.from_env()
-    container = client.containers.run(
-        "cibersortx/hires:latest", command_arguments, **run_kwargs
+    message = client.containers.run(
+        "cibersortx/fractions:latest", command_arguments, **run_kwargs
     )
+    print(message.decode("utf-8"))
+    # for message in container.logs(follow=True):
+    #     print(message)
+    # container.wait()
 
 
-def run_high_resolution_and_upload(
+def run_fractions_and_upload(
     uri_bulk_rnaseq: str,
     uri_refsample_sc_rnaseq: str,
     uri_save_job_files_to: str,
@@ -84,7 +88,7 @@ def run_high_resolution_and_upload(
         (path / "out").mkdir()
         AnyPath(uri_bulk_rnaseq).copy(path / "in" / "inputbulkrnaseq.tsv")
         AnyPath(uri_refsample_sc_rnaseq).copy(path / "in" / "inputrefscrnaseq.tsv")
-        run_high_resolution_in_prepared_local_directory(tmp_dir)
+        run_fractions_in_prepared_local_directory(tmp_dir)
         storage_client = storage.Client()
         bucket = storage_client.bucket("liulab")
         copy_local_directory_to_gcs(tmp_dir, bucket, uri_save_job_files_to)
@@ -105,18 +109,23 @@ if __name__ == "__main__":
     logging.getLogger().handlers = [handler]
     logger.setLevel("DEBUG")
     logger.debug("test debug-level message")
-
-    df_bulk_rnaseq_hg19_tpm = (
-        helpers.datasets.load_tcga_skcm_hg19_scaled_estimate_firebrowse()
-    )
-    df_bulk_rnaseq_hg19_tpm *= 1e6 / df_bulk_rnaseq_hg19_tpm.sum()
-    df_sc_rnaseq, df_sc_metadata = helpers.datasets.load_jerby_arnon_hg19_tpm()
-    df_sc_rnaseq *= 1e6 / df_sc_rnaseq.sum()
-    with tempfile.TemporaryFile() as uri_csx_bulk_rnaseq, tempfile.TemporaryFile() as uri_csx_refsample:
-        create_csx_mixture_tsv(df_bulk_rnaseq_hg19_tpm, uri_csx_bulk_rnaseq)
-        create_csx_refsample_tsv(df_sc_rnaseq, df_sc_metadata, uri_csx_refsample)
-        run_high_resolution_and_upload(
-            uri_csx_bulk_rnaseq,
-            uri_csx_refsample_sc_rnaseq,
-            "gs://liulab/tmp/csx_job_files",
-        )
+    # logger.debug("loading data (bulk and sc data)")
+    # df_bulk_rnaseq_hg19_tpm = (
+    #     helpers.datasets.load_tcga_skcm_hg19_scaled_estimate_firebrowse()
+    # )
+    # # df_bulk_rnaseq_hg19_tpm *= 1e6 / df_bulk_rnaseq_hg19_tpm.sum()
+    # df_sc_rnaseq, df_sc_metadata = helpers.datasets.load_jerby_arnon_hg19_tpm()
+    # # df_sc_rnaseq *= 1e6 / df_sc_rnaseq.sum()
+    # logger.debug("creating bulk rna-seq tsv formatted for cibersortx")
+    # create_csx_mixture_tsv(df_bulk_rnaseq_hg19_tpm, uri_csx_bulk_rnaseq)
+    # logger.debug("creating refsample sc rna-seq tsv formatted for cibersortx")
+    # create_csx_refsample_tsv(df_sc_rnaseq, df_sc_metadata, uri_csx_refsample)
+    # uri_csx_bulk_rnaseq = "/tmp/csx_bulk_rnaseq.tsv"
+    # uri_csx_refsample = "/tmp/csx_refsample.tsv"
+    # logger.debug("running with docker")
+    # run_high_resolution_and_upload(
+    #     uri_csx_bulk_rnaseq,
+    #     uri_csx_refsample,
+    #     "gs://liulab/tmp/csx_job_files",
+    # )
+    run_fractions_in_prepared_local_directory("/home/jupyter/deconv/tmp")
