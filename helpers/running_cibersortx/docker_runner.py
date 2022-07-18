@@ -11,6 +11,7 @@ from cloudpathlib import AnyPath
 from google.cloud import storage
 
 import helpers
+from helpers.running_cibersortx.copying_to_gcs import copy_local_directory_to_gcs
 
 logger = logging.getLogger(__name__)
 
