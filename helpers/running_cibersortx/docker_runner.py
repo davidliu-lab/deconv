@@ -93,6 +93,7 @@ def run_fractions_and_upload(
     uri_save_job_files_to: str,
 ):
     with tempfile.TemporaryDirectory() as tmp_dir:
+        logger.debug(f"running cibersortx from {tmp_dir}")
         path = pathlib.Path(tmp_dir)
         (path / "in").mkdir()
         (path / "out").mkdir()
