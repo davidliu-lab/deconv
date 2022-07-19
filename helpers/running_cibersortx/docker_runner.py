@@ -54,22 +54,28 @@ def run_fractions_in_prepared_local_directory(csx_dir):
     container.wait()
 
 
+def set_up_fractions_dir(uri_bulk_rnaseq, uri_refsample_sc_rnaseq, tmp_dir):
+    csx_dir = pathlib.Path(tmp_dir)
+    csx_dir.mkdir()
+    (csx_dir / "in").mkdir()
+    (csx_dir / "out").mkdir()
+    copy_file_maybe_in_the_cloud_to_local_path(
+        uri_bulk_rnaseq, csx_dir / "in" / "inputbulkrnaseq.tsv"
+    )
+    copy_file_maybe_in_the_cloud_to_local_path(
+        uri_refsample_sc_rnaseq, csx_dir / "in" / "inputrefscrnaseq.tsv"
+    )
+    return csx_dir
+
+
 def run_fractions_and_upload(
     uri_bulk_rnaseq: str,
     uri_refsample_sc_rnaseq: str,
     uri_save_job_files_to: str,
 ):
     with tempfile.TemporaryDirectory() as tmp_dir:
-        logger.debug(f"running cibersortx from {tmp_dir}")
-        path = pathlib.Path(tmp_dir)
-        (path / "in").mkdir()
-        (path / "out").mkdir()
-        copy_file_maybe_in_the_cloud_to_local_path(
-            uri_bulk_rnaseq, path / "in" / "inputbulkrnaseq.tsv"
-        )
-        copy_file_maybe_in_the_cloud_to_local_path(
-            uri_refsample_sc_rnaseq, path / "in" / "inputrefscrnaseq.tsv"
-        )
+        logger.debug(f"running fractions in {tmp_dir}")
+        set_up_fractions_dir(uri_bulk_rnaseq, uri_refsample_sc_rnaseq, tmp_dir)
         run_fractions_in_prepared_local_directory(tmp_dir)
         storage_client = storage.Client()
         bucket = storage_client.bucket("liulab")
