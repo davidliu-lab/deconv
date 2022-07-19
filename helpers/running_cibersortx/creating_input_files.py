@@ -45,10 +45,14 @@ def create_refsample_from_jerby_arnon(uri_save_destination):
     logger.debug("loading sc data")
     df_sc_rnaseq, df_metadata = helpers.datasets.load_jerby_arnon_hg19_tpm()
     df_sc_rnaseq *= 1e6 / df_sc_rnaseq.sum()
-    logger.debug(f"length of df_jerby_arnon_sc_rnaseq: {len(df_sc_rnaseq)}")
-    nonnull_cell_type_cells = ~df_metadata[helpers.columns.CELL_TYPE].isna()
-    df_sc_rnaseq = df_sc_rnaseq.loc[nonnull_cell_type_cells]
-    logger.debug(f"new length of df_jerby_arnon_sc_rnaseq: {len(df_sc_rnaseq)}")
+    logger.debug(f"shape of scRNA-seq: {df_sc_rnaseq.shape}")
+    nonnull_cell_type_cells = df_metadata[
+        ~df_metadata[helpers.columns.CELL_TYPE].isna()
+    ].index
+    logger.debug(f"length of nonnull_cell_type_cells: {len(nonnull_cell_type_cells)}")
+    logger.debug(f"{nonnull_cell_type_cells}")
+    df_sc_rnaseq = df_sc_rnaseq[nonnull_cell_type_cells]
+    logger.debug(f"new shape of scRNA-seq: {df_sc_rnaseq.shape}")
     logger.debug("creating and writing refsample tsv")
     create_csx_refsample_tsv(df_sc_rnaseq, df_metadata, uri_save_destination)
 
@@ -83,16 +87,25 @@ def create_csx_mixtures_for_pseudobulk(uri_save_destination):
 
 if __name__ == "__main__":
     handler = logging.StreamHandler()
-    handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
+    handler.setFormatter(
+        logging.Formatter(
+            "%(asctime)s %(process)d/%(threadName)s %(name)s %(levelname)s\n%(message)s"
+        )
+    )
     logging.getLogger().addHandler(handler)
+    logger.setLevel("DEBUG")
+    logging.getLogger("helpers").setLevel("DEBUG")
+    logging.getLogger("helpers.datasets").setLevel("DEBUG")
 
     uri_refsample_jerby_arnon = "gs://liulab/data/pseudobulk_evaluation/csx_input_files/refsample_jerby_arnon_hg19_tpm.tsv"
     create_refsample_from_jerby_arnon(uri_refsample_jerby_arnon)
 
+    logger.debug("creating csx mixtures for tcga skcm")
     create_csx_mixtures_for_tcga_skcm(
         "gs://liulab/data/pseudobulk_evaluation/csx_input_files/bulk_rnaseq_tcga_skcm.tsv"
     )
 
+    logger.debug("creating csx mixtures for pseudobulk")
     create_csx_mixtures_for_pseudobulk(
         "gs://liulab/data/pseudobulk_evaluation/csx_input_files/bulk_rnaseq_pseudobulk.tsv"
     )
