@@ -16,7 +16,7 @@ from helpers.running_cibersortx.copying_to_gcs import (
     copy_local_directory_to_gcs,
 )
 from helpers.running_cibersortx.creating_input_files import (
-    create_csx_mixture_tsv,
+    create_csx_mixtures_tsv,
     create_csx_refsample_tsv,
 )
 
