@@ -41,6 +41,10 @@ def create_csx_refsample_tsv(
     return uri_save_destination
 
 
+def create_csx_fractions_tsv():
+    raise NotImplementedError
+
+
 def create_refsample_from_jerby_arnon(uri_save_destination):
     logger.debug("loading sc data")
     df_sc_rnaseq, df_metadata = helpers.datasets.load_jerby_arnon_hg19_tpm()
