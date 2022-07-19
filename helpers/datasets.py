@@ -20,7 +20,10 @@ def load_jerby_arnon(
 
 
 def load_jerby_arnon_hg19_tpm() -> Tuple[pd.DataFrame, pd.DataFrame]:
-    """Load Jerby-Arnon scRNA-seq data (hg19 tpm) from GEO (GSE115978)"""
+    """Load Jerby-Arnon scRNA-seq data (hg19 tpm) from GEO (GSE115978)
+
+    :return: sc_hg19_tpm, metadata
+    """
     logger.debug("loading Jerby-Arnon scRNA-seq data")
     sc_hg19_tpm = (
         pd.read_csv(
