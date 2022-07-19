@@ -7,7 +7,6 @@ import tempfile
 import dask.dataframe as dd
 import docker
 import pandas as pd
-from cloudpathlib import AnyPath
 from google.cloud import storage
 
 import helpers
@@ -85,7 +84,6 @@ if __name__ == "__main__":
     logging.getLogger("gcsfs").setLevel("INFO")
     logging.getLogger("google.cloud.bigquery").setLevel("DEBUG")
     logging.getLogger("helpers").setLevel("DEBUG")
-    logging.getLogger("helpers.pseudobulk_evaluation.deg_analysis").setLevel("INFO")
     logging.getLogger("pandas").setLevel("DEBUG")
     logging.getLogger("pyarrow").setLevel("DEBUG")
     handler = logging.StreamHandler()
@@ -96,23 +94,19 @@ if __name__ == "__main__":
     logging.getLogger().handlers = [handler]
     logger.setLevel("DEBUG")
     logger.debug("test debug-level message")
-    # logger.debug("loading data (bulk and sc data)")
-    # df_bulk_rnaseq_hg19_tpm = (
-    #     helpers.datasets.load_tcga_skcm_hg19_scaled_estimate_firebrowse()
-    # )
-    # # df_bulk_rnaseq_hg19_tpm *= 1e6 / df_bulk_rnaseq_hg19_tpm.sum()
-    # df_sc_rnaseq, df_sc_metadata = helpers.datasets.load_jerby_arnon_hg19_tpm()
-    # # df_sc_rnaseq *= 1e6 / df_sc_rnaseq.sum()
-    # logger.debug("creating bulk rna-seq tsv formatted for cibersortx")
-    # create_csx_mixture_tsv(df_bulk_rnaseq_hg19_tpm, uri_csx_bulk_rnaseq)
-    # logger.debug("creating refsample sc rna-seq tsv formatted for cibersortx")
-    # create_csx_refsample_tsv(df_sc_rnaseq, df_sc_metadata, uri_csx_refsample)
-    # uri_csx_bulk_rnaseq = "/tmp/csx_bulk_rnaseq.tsv"
-    # uri_csx_refsample = "/tmp/csx_refsample.tsv"
-    # logger.debug("running with docker")
-    # run_high_resolution_and_upload(
-    #     uri_csx_bulk_rnaseq,
-    #     uri_csx_refsample,
-    #     "gs://liulab/tmp/csx_job_files",
-    # )
-    run_fractions_in_prepared_local_directory("/home/jupyter/deconv/tmp")
+
+    uri_refsample = "gs://liulab/data/pseudobulk_evaluation/csx_input_files/refsample_jerby_arnon_hg19_tpm.tsv"
+
+    logger.debug("run cibersortx on tcga skcm bulk rna-seq")
+    run_fractions_and_upload(
+        uri_bulk_rnaseq="gs://liulab/data/pseudobulk_evaluation/csx_input_files/bulk_rnaseq_tcga_skcm.tsv",
+        uri_refsample_sc_rnaseq=uri_refsample,
+        uri_save_job_files_to="gs://liulab/data/pseudobulk_evaluation/csx-runs/tcga_skcm/",
+    )
+
+    logger.debug("run cibersortx on pseudobulk bulk rna-seq")
+    run_fractions_and_upload(
+        uri_bulk_rnaseq="gs://liulab/data/pseudobulk_evaluation/csx_input_files/bulk_rnaseq_pseudobulk.tsv",
+        uri_refsample_sc_rnaseq=uri_refsample,
+        uri_save_job_files_to="gs://liulab/data/pseudobulk_evaluation/csx-runs/pseudobulks/n_cells=5/malignant_from_one_sample=True/",
+    )
