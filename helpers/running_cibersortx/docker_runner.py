@@ -74,17 +74,12 @@ def run_fractions_and_upload(
 
 
 if __name__ == "__main__":
+    helpers.logging.configure_logging()
     logging.getLogger("gcsfs").setLevel("INFO")
     logging.getLogger("google.cloud.bigquery").setLevel("DEBUG")
     logging.getLogger("helpers").setLevel("DEBUG")
     logging.getLogger("pandas").setLevel("DEBUG")
     logging.getLogger("pyarrow").setLevel("DEBUG")
-    handler = logging.StreamHandler()
-    formatter = logging.Formatter(
-        "%(asctime)s %(process)d/%(threadName)s %(name)s %(levelname)s\n%(message)s"
-    )
-    handler.setFormatter(formatter)
-    logging.getLogger().handlers = [handler]
     logger.setLevel("DEBUG")
     logger.debug("test debug-level message")
 
@@ -94,12 +89,12 @@ if __name__ == "__main__":
     run_fractions_and_upload(
         uri_bulk_rnaseq="gs://liulab/data/pseudobulk_evaluation/csx_input_files/bulk_rnaseq_tcga_skcm.tsv",
         uri_refsample_sc_rnaseq=uri_refsample,
-        uri_save_job_files_to="gs://liulab/data/pseudobulk_evaluation/csx-runs/tcga_skcm/",
+        uri_save_job_files_to="gs://liulab/data/pseudobulk_evaluation/csx_runs/tcga_skcm/",
     )
 
     logger.debug("run cibersortx on pseudobulk bulk rna-seq")
     run_fractions_and_upload(
         uri_bulk_rnaseq="gs://liulab/data/pseudobulk_evaluation/csx_input_files/bulk_rnaseq_pseudobulk.tsv",
         uri_refsample_sc_rnaseq=uri_refsample,
-        uri_save_job_files_to="gs://liulab/data/pseudobulk_evaluation/csx-runs/pseudobulks/n_cells=5/malignant_from_one_sample=True/",
+        uri_save_job_files_to="gs://liulab/data/pseudobulk_evaluation/csx_runs/pseudobulks/n_cells=5/malignant_from_one_sample=True/",
     )

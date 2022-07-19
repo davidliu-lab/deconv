@@ -8,6 +8,7 @@ from . import (
     columns,
     creating_mixtures,
     datasets,
+    logging,
     pseudobulk_evaluation,
 )
 from .download_ftp_file import download_gz_from_ftp
