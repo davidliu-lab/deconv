@@ -12,8 +12,8 @@ from google.cloud import storage
 
 import helpers
 from helpers.running_cibersortx.copying_to_gcs import (
-    copy_local_directory_to_gcs,
     copy_file_maybe_in_the_cloud_to_local_path,
+    copy_local_directory_to_gcs,
 )
 from helpers.running_cibersortx.creating_input_files import (
     create_csx_mixture_tsv,
