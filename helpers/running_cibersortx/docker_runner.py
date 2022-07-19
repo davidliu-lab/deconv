@@ -11,41 +11,16 @@ from cloudpathlib import AnyPath
 from google.cloud import storage
 
 import helpers
-from helpers.running_cibersortx.copying_to_gcs import copy_local_directory_to_gcs
+from helpers.running_cibersortx.copying_to_gcs import (
+    copy_local_directory_to_gcs,
+    copy_file_maybe_in_the_cloud_to_local_path,
+)
+from helpers.running_cibersortx.creating_input_files import (
+    create_csx_mixture_tsv,
+    create_csx_refsample_tsv,
+)
 
 logger = logging.getLogger(__name__)
-
-
-def create_csx_mixture_tsv(df_bulk_rnaseq: pd.DataFrame, uri_file: str) -> str:
-    # tmp_dir = tmpfile.mkdtemp()
-    # uri_csv_file = tmp_dir / "bulk_rnaseq.csv"
-    # uri_csv_file = tempfile.mkstemp()
-    df_bulk_rnaseq = df_bulk_rnaseq.rename_axis(index="Gene", columns=None)
-    df_bulk_rnaseq *= 1e6 / df_bulk_rnaseq.sum()
-    df_bulk_rnaseq = df_bulk_rnaseq.reset_index()
-    df_bulk_rnaseq.to_csv(uri_file, index=False, sep="\t")
-    return uri_file
-
-
-def create_csx_refsample_tsv(
-    df_refsample_sc_rnaseq: pd.DataFrame,
-    df_refsample_sc_metadata: pd.DataFrame,
-    uri_file: str,
-) -> str:
-    # tmp_dir = tempfile.mkdtemp()
-    # uri_csv_file = os.path.join(tmp_dir, "refsample_sc_rnaseq.tsv")
-    # uri_csv_file = tempfile.mkstemp()
-
-    def look_up_cell_type(single_cell_id):
-        return df_refsample_sc_metadata.loc[single_cell_id][helpers.columns.CELL_TYPE]
-
-    df_refsample_sc_rnaseq = df_refsample_sc_rnaseq.rename(columns=look_up_cell_type)
-    df_refsample_sc_rnaseq = df_refsample_sc_rnaseq.rename_axis(
-        index="Gene", columns=None
-    )
-    df_refsample_sc_rnaseq = df_refsample_sc_rnaseq.reset_index()
-    df_refsample_sc_rnaseq.to_csv(uri_file, index=False, sep="\t")
-    return uri_file
 
 
 def run_fractions_in_prepared_local_directory(csx_dir):
@@ -77,14 +52,6 @@ def run_fractions_in_prepared_local_directory(csx_dir):
     # for message in container.logs(follow=True):
     #     print(message)
     # container.wait()
-
-
-def copy_file_maybe_in_the_cloud_to_local_path(source_uri: str, target_path: AnyPath):
-    path = AnyPath(source_uri)
-    try:
-        path.copy(target_path)
-    except AttributeError:
-        shutil.copy(path.resolve(), target_path.resolve())
 
 
 def run_fractions_and_upload(
