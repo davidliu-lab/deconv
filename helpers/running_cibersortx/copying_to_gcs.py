@@ -1,8 +1,11 @@
 import glob
 import os
+import pathlib
+
+from google.cloud import storage
 
 
-def copy_local_directory_to_gcs(local_path, bucket, gcs_path):
+def copy_local_directory_to_gcs(local_path: str, bucket: storage.Bucket, gcs_path: str):
     """Recursively copy a directory of files to GCS.
 
     local_path should be a directory and not have a trailing slash.
@@ -16,7 +19,9 @@ def copy_local_directory_to_gcs(local_path, bucket, gcs_path):
         blob.upload_from_filename(local_file)
 
 
-def copy_file_maybe_in_the_cloud_to_local_path(source_uri: str, target_path: AnyPath):
+def copy_file_maybe_in_the_cloud_to_local_path(
+    source_uri: str, target_path: pathlib.Path
+):
     path = AnyPath(source_uri)
     try:
         path.copy(target_path)
