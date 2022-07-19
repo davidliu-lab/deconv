@@ -25,12 +25,13 @@ logger = logging.getLogger(__name__)
 
 def run_fractions_in_prepared_local_directory(csx_dir):
     run_kwargs = dict(
+        auto_remove=True,
+        detach=True,
         user=f"{os.getuid()}:{os.getgid()}",
         volumes=[
             f"{csx_dir}/in:/src/data",
             f"{csx_dir}/out:/src/outdir",
         ],
-        auto_remove=True,
     )
     command_arguments = " ".join(
         [
@@ -45,13 +46,12 @@ def run_fractions_in_prepared_local_directory(csx_dir):
         ]
     )
     client = docker.from_env()
-    message = client.containers.run(
+    container = client.containers.run(
         "cibersortx/fractions:latest", command_arguments, **run_kwargs
     )
-    print(message.decode("utf-8"))
-    # for message in container.logs(follow=True):
-    #     print(message)
-    # container.wait()
+    for message in container.logs(follow=True, stream=True):
+        print(message.decode("utf-8"), end="")
+    container.wait()
 
 
 def run_fractions_and_upload(
