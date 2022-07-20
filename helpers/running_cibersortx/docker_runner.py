@@ -21,8 +21,8 @@ def run_fractions_in_prepared_local_directory(csx_dir):
         detach=True,
         user=f"{os.getuid()}:{os.getgid()}",
         volumes=[
-            f"{csx_dir}/in:/src/data",
-            f"{csx_dir}/out:/src/outdir",
+            f"{csx_dir}/data:/src/data",
+            f"{csx_dir}/outdir:/src/outdir",
         ],
     )
     command_arguments = " ".join(
@@ -30,8 +30,8 @@ def run_fractions_in_prepared_local_directory(csx_dir):
             "--username lyronctk@stanford.edu",
             "--token dfeba2c8b9d61daebee5fa87026b8e56",
             "--single_cell TRUE",
-            "--refsample inputrefscrnaseq.tsv",
-            "--mixture inputbulkrnaseq.tsv",
+            "--refsample inputrefscrnaseq.txt",
+            "--mixture inputbulkrnaseq.txt",
             "--rmbatchBmode TRUE",
             "--verbose TRUE",
             "--absolute FALSE",
@@ -48,13 +48,13 @@ def run_fractions_in_prepared_local_directory(csx_dir):
 
 def set_up_fractions_dir(uri_bulk_rnaseq, uri_refsample_sc_rnaseq, tmp_dir):
     csx_dir = pathlib.Path(tmp_dir)
-    (csx_dir / "in").mkdir()
-    (csx_dir / "out").mkdir()
+    (csx_dir / "data").mkdir()
+    (csx_dir / "outdir").mkdir()
     copy_file_maybe_in_the_cloud_to_local_path(
-        uri_bulk_rnaseq, csx_dir / "in" / "inputbulkrnaseq.tsv"
+        uri_bulk_rnaseq, csx_dir / "data" / "inputbulkrnaseq.txt"
     )
     copy_file_maybe_in_the_cloud_to_local_path(
-        uri_refsample_sc_rnaseq, csx_dir / "in" / "inputrefscrnaseq.tsv"
+        uri_refsample_sc_rnaseq, csx_dir / "data" / "inputrefscrnaseq.txt"
     )
     return csx_dir
 
