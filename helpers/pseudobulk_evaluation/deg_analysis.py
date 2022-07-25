@@ -141,61 +141,98 @@ def make_volcano_plot(df_gene_stats):
     fig = px.scatter(
         df_gene_stats,
         x="log2_fold_change",
-        y="-log10_pval_adj_fdr=0.10",
+        y="-log10_pval_adj_bh",
+        color="significant_bh_fdr=0.10",
+        color_discrete_map={True: "orangered", False: "royalblue"},
         hover_name="gene_symbol",
         hover_data=["fold_change", "pval"],
     )
     fig.update_xaxes(range=(-12, 12))
     fig.update_yaxes(range=(0, 25))
-    fig.update_traces(marker=dict(size=3))
+    fig.update_traces(marker=dict(size=2.5))
+    fig.update_layout(
+        legend=dict(
+            yanchor="top", y=0.99, xanchor="left", x=0.01, itemsizing="constant"
+        ),
+    )
     return fig
 
 
-def make_scatter_of_signed_pvals(df_gene_stats_1, df_gene_stats_2):
+def make_scatter_of_signed_pvals(df_gene_stats_merged):
+    df = df_gene_stats_merged
+    df["significant_in"] = df.apply(signif_in, axis=1)
     fig = px.scatter(
-        df_gene_stats_1.merge(df_gene_stats_2, on="gene_symbol"),
-        x="-log10_pval_adj_fdr=0.10_signed_x",
-        y="-log10_pval_adj_fdr=0.10_signed_y",
-        trendline="ols",
+        df,
+        x="-log10_pval_adj_bh_signed_x",
+        y="-log10_pval_adj_bh_signed_y",
+        color="significant_in",
+        # color_discrete_map={True: "orangered", False: "royalblue"},
+        color_discrete_sequence=px.colors.qualitative.G10,
         hover_name="gene_symbol",
     )
     fig.update_xaxes(range=(-25, 25))
     fig.update_yaxes(range=(-25, 25))
-    fig.update_traces(marker=dict(size=3))
+    fig.update_traces(marker=dict(size=2.5))
+    fig.update_layout(
+        legend=dict(
+            yanchor="top", y=0.99, xanchor="left", x=0.01, itemsizing="constant"
+        ),
+    )
     return fig
 
 
+def signif_in(row):
+    x = row["significant_bh_fdr=0.10_x"]
+    y = row["significant_bh_fdr=0.10_y"]
+    if x & y:
+        return "both"
+    if x:
+        return "x only"
+    if y:
+        return "y only"
+    return "neither"
+
+
 def make_scatter_of_log2_fold_changes(df_gene_stats_1, df_gene_stats_2):
+    df = df_gene_stats_1.merge(df_gene_stats_2, on="gene_symbol")
+
+    df["significant_in"] = df.apply(signif_in, axis=1)
     fig = px.scatter(
-        df_gene_stats_1.merge(df_gene_stats_2, on="gene_symbol"),
+        df,
         x="log2_fold_change_x",
         y="log2_fold_change_y",
-        trendline="ols",
+        symbol="significant_in",
+        # trendline="ols",
+        color="significant_in",
+        color_discrete_map={
+            "both": "orangered",
+            "x only": "orchid",
+            "y only": "yellow",
+            "neither": "royalblue",
+        },
+        symbol_map={
+            "both": "square",
+            "x only": "circle",
+            "y only": "circle",
+            "neither": "circle",
+        },
         hover_name="gene_symbol",
     )
-    fig.update_xaxes(range=(-12, 12))
-    fig.update_yaxes(range=(-12, 12))
-    fig.update_traces(marker=dict(size=3))
+    fig.update_xaxes(range=(-10, 10))
+    fig.update_yaxes(range=(-10, 10))
+    fig.update_traces(marker=dict(size=2.5))
+    fig.update_layout(
+        legend=dict(
+            yanchor="top", y=0.99, xanchor="left", x=0.01, itemsizing="constant"
+        ),
+    )
     return fig
 
 
 def analyze_gene_significance_overlap(
-    df_gene_stats_1: pd.DataFrame,
-    df_gene_stats_2: pd.DataFrame,
-    top_fraction_cutoff: float,
+    special_genes_1,
+    special_genes_2,
 ):
-    special_genes_1 = (
-        df_gene_stats_1.set_index("gene_symbol")["-log10_pval_adj_fdr=0.10"].rank(
-            pct=True
-        )
-        > 1 - top_fraction_cutoff
-    ).rename("significant_in_cohort_1")
-    special_genes_2 = (
-        df_gene_stats_2.set_index("gene_symbol")["-log10_pval_adj_fdr=0.10"].rank(
-            pct=True
-        )
-        > 1 - top_fraction_cutoff
-    ).rename("significant_in_cohort_2")
     special_genes_both = special_genes_1 & special_genes_2
     crosstab = pd.crosstab(special_genes_1, special_genes_2)
     odds_ratio, p_value = scipy.stats.fisher_exact(crosstab)
