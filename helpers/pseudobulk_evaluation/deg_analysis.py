@@ -73,17 +73,31 @@ def process_gene_level_results(df: pd.DataFrame) -> pd.DataFrame:
     df["log2_fold_change"] = np.log2(df["fold_change"])
     sign = np.sign(df["log2_fold_change"])
     df["-log10_pval_signed"] = df["-log10_pval"] * sign
-    # df["pval_adj_bh_0.05"] = multipletests(df["pval"], method="fdr_bh", alpha=0.05)[1]
-    # df["pval_adj_bh_0.10"] = multipletests(df["pval"], method="fdr_bh", alpha=0.1)[1]
-    # df["pval_adj_bh_0.20"] = multipletests(df["pval"], method="fdr_bh", alpha=0.2)[1]
-    # df["-log10(pval_adj_bh_0.05)"] = -np.log10(df["pval_adj_bh_0.05"])
-    # df["-log10(pval_adj_bh_0.10)"] = -np.log10(df["pval_adj_bh_0.10"])
-    # df["-log10(pval_adj_bh_0.20)"] = -np.log10(df["pval_adj_bh_0.20"])
+
+    # benjamini-hochberg adjustments
+    ## using scipy.stats.multipletests
+    df["pval_adj_bh"] = multipletests(df["pval"], method="fdr_bh")[1]
+    df["-log10_pval_adj_bh"] = -np.log10(df["pval_adj_bh"])
+    df["-log10_pval_adj_bh_signed"] = df["-log10_pval_adj_bh"] * sign
+
+    ## manually using pandas.DataFrame.rank
+    df["pval_rank_pandas"] = df["pval"].rank(method="min")
+    df["pval_adj_rank_pandas"] = df["pval"] * len(df) / df["pval_rank_pandas"]
+    df["-log10_pval_adj_rank_pandas"] = -np.log10(df["pval_adj_rank_pandas"])
+
     for alpha in [0.05, 0.1, 0.2]:
-        field_name = f"pval_adj_fdr={alpha:3.2f}"
-        df[field_name] = multipletests(df["pval"], method="fdr_bh", alpha=alpha)[1]
-        df[f"-log10_{field_name}"] = -np.log10(df[field_name])
-        df[f"-log10_{field_name}_signed"] = df[f"-log10_{field_name}"] * sign
+        field_name = f"significant_bh_fdr={alpha:3.2f}"
+        df[field_name] = multipletests(df["pval"], method="fdr_bh", alpha=alpha)[0]
+        logger.debug(f"computing B-H significance test manually for alpha={alpha:3.2f}")
+        df[f"{field_name}_rank_pandas"] = False
+        for row_index in df["pval"].sort_values().index:
+            if df.loc[row_index, "pval_adj_rank_pandas"] <= alpha:
+                df.loc[row_index, f"{field_name}_rank_pandas"] = True
+            else:
+                logger.debug(
+                    f"stopping manual B-H search at rank {df.loc[row_index, 'pval_rank_pandas']}"
+                )
+                break
     return df
 
 
