@@ -55,7 +55,6 @@ def compute_stats_single_gene(df: pd.DataFrame) -> pd.Series:
 
     :param df: pandas.DataFrame, rows are samples
     """
-    logger.debug(df.dtypes)
     immune_low_tpm = df[df["immune_low"]]["tpm"]
     immune_high_tpm = df[df["immune_high"]]["tpm"]
     pval = scipy.stats.mannwhitneyu(immune_high_tpm, immune_low_tpm)[1]
