@@ -71,7 +71,7 @@ def process_gene_level_results(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
     df["-log10_pval"] = -np.log10(df["pval"])
     df["log2_fold_change"] = np.log2(df["fold_change"])
-    sign = df["log2_fold_change"].map(lambda x: 1 if x > 0 else -1)
+    sign = np.sign(df["log2_fold_change"])
     df["-log10_pval_signed"] = df["-log10_pval"] * sign
     # df["pval_adj_bh_0.05"] = multipletests(df["pval"], method="fdr_bh", alpha=0.05)[1]
     # df["pval_adj_bh_0.10"] = multipletests(df["pval"], method="fdr_bh", alpha=0.1)[1]
