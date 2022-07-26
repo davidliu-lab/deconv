@@ -17,13 +17,13 @@ def set_up_csx_dir(csx_dir, uri_bulk_rnaseq, uri_sigmatrix, uri_sourcegeps):
     (csx_path / "data").mkdir()
     (csx_path / "outdir").mkdir()
     copy_file_maybe_in_the_cloud_to_local_path(
-        uri_bulk_rnaseq, csx_dir / "data" / "bulkrnaseq.txt"
+        uri_bulk_rnaseq, csx_path / "data" / "bulkrnaseq.txt"
     )
     copy_file_maybe_in_the_cloud_to_local_path(
-        uri_sigmatrix, csx_dir / "data" / "sigmatrix.txt"
+        uri_sigmatrix, csx_path / "data" / "sigmatrix.txt"
     )
     copy_file_maybe_in_the_cloud_to_local_path(
-        uri_sourcegeps, csx_dir / "data" / "sourcegeps.txt"
+        uri_sourcegeps, csx_path / "data" / "sourcegeps.txt"
     )
 
 

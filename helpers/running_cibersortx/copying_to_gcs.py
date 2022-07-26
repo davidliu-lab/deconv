@@ -41,5 +41,5 @@ if __name__ == "__main__":
     logger.setLevel("DEBUG")
     helpers.logging.configure_logging()
     bucket = storage.Client().bucket("liulab")
-    local_dir = "/home/jupyter/deconv/tmp"
-    copy_local_directory_to_gcs(local_dir, bucket, gcs_path="gs://liulab/tmp/stuff2/")
+    local_dir = "/Users/william/src/deconv/tmp"
+    copy_local_directory_to_gcs(local_dir, bucket, gcs_path="gs://liulab/tmp/stuff3/")

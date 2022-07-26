@@ -1,6 +1,5 @@
 import logging
 
-
 format_string = (
     "%(asctime)s %(process)d/%(threadName)s %(name)s %(levelname)s\n%(message)s"
 )
