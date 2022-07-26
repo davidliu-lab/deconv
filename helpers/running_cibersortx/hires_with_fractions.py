@@ -1,15 +1,34 @@
+import json
+import logging
+import os
+import pathlib
 import tempfile
 
-from .copying_to_gcs import copy_local_directory_to_gcs
+import docker
+from google.cloud import storage
+
+import helpers
+from helpers.running_cibersortx.copying_to_gcs import (
+    copy_file_maybe_in_the_cloud_to_local_path,
+    copy_local_directory_to_gcs,
+)
+
+logger = logging.getLogger(__name__)
 
 
 def run_and_upload(
     uri_save_job_files_to, uri_bulk_rnaseq, uri_sigmatrix, uri_sourcegeps
 ):
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        set_up_csx_dir(tmp_dir, uri_bulk_rnaseq, uri_fractions, uri_refsample)
+    with tempfile.TemporaryDirectory(
+        # dir="/Users/william/src/deconv/tmp/",
+    ) as tmp_dir:
+        logger.debug(f"tmp_dir: {tmp_dir}")
+        logger.debug(f"watch -n 0.1 tree -ghpu {tmp_dir}")
+        set_up_csx_dir(tmp_dir, uri_bulk_rnaseq, uri_sigmatrix, uri_sourcegeps)
         run(tmp_dir)
-        copy_local_directory_to_gcs(tmp_dir, uri_save_job_files_to)
+        storage_client = storage.Client()
+        bucket = storage_client.bucket("liulab")
+        copy_local_directory_to_gcs(tmp_dir, bucket, uri_save_job_files_to)
 
 
 def set_up_csx_dir(csx_dir, uri_bulk_rnaseq, uri_sigmatrix, uri_sourcegeps):
@@ -31,12 +50,13 @@ def run(csx_dir):
     run_kwargs = dict(
         auto_remove=True,
         detach=True,
-        user=f"{os.getuid()}:{os.getgid()}",
+        # user=f"{os.getuid()}:{os.getgid()}",
         volumes=[
             f"{csx_dir}/data:/src/data",
             f"{csx_dir}/outdir:/src/outdir",
         ],
     )
+    logger.debug(f"run_kwargs:\n{json.dumps(run_kwargs, indent=2, sort_keys=True)}")
     command_arguments = " ".join(
         [
             "--username lyronctk@stanford.edu",
@@ -54,7 +74,13 @@ def run(csx_dir):
             # "--useadjustedmixtures ",  # <bool>  If doing B-mode batch correction, use adjusted mixtures for GEP imputation [default: FALSE]
         ]
     )
-    pass
+    client = docker.from_env()
+    container = client.containers.run(
+        "cibersortx/hires:latest", command_arguments, **run_kwargs
+    )
+    for message in container.logs(follow=True, stream=True):
+        print(message.decode("utf-8"), end="")
+    container.wait()
 
 
 if __name__ == "__main__":
@@ -66,20 +92,21 @@ if __name__ == "__main__":
     logging.getLogger("pyarrow").setLevel("DEBUG")
     logger.setLevel("DEBUG")
 
+    data_path_prefix = "gs://liulab/data"
+    # data_path_prefix = "/Users/william/Downloads/liulab_mirror/data"
+
     logger.debug("run cibersortx hires (with fractions) on tcga skcm")
-    run_upload(
-        uri_save_job_files_to="gs://liulab/data/pseudobulk_evaluation/csx_runs/hires_with_fractions/tcga_skcm/",
-        uri_bulk_rnaseq="gs://liulab/data/pseudobulk_evaluation/csx_input_files/bulk_rnaseq_tcga_skcm.tsv",
-        uri_sigmatrix="gs://liulab/data/pseudobulk_evaluation/csx_runs/tcga_skcm/out/CIBERSORTx_inputrefscrnaseq_inferred_phenoclasses.CIBERSORTx_inputrefscrnaseq_inferred_refsample.bm.K999.txt",
-        uri_sourcegeps="gs://liulab/data/pseudobulk_evaluation/csx_runs/tcga_skcm/out/CIBERSORTx_cell_type_sourceGEP.txt",
+    run_and_upload(
+        uri_save_job_files_to=f"{data_path_prefix}/pseudobulk_evaluation/csx_runs/hires_with_fractions/tcga_skcm/",
+        uri_bulk_rnaseq=f"{data_path_prefix}/pseudobulk_evaluation/csx_input_files/bulk_rnaseq_tcga_skcm.tsv",
+        uri_sigmatrix=f"{data_path_prefix}/pseudobulk_evaluation/csx_runs/tcga_skcm/out/CIBERSORTx_inputrefscrnaseq_inferred_phenoclasses.CIBERSORTx_inputrefscrnaseq_inferred_refsample.bm.K999.txt",
+        uri_sourcegeps=f"{data_path_prefix}/pseudobulk_evaluation/csx_runs/tcga_skcm/out/CIBERSORTx_cell_type_sourceGEP.txt",
     )
 
     logger.debug("run cibersortx hires (with fractions) on pseudobulk bulk rna-seq")
-    run_upload(
-        uri_save_job_files_to="gs://liulab/data/pseudobulk_evaluation/csx_runs/hires_with_fractions/pseudobulks/n_cells=5/malignant_from_one_sample=True/",
-        # uri_save_job_files_to="gs://liulab/data/pseudobulk_evaluation/csx_runs/hires_with_fractions/tcga_skcm/pseudobulks/n_cells=5/malignant_from_one_sample=True/",
-        # uri_refsample_sc_rnaseq=uri_refsample,
-        uri_bulk_rnaseq="gs://liulab/data/pseudobulk_evaluation/csx_input_files/bulk_rnaseq_pseudobulk.tsv",
-        uri_sigmatrix="gs://liulab/data/pseudobulk_evaluation/csx_runs/pseudobulks/n_cells=5/malignant_from_one_sample=True/out/CIBERSORTx_inputrefscrnaseq_inferred_phenoclasses.CIBERSORTx_inputrefscrnaseq_inferred_refsample.bm.K999.txt",
-        uri_sourcegeps="gs://liulab/data/pseudobulk_evaluation/csx_runs/pseudobulks/n_cells=5/malignant_from_one_sample=True/out/CIBERSORTx_cell_type_sourceGEP.txt",
+    run_and_upload(
+        uri_save_job_files_to=f"{data_path_prefix}/pseudobulk_evaluation/csx_runs/hires_with_fractions/pseudobulks/n_cells=5/malignant_from_one_sample=True/",
+        uri_bulk_rnaseq=f"{data_path_prefix}/pseudobulk_evaluation/csx_input_files/bulk_rnaseq_pseudobulk.tsv",
+        uri_sigmatrix=f"{data_path_prefix}/pseudobulk_evaluation/csx_runs/pseudobulks/n_cells=5/malignant_from_one_sample=True/out/CIBERSORTx_inputrefscrnaseq_inferred_phenoclasses.CIBERSORTx_inputrefscrnaseq_inferred_refsample.bm.K999.txt",
+        uri_sourcegeps=f"{data_path_prefix}/pseudobulk_evaluation/csx_runs/pseudobulks/n_cells=5/malignant_from_one_sample=True/out/CIBERSORTx_cell_type_sourceGEP.txt",
     )
