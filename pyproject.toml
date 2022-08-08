@@ -21,3 +21,7 @@ max-line-length = 88
 disable = [
   "line-too-long",
 ]
+
+[tool.pylint.BASIC]
+variable-rgx = '^[a-z][a-z0-9]*((_[a-z0-9]+)*)?$'
+argument-rgx = '^[a-z][a-z0-9]*((_[a-z0-9]+)*)?$'
