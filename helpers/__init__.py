@@ -9,6 +9,6 @@ from . import (
     creating_mixtures,
     datasets,
     logging,
-    pseudobulk_evaluation,
+    evaluating_pseudobulks,
 )
 from .download_ftp_file import download_gz_from_ftp
