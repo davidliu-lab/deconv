@@ -8,5 +8,6 @@
     },
     "editor.formatOnSave": true,
     "python.linting.enabled": true,
-    "python.linting.pylintEnabled": true
+    "python.linting.pylintEnabled": true,
+    "python.sortImports.path": "isort"
 }
