@@ -13,6 +13,10 @@ logger = logging.getLogger(__name__)
 def load_jerby_arnon(
     ref_genome="hg19", units="tpm"
 ) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    """Load Jerby-Arnon scRNA-seq data (hg19 tpm) from GEO (GSE115978)
+
+    :return: sc_data, sc_metadata
+    """
     if ref_genome == "hg19" and units == "tpm":
         return load_jerby_arnon_hg19_tpm()
     else:
