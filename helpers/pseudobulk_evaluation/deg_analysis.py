@@ -5,36 +5,9 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 import scipy.stats
-from google.cloud import bigquery
 from statsmodels.stats.multitest import multipletests
 
-from helpers.datasets import load_tcga_skcm_fractions_from_csx
-
 logger = logging.getLogger(__name__)
-
-
-def make_labels_for_aliquots(df_cell_type_fractions, df_sample_metadata):
-    immune_cell_types = ["B", "Macrophage", "NK", "T", "T CD4", "T CD8"]
-    df_immune_fraction = (
-        df_cell_type_fractions[immune_cell_types]
-        .sum(axis="columns")
-        .to_frame("immune_fraction")
-        .rename_axis(index="aliquot_barcode")
-        .reset_index()
-        .assign(sample_barcode=lambda row: row["aliquot_barcode"].str[:-12])
-    )
-    df_sample_metadata = df_sample_metadata[
-        ["sample_barcode", "sample_type_name"]
-    ].merge(
-        df_immune_fraction,
-        left_on="sample_barcode",
-        right_on="sample_barcode",
-        validate="one_to_one",
-    )
-    immune_quintile = pd.qcut(df_sample_metadata["immune_fraction"], 5, labels=False)
-    df_sample_metadata = df_sample_metadata.assign(immune_low=immune_quintile == 0)
-    df_sample_metadata = df_sample_metadata.assign(immune_high=immune_quintile == 4)
-    return df_sample_metadata
 
 
 def compute_gene_stats_with_immune_groups(ddf_bulk_rnaseq, df_sample_metadata):
@@ -99,30 +72,6 @@ def process_gene_level_results(df: pd.DataFrame) -> pd.DataFrame:
                 )
                 break
     return df
-
-
-def get_metastatic_sample_barcodes():
-    bqclient = bigquery.Client()
-    query_string = """
-    SELECT * 
-    FROM `isb-cgc-bq.TCGA.biospecimen_gdc_current`
-    where project_short_name = "TCGA-SKCM"
-        and sample_type_name = "Metastatic"
-    order by sample_barcode
-    """
-    df_tcga_sample_metadata = (
-        bqclient.query(query_string).result().to_dataframe(progress_bar_type="tqdm")
-    )
-    return df_tcga_sample_metadata
-
-
-def get_tcga_skcm_metastatic_sample_metadata() -> pd.DataFrame:
-    df_tcga_skcm_fractions_from_csx = load_tcga_skcm_fractions_from_csx()
-    df_tcga_sample_metadata = get_metastatic_sample_barcodes()
-    df_sample_metadata = make_labels_for_aliquots(
-        df_tcga_skcm_fractions_from_csx, df_tcga_sample_metadata
-    )
-    return df_sample_metadata
 
 
 def compute_all_deg_results(
