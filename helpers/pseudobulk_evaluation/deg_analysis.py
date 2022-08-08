@@ -233,7 +233,6 @@ def analyze_gene_significance_overlap(
     special_genes_1,
     special_genes_2,
 ):
-    special_genes_both = special_genes_1 & special_genes_2
     crosstab = pd.crosstab(special_genes_1, special_genes_2)
     odds_ratio, p_value = scipy.stats.fisher_exact(crosstab)
     return crosstab, odds_ratio, p_value
