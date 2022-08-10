@@ -1,61 +1,57 @@
+import datetime
+import logging
+
 import cloudpathlib
 import pandas as pd
 
+import helpers
 from helpers import creating_mixtures, datasets, running_cibersortx
 
-sc_data, sc_metadata = datasets.load_jerby_arnon(ref_genome="hg19", units="tpm")
-tcga_skcm_fractions = datasets.load_tcga_skcm_fractions_from_csx()
-tcga_skcm_metastatic_sample_barcodes = (
-    datasets.load_tcga_skcm_metastatic_sample_barcodes()
-)
-tcga_skcm_fractions_mets = datasets.get_tcga_skcm_metastatic_sample_metadata()
 
-"""
-todo
-- limit tcga skcm samples to metastases (where does filtering happen elsewhere?)
-"""
+logger = logging.getLogger(__name__)
 
 
-def run_trial(
+def make_pseudobulks_and_run_hires(
     sc_data: pd.DataFrame,
     sc_metadata: pd.DataFrame,
-    fractions: pd.DataFrame,
-    trial_id: int,
+    pseudobulk_sample_fractions: pd.DataFrame,
+    path_results: cloudpathlib.AnyPath,
 ) -> None:
-    sc_data = sc_data.sample(1000)
-    path_results_prefix = cloudpathlib.AnyPath(
-        f"gs://liulab/evaluating_cibersortx/identical_cohorts/{trial_id}"
+    df_pseudobulk_rnaseq, cell_type_geps = creating_mixtures.make_mixtures(
+        sc_data, sc_metadata, pseudobulk_sample_fractions
     )
-    df_pseudobulks = creating_mixtures.make_mixtures(
-        sc_data, sc_metadata, tcga_skcm_fractions_mets
+    uri_bulk_rnaseq = str(path_results / "pseudobulk_rnaseq.tsv")
+    helpers.running_cibersortx.creating_input_files.create_csx_mixtures_tsv(
+        df_pseudobulk_rnaseq, uri_bulk_rnaseq
     )
-    uri_pseudobulks = str(
-        path_results_prefix / "csx_fractions" / "in" / "pseudobulks.tsv"
-    )
-    uri_refsample_sc_rnaseq = str(
-        path_results_prefix / "csx_fractions" / "in" / "refscrnaseq.tsv"
-    )
-    uri_sigmatrix = str(
-        path_results_prefix
-        / "csx_fractions"
-        / "outdir"
-        / "CIBERSORTx_inputrefscrnaseq_inferred_phenoclasses.CIBERSORTx_refscrnaseq_inferred_refsample.bm.K999.txt"
-    )
-    running_cibersortx.creating_input_files.create_csx_mixtures_tsv(
-        df_pseudobulks, uri_pseudobulks
-    )
-    # uri_results_fractions =
-    # uri_results_hires = f"gs://liulab/evaluating_cibersortx/identical_cohorts/{trial_id}/results_hires"
-    uri_results_hires = str(path_results_prefix / "csx_results" / "hires")
-    running_cibersortx.sigmatrix_and_fractions.run_fractions_and_upload(
+    helpers.running_cibersortx.hires_with_fractions.run_and_upload(
+        str(path_results),
         uri_bulk_rnaseq,
-        uri_refsample_sc_rnaseq,
-        uri_save_job_files_to,
+        uri_sigmatrix="gs://liulab/data/pseudobulk_evaluation/csx_runs/tcga_skcm/out/CIBERSORTx_inputrefscrnaseq_inferred_phenoclasses.CIBERSORTx_inputrefscrnaseq_inferred_refsample.bm.K999.txt",
+        uri_sourcegeps="gs://liulab/data/pseudobulk_evaluation/csx_runs/tcga_skcm/out/CIBERSORTx_cell_type_sourceGEP.txt",
     )
-    # uri_pseudobulks, uri_refsample_sc_rnaseq, uri_results_fractions
-    running_cibersortx.hires_with_fractions.run_and_upload(
-        uri_save_job_files_to,
-        uri_bulk_rnaseq,
-        uri_sigmatrix,
-        uri_sourcegeps,
-    )
+
+
+if __name__ == "__main__":
+    helpers.logging.configure_logging()
+    logger.setLevel("DEBUG")
+    logging.getLogger("helpers").setLevel("DEBUG")
+
+    logger.debug("loading pseudobulk sample metadata")
+    tcga_skcm_fractions_mets = datasets.get_tcga_skcm_metastatic_sample_metadata()
+    tcga_skcm_fractions = datasets.load_tcga_skcm_fractions_from_csx()
+    pseudobulk_sample_fractions = tcga_skcm_fractions.loc[
+        tcga_skcm_fractions_mets["aliquot_barcode"]
+    ]
+    logger.debug(f"number of pseudobulk samples: {len(pseudobulk_sample_fractions)}")
+    sc_data, sc_metadata = datasets.load_jerby_arnon(ref_genome="hg19", units="tpm")
+    timestamp_str = helpers.useful_small_things.make_a_nice_timestamp_of_now()
+    for ith_trial in range(1, 2):
+        path_results = (
+            cloudpathlib.AnyPath("gs://liulab/evaluating_cibersortx/identical_cohorts")
+            / timestamp_str
+            / ith_trial
+        )
+        make_pseudobulks_and_run_hires(
+            sc_data, sc_metadata, pseudobulk_sample_fractions, path_results
+        )
