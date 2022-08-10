@@ -50,7 +50,7 @@ if __name__ == "__main__":
         path_results = (
             cloudpathlib.AnyPath("gs://liulab/evaluating_cibersortx/identical_cohorts")
             / timestamp_str
-            / ith_trial
+            / str(ith_trial)
         )
         make_pseudobulks_and_run_hires(
             sc_data, sc_metadata, pseudobulk_sample_fractions, path_results
