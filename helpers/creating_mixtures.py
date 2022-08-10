@@ -74,6 +74,7 @@ def make_mixtures(
     malignant_from_one_sample: bool = True,
     rng: np.random.Generator = np.random.default_rng(),
 ) -> tuple[pd.DataFrame, dict[str, pd.DataFrame]]:
+    logger.debug("making pseudobulk RNA-seq samples")
     logger.debug(
         f"using np.random.Generator with BitGenerator state {rng.bit_generator.state['state']}"
     )
