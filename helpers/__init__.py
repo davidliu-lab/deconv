@@ -10,5 +10,6 @@ from . import (
     datasets,
     logging,
     evaluating_pseudobulks,
+    useful_small_things,
 )
 from .download_ftp_file import download_gz_from_ftp
