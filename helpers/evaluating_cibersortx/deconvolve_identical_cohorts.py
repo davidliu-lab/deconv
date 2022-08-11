@@ -7,7 +7,6 @@ import pandas as pd
 import helpers
 from helpers import creating_mixtures, datasets, running_cibersortx
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -46,7 +45,7 @@ if __name__ == "__main__":
     logger.debug(f"number of pseudobulk samples: {len(pseudobulk_sample_fractions)}")
     sc_data, sc_metadata = datasets.load_jerby_arnon(ref_genome="hg19", units="tpm")
     timestamp_str = helpers.useful_small_things.make_a_nice_timestamp_of_now()
-    for ith_trial in range(1, 2):
+    for ith_trial in range(2):
         path_results = (
             cloudpathlib.AnyPath("gs://liulab/evaluating_cibersortx/identical_cohorts")
             / timestamp_str
