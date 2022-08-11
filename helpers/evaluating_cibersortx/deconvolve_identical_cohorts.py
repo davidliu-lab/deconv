@@ -35,6 +35,7 @@ if __name__ == "__main__":
     helpers.logging.configure_logging()
     logger.setLevel("DEBUG")
     logging.getLogger("helpers").setLevel("DEBUG")
+    logging.getLogger("helpers.creating_mixtures").setLevel("INFO")
 
     logger.debug("loading pseudobulk sample metadata")
     tcga_skcm_fractions_mets = datasets.get_tcga_skcm_metastatic_sample_metadata()
