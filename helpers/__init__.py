@@ -10,6 +10,7 @@ from . import (
     datasets,
     evaluating_cibersortx,
     evaluating_pseudobulks,
+    generating_pseudobulks,
     logging,
     running_cibersortx,
     useful_small_things,

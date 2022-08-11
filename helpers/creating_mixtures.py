@@ -3,6 +3,11 @@ import logging
 import numpy as np
 import pandas as pd
 
+from helpers.generating_pseudobulks import (
+    add_noise_multiplying_uniform,
+    normalize_expression,
+)
+
 from . import columns
 
 logger = logging.getLogger(__name__)
@@ -98,13 +103,3 @@ def make_mixtures(
     mixtures = add_noise_multiplying_uniform(mixtures, rng)
     mixtures = normalize_expression(mixtures, normalization_factor)
     return mixtures, cell_type_geps
-
-
-def add_noise_multiplying_uniform(
-    mixtures: pd.DataFrame, rng: np.random.Generator = np.random.default_rng()
-):
-    return mixtures * rng.uniform(0.9, 1.1, size=(mixtures.shape))
-
-
-def normalize_expression(geps: pd.DataFrame, normalization_factor: int = 1_000_000):
-    return geps * normalization_factor / geps.sum()
