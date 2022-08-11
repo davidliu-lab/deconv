@@ -8,8 +8,10 @@ from . import (
     columns,
     creating_mixtures,
     datasets,
-    logging,
+    evaluating_cibersortx,
     evaluating_pseudobulks,
+    logging,
+    running_cibersortx,
     useful_small_things,
 )
 from .download_ftp_file import download_gz_from_ftp

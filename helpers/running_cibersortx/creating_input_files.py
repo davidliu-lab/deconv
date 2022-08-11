@@ -3,7 +3,6 @@ import logging
 import pandas as pd
 
 import helpers
-import helpers.columns
 
 logger = logging.getLogger(__name__)
 
