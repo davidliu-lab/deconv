@@ -16,7 +16,7 @@ def set_up_local_dir(uri_refsample_sc_rnaseq: str, tmp_dir: str):
 
 
 def run(csx_dir: str):
-    logger.debug("generating signature matrix in {}", csx_dir)
+    logger.debug("generating signature matrix in %s", csx_dir)
     run_kwargs = dict(
         auto_remove=True,
         detach=True,
@@ -49,7 +49,7 @@ def set_up_run_and_upload(
     uri_save_job_files_to: str,
 ):
     with tempfile.TemporaryDirectory() as tmp_dir:
-        logger.debug(f"generating signature matrix in {tmp_dir}")
+        logger.debug("generating signature matrix in %s", tmp_dir)
         set_up_local_dir(uri_bulk_rnaseq, uri_refsample_sc_rnaseq, tmp_dir)
         run_fractions_in_prepared_local_directory(tmp_dir)
         storage_client = storage.Client()
@@ -70,7 +70,7 @@ if __name__ == "__main__":
     uri_refsample = str(base_path / "sigmatrix_only_refsample.tsv")
     sc_data, sc_metadata = helpers.datasets.load_jerby_arnon()
     sc_data = sc_data.iloc[::10, ::10]
-    logger.debug(f"sc_data has shape {sc_data.shape}")
+    logger.debug("sc_data has shape %s", sc_data.shape)
     helpers.running_cibersortx.creating_input_files.create_csx_refsample_tsv(
         sc_data, sc_metadata, uri_refsample
     )

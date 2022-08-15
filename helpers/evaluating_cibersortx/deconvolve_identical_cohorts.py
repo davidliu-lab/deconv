@@ -43,7 +43,7 @@ if __name__ == "__main__":
     pseudobulk_sample_fractions = tcga_skcm_fractions.loc[
         tcga_skcm_fractions_mets["aliquot_barcode"]
     ]
-    logger.debug(f"number of pseudobulk samples: {len(pseudobulk_sample_fractions)}")
+    logger.debug("number of pseudobulk samples: %s", len(pseudobulk_sample_fractions))
     sc_data, sc_metadata = datasets.load_jerby_arnon(ref_genome="hg19", units="tpm")
     timestamp_str = helpers.useful_small_things.make_a_nice_timestamp_of_now()
     for ith_trial in range(2):

@@ -61,14 +61,15 @@ def process_gene_level_results(df: pd.DataFrame) -> pd.DataFrame:
     for alpha in [0.05, 0.1, 0.2]:
         field_name = f"significant_bh_fdr={alpha:3.2f}"
         df[field_name] = multipletests(df["pval"], method="fdr_bh", alpha=alpha)[0]
-        logger.debug(f"computing B-H significance test manually for alpha={alpha:3.2f}")
+        logger.debug("computing B-H significance test manually for alpha=%3.2f", alpha)
         df[f"{field_name}_rank_pandas"] = False
         for row_index in df["pval"].sort_values().index:
             if df.loc[row_index, "pval_adj_rank_pandas"] <= alpha:
                 df.loc[row_index, f"{field_name}_rank_pandas"] = True
             else:
                 logger.debug(
-                    f"stopping manual B-H search at rank {df.loc[row_index, 'pval_rank_pandas']}"
+                    "stopping manual B-H search at rank %d",
+                    df.loc[row_index, "pval_rank_pandas"],
                 )
                 break
     return df

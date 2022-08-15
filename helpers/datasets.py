@@ -61,7 +61,7 @@ def load_jerby_arnon_hg19_tpm() -> Tuple[pd.DataFrame, pd.DataFrame]:
 def load_tcga_skcm_hg19_normalized_counts_dereks_file() -> pd.DataFrame:
     """Load RNA-seq (hg19 normalized counts) for TCGA SKCM, processed by Derek"""
     path = "gs://liulab/downloaded_manually/derek_csx_tcga_skcm/skcm_rnaseqv2_normalized_clean.txt"
-    logger.debug(f"reading {path}")
+    logger.debug("reading %s", path)
     bulk_rna_seq = pd.read_csv(path, sep="\t", index_col=0, engine="pyarrow")
     # clean up index (gene symbols)
     bulk_rna_seq = bulk_rna_seq.sort_index()
@@ -80,7 +80,7 @@ def load_tcga_skcm_hg19_normalized_counts_dereks_file() -> pd.DataFrame:
 def load_tcga_skcm_hg19_scaled_estimate_firebrowse() -> pd.DataFrame:
     """Load RNA-seq (hg19 scaled_estimate) for TCGA SKCM, from firebrowse"""
     path = "gs://liulab/firebrowse.org/SKCM.rnaseqv2__illuminahiseq_rnaseqv2__unc_edu__Level_3__RSEM_genes__data.data.txt"
-    logger.debug(f"reading {path}")
+    logger.debug("reading %s", path)
     df = pd.read_csv(
         path,
         sep="\t",

@@ -1,6 +1,5 @@
 import json
 import logging
-import os
 import pathlib
 import tempfile
 
@@ -19,11 +18,9 @@ logger = logging.getLogger(__name__)
 def run_and_upload(
     uri_save_job_files_to, uri_bulk_rnaseq, uri_sigmatrix, uri_sourcegeps
 ):
-    with tempfile.TemporaryDirectory(
-        # dir="/Users/william/src/deconv/tmp/",
-    ) as tmp_dir:
-        logger.debug(f"tmp_dir: {tmp_dir}")
-        logger.debug(f"watch -n 0.1 tree -ghpu {tmp_dir}")
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        logger.debug("tmp_dir: %s", tmp_dir)
+        logger.debug("watch -n 0.1 tree -ghpu %s", tmp_dir)
         set_up_csx_dir(tmp_dir, uri_bulk_rnaseq, uri_sigmatrix, uri_sourcegeps)
         run(tmp_dir)
         storage_client = storage.Client()
@@ -56,7 +53,7 @@ def run(csx_dir):
             f"{csx_dir}/outdir:/src/outdir",
         ],
     )
-    logger.debug(f"run_kwargs:\n{json.dumps(run_kwargs, indent=2, sort_keys=True)}")
+    logger.debug("run_kwargs:\n%s", json.dumps(run_kwargs, indent=2, sort_keys=True))
     command_arguments = " ".join(
         [
             "--username lyronctk@stanford.edu",

@@ -65,7 +65,7 @@ def run_fractions_and_upload(
     uri_save_job_files_to: str,
 ):
     with tempfile.TemporaryDirectory() as tmp_dir:
-        logger.debug(f"running fractions in {tmp_dir}")
+        logger.debug("running fractions in %s", tmp_dir)
         set_up_fractions_dir(uri_bulk_rnaseq, uri_refsample_sc_rnaseq, tmp_dir)
         run_fractions_in_prepared_local_directory(tmp_dir)
         storage_client = storage.Client()

@@ -26,7 +26,7 @@ def make_cell_type_geps(
         random_sample = rng.choice(
             sc_metadata[malignant_cells][columns.SAMPLE_ID].unique()
         )
-        logger.debug(f"randomly chose {random_sample} for malignant cells")
+        logger.debug("randomly chose %s for malignant cells", random_sample)
         single_cells_to_include = np.logical_not(
             np.logical_and(
                 malignant_cells, sc_metadata[columns.SAMPLE_ID] != random_sample
@@ -81,7 +81,8 @@ def make_mixtures(
 ) -> tuple[pd.DataFrame, dict[str, pd.DataFrame]]:
     logger.debug("making pseudobulk RNA-seq samples")
     logger.debug(
-        f"using np.random.Generator with BitGenerator state {rng.bit_generator.state['state']}"
+        "using np.random.Generator with BitGenerator state %s",
+        rng.bit_generator.state["state"],
     )
     cell_type_geps = {
         sample: make_cell_type_geps(

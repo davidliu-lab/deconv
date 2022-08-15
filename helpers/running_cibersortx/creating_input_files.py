@@ -48,14 +48,14 @@ def create_refsample_from_jerby_arnon(uri_save_destination):
     logger.debug("loading sc data")
     df_sc_rnaseq, df_metadata = helpers.datasets.load_jerby_arnon_hg19_tpm()
     df_sc_rnaseq *= 1e6 / df_sc_rnaseq.sum()
-    logger.debug(f"shape of scRNA-seq: {df_sc_rnaseq.shape}")
+    logger.debug("shape of scRNA-seq: %s", df_sc_rnaseq.shape)
     nonnull_cell_type_cells = df_metadata[
         ~df_metadata[helpers.columns.CELL_TYPE].isna()
     ].index
-    logger.debug(f"length of nonnull_cell_type_cells: {len(nonnull_cell_type_cells)}")
-    logger.debug(f"{nonnull_cell_type_cells}")
+    logger.debug("length of nonnull_cell_type_cells: %s", len(nonnull_cell_type_cells))
+    logger.debug("%s", nonnull_cell_type_cells)
     df_sc_rnaseq = df_sc_rnaseq[nonnull_cell_type_cells]
-    logger.debug(f"new shape of scRNA-seq: {df_sc_rnaseq.shape}")
+    logger.debug("new shape of scRNA-seq: %s", df_sc_rnaseq.shape)
     logger.debug("creating and writing refsample tsv")
     create_csx_refsample_tsv(df_sc_rnaseq, df_metadata, uri_save_destination)
 
