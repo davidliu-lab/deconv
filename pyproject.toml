@@ -25,6 +25,3 @@ disable = [
 [tool.pylint.BASIC]
 variable-rgx = '^[a-z][a-z0-9]*((_[a-z0-9]+)*)?$'
 argument-rgx = '^[a-z][a-z0-9]*((_[a-z0-9]+)*)?$'
-
-[tool.pylint.LOGGING]
-logging-format-style = "fstr"  # allow f-string formatting for logging messages
