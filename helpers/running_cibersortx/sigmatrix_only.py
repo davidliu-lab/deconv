@@ -1,7 +1,17 @@
 import logging
 import pathlib
+import tempfile
+
+import cloudpathlib
+import docker
+from google.cloud import storage
 
 import helpers
+
+from .copying_to_gcs import (
+    copy_file_maybe_in_the_cloud_to_local_path,
+    copy_local_directory_to_gcs,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -15,12 +25,17 @@ def set_up_local_dir(uri_refsample_sc_rnaseq: str, tmp_dir: str):
     )
 
 
-def run(csx_dir: str):
+def run(csx_dir: str) -> None:
+    """
+    Run a cibersortx container in the given directory to generate a signature matrix
+
+    :param csx_dir: a local directory with a "reference sample" file of scRNA-seq
+    """
     logger.debug("generating signature matrix in %s", csx_dir)
     run_kwargs = dict(
         auto_remove=True,
         detach=True,
-        user=f"{os.getuid()}:{os.getgid()}",
+        # user=f"{os.getuid()}:{os.getgid()}",
         volumes=[
             f"{csx_dir}/data:/src/data",
             f"{csx_dir}/outdir:/src/outdir",
@@ -50,8 +65,8 @@ def set_up_run_and_upload(
 ):
     with tempfile.TemporaryDirectory() as tmp_dir:
         logger.debug("generating signature matrix in %s", tmp_dir)
-        set_up_local_dir(uri_bulk_rnaseq, uri_refsample_sc_rnaseq, tmp_dir)
-        run_fractions_in_prepared_local_directory(tmp_dir)
+        set_up_local_dir(uri_refsample_sc_rnaseq, tmp_dir)
+        run(tmp_dir)
         storage_client = storage.Client()
         bucket = storage_client.bucket("liulab")
         copy_local_directory_to_gcs(tmp_dir, bucket, uri_save_job_files_to)
@@ -69,9 +84,13 @@ if __name__ == "__main__":
     )
     uri_refsample = str(base_path / "sigmatrix_only_refsample.tsv")
     sc_data, sc_metadata = helpers.datasets.load_jerby_arnon()
-    sc_data = sc_data.iloc[::10, ::10]
+    # sc_data = sc_data.iloc[::10, ::10]
     logger.debug("sc_data has shape %s", sc_data.shape)
-    helpers.running_cibersortx.creating_input_files.create_csx_refsample_tsv(
-        sc_data, sc_metadata, uri_refsample
-    )
-    run_and_upload(uri_refsample, str(base_path / "csx_outputs"))
+    for i in range(10):
+        logger.debug("making sigmat: trial %d", i)
+        sc_data_i = sc_data.iloc[:, i::10]
+        logger.debug("shape of sc_data_i: %s", sc_data_i.shape)
+        helpers.running_cibersortx.creating_input_files.create_csx_refsample_tsv(
+            sc_data_i, sc_metadata, uri_refsample
+        )
+        set_up_run_and_upload(uri_refsample, str(base_path / str(i) / "csx_outputs"))
