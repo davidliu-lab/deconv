@@ -46,6 +46,12 @@ mamba env update --file conda-env.yml
 mamba activate deconv
 ```
 
+### add `deconv` kernel to jupyter
+
+```shell
+python -m ipykernel install --user --name=deconv
+```
+
 ### to install `helpers`
 
 ```shell
