@@ -1,6 +1,7 @@
 *credentials*
 *results*
 data
+_build
 
 # Created by https://www.toptal.com/developers/gitignore/api/python,macos,jupyternotebooks,visualstudiocode
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,macos,jupyternotebooks,visualstudiocode
