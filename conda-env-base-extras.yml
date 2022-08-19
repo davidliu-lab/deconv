@@ -5,8 +5,9 @@ dependencies:
   - black-jupyter>=22.6
   - flit>=3.7
   - isort
-  - jupyterlab
   - jupyter-book>=0.13
+  - jupyter-server-proxy
+  - jupyterlab
   - jupyterlab_code_formatter
   - jupyterlab-git
   - jupyterlab-lsp
@@ -22,6 +23,7 @@ dependencies:
   - pip:
     - myst-nb
     - jupyterlab-myst[eval]
+    - git+https://github.com/choldgraf/jupyter-http-server
 
 #  - pre-commit
 #  - nbresuse
