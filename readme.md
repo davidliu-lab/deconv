@@ -66,3 +66,12 @@ gcloud auth application-default login
 gcloud auth login
 gcloud config set project keen-dispatch-316219
 ```
+
+## restart jupyter lab server
+
+```shell
+sudo service jupyter status
+sudo service jupyter restart
+```
+
+Source: https://cloud.google.com/vertex-ai/docs/general/troubleshooting-workbench#restart_the_jupyter_service
