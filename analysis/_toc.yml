@@ -3,7 +3,14 @@
 
 format: jb-book
 root: intro
-chapters:
-- file: markdown
-- file: notebooks
-- file: markdown-notebooks
+parts:
+  - caption: Introduction
+    chapters:
+    - file: background
+  - caption: Methods
+    chapters:
+    - file: methods
+    - file: evaluating_cibersortx/intro
+      sections:
+      - file: evaluating_cibersortx/identically_simulated_cohorts.ipynb
+      - file: evaluating_cibersortx/detecting_perturbed_gene_expression_in_malignant_cells.ipynb
