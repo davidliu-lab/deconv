@@ -1,30 +1,35 @@
-import datetime
 import logging
 
 import cloudpathlib
 import pandas as pd
 
 import helpers
-from helpers import creating_mixtures, datasets, running_cibersortx
+from helpers import creating_mixtures, datasets
+from helpers.generating_pseudobulks.saving_to_cloud import save_simulated_data
 
 logger = logging.getLogger(__name__)
 
 
 def make_pseudobulks_and_run_hires(
-    sc_data: pd.DataFrame,
-    sc_metadata: pd.DataFrame,
+    df_scrnaseq: pd.DataFrame,
+    df_scrnaseq_metadata: pd.DataFrame,
     pseudobulk_sample_fractions: pd.DataFrame,
-    path_results: cloudpathlib.AnyPath,
+    path_to_save_results_in_cloud: cloudpathlib.CloudPath,
 ) -> None:
-    df_pseudobulk_rnaseq, cell_type_geps = creating_mixtures.make_mixtures(
-        sc_data, sc_metadata, pseudobulk_sample_fractions
+    df_simulated_bulkrnaseq, simulated_cell_type_geps = creating_mixtures.make_mixtures(
+        df_scrnaseq, df_scrnaseq_metadata, pseudobulk_sample_fractions
     )
-    uri_bulk_rnaseq = str(path_results / "pseudobulk_rnaseq.tsv")
+    save_simulated_data(
+        df_simulated_bulkrnaseq,
+        simulated_cell_type_geps,
+        path_to_save_results_in_cloud / "all_simulated_data",
+    )
+    uri_bulk_rnaseq = str(path_to_save_results_in_cloud / "pseudobulk_rnaseq.tsv")
     helpers.running_cibersortx.creating_input_files.create_csx_mixtures_tsv(
-        df_pseudobulk_rnaseq, uri_bulk_rnaseq
+        df_simulated_bulkrnaseq, uri_bulk_rnaseq
     )
     helpers.running_cibersortx.hires_with_fractions.run_and_upload(
-        str(path_results),
+        str(path_to_save_results_in_cloud),
         uri_bulk_rnaseq,
         uri_sigmatrix="gs://liulab/data/pseudobulk_evaluation/csx_runs/tcga_skcm/out/CIBERSORTx_inputrefscrnaseq_inferred_phenoclasses.CIBERSORTx_inputrefscrnaseq_inferred_refsample.bm.K999.txt",
         uri_sourcegeps="gs://liulab/data/pseudobulk_evaluation/csx_runs/tcga_skcm/out/CIBERSORTx_cell_type_sourceGEP.txt",
@@ -44,14 +49,27 @@ if __name__ == "__main__":
         tcga_skcm_fractions_mets["aliquot_barcode"]
     ]
     logger.debug("number of pseudobulk samples: %s", len(pseudobulk_sample_fractions))
-    sc_data, sc_metadata = datasets.load_jerby_arnon(ref_genome="hg19", units="tpm")
+    df_scrnaseq, df_sc_metadata = datasets.load_jerby_arnon(
+        ref_genome="hg19", units="tpm"
+    )
+    logger.debug("loading TCGA-SKCM bulk RNA-seq data")
+    df_bulkrnaseq_tcga_skcm = datasets.load_tcga_skcm_hg19_scaled_estimate_firebrowse()
+    logger.debug("determining high-quality genes")
+    good_genes = helpers.generating_pseudobulks.qa_gene_filtering.get_good_genes(
+        df_bulkrnaseq_tcga_skcm, df_scrnaseq, 0.5
+    )
+    logger.debug("limiting scRNA-seq data to high-quality genes")
+    df_scrnaseq = df_scrnaseq.loc[list(sorted(good_genes))]
+    logger.debug("Shape of scRNA-seq data: %s", df_scrnaseq.shape)
     timestamp_str = helpers.useful_small_things.make_a_nice_timestamp_of_now()
     for ith_trial in range(2):
         path_results = (
-            cloudpathlib.AnyPath("gs://liulab/evaluating_cibersortx/identical_cohorts")
+            cloudpathlib.CloudPath(
+                "gs://liulab/evaluating_cibersortx/identical_cohorts"
+            )
             / timestamp_str
             / str(ith_trial)
         )
         make_pseudobulks_and_run_hires(
-            sc_data, sc_metadata, pseudobulk_sample_fractions, path_results
+            df_scrnaseq, df_sc_metadata, pseudobulk_sample_fractions, path_results
         )
