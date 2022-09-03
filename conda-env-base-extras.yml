@@ -5,6 +5,7 @@ dependencies:
   - black-jupyter>=22.6
   - flit>=3.7
   - isort
+  - jupyter
   - jupyter-book>=0.13
   - jupyter-server-proxy
   - jupyterlab
@@ -18,13 +19,8 @@ dependencies:
   - nbconvert
   - nbqa
   - pip
+  - plotly>=5  # needed for jupyter lab to render plots
   - python-lsp-server
   - pyupgrade
   - pip:
-    - myst-nb
-    - jupyterlab-myst[eval]
     - git+https://github.com/choldgraf/jupyter-http-server
-
-#  - pre-commit
-#  - nbresuse
-#    - jupyterlab-plotly  # should work automatically with plotly>=5

@@ -12,7 +12,7 @@ dependencies:
   - gcsfs
   - google-cloud-bigquery
   - google-cloud-storage
-  - ipykernel
+  - jupyter  # includes ipykernel, nbformat
   - matplotlib
   - opentelemetry-api
   - opentelemetry-instrumentation
