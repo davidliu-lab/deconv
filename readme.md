@@ -49,12 +49,16 @@ mamba activate deconv
 ### add `deconv` kernel to jupyter
 
 ```shell
+# in the base env, in which jupyter lab runs
 python -m ipykernel install --user --name=deconv
+# or, to mimic nb_conda_kernels
+python -m ipykernel install --user --name=conda-env-deconv-py
 ```
 
 ### to install `helpers`
 
 ```shell
+# in the deconv env
 pip install --verbose --no-build-isolation --editable .
 ```
 
