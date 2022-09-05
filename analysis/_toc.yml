@@ -6,7 +6,7 @@ parts:
     
     - file: evaluating_cibersortx/intro.md
     
-    - file: evaluating_cibersortx/identically_generated_cohorts/deg_analysis.ipynb
+    - file: evaluating_cibersortx/identically_generated_cohorts/samples_like_tcga_skcm_mets.ipynb
       sections:
       - file: evaluating_cibersortx/identically_generated_cohorts/explore_generated_data.ipynb
     
