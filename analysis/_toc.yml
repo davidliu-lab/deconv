@@ -9,26 +9,27 @@ parts:
     - file: evaluating_cibersortx/identically_generated_cohorts/samples_like_tcga_skcm_mets.ipynb
       sections:
       - file: evaluating_cibersortx/identically_generated_cohorts/explore_generated_data.ipynb
-    
-    - file: evaluating_cibersortx/perturbed_gene_expression/intro
+      - file: evaluating_cibersortx/identically_generated_cohorts/1_generated_data_like_tcga_skcm_mets.ipynb
+
+    - file: evaluating_cibersortx/perturbed_gene_expression/intro.md
       sections:
       # - file: evaluating_cibersortx/perturbed_gene_expression/detecting_perturbed_gene_expression_in_malignant_cells.ipynb
       - glob: evaluating_cibersortx/perturbed_gene_expression/*
 
-    - file: evaluating_cibersortx/perturbed_cell_type_proportions/intro
+    - file: evaluating_cibersortx/perturbed_cell_type_proportions/intro.md
       sections:
-      - file: evaluating_cibersortx/perturbed_cell_type_proportions/malignant_cells_proportion
+      - file: evaluating_cibersortx/perturbed_cell_type_proportions/malignant_cells_proportion.ipynb
   
-    - file: evaluating_cibersortx/perturbed_both/intro
+    - file: evaluating_cibersortx/perturbed_both/intro.md
       sections:
       - glob: evaluating_cibersortx/perturbed_both/*
 
   - caption: Simulating bulk RNA-seq samples
     chapters:
-    - file: simulating_bulk_rnaseq/intro
+    - file: simulating_bulk_rnaseq/intro.md
 
   - caption: Debugging
     chapters:
-    - file: debugging/plotly_rendering/intro
+    - file: debugging/plotly_rendering/intro.md
       sections:
       - glob: debugging/plotly_rendering/*
