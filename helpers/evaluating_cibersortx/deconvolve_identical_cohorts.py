@@ -55,7 +55,7 @@ if __name__ == "__main__":
     logger.debug("loading TCGA-SKCM bulk RNA-seq data")
     df_bulkrnaseq_tcga_skcm = datasets.load_tcga_skcm_hg19_scaled_estimate_firebrowse()
     logger.debug("determining high-quality genes")
-    good_genes = helpers.generating_pseudobulks.qa_gene_filtering.get_good_genes(
+    good_genes = helpers.data_qa_cleaning.qa_gene_filtering.get_good_genes(
         df_bulkrnaseq_tcga_skcm, df_scrnaseq, 0.5
     )
     logger.debug("limiting scRNA-seq data to high-quality genes")
