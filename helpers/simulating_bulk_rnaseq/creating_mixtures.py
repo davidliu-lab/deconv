@@ -3,7 +3,7 @@ import logging
 import numpy as np
 import pandas as pd
 
-from helpers.generating_pseudobulks import (
+from helpers.simulating_bulk_rnaseq import (
     add_noise_multiplying_uniform,
     normalize_expression,
 )

@@ -9,10 +9,10 @@ from . import (
     datasets,
     evaluating_cibersortx,
     evaluating_pseudobulks,
-    generating_pseudobulks,
+    simulating_bulk_rnaseq,
     logging,
     running_cibersortx,
     useful_small_things,
 )
 from .download_ftp_file import download_gz_from_ftp
-from .generating_pseudobulks import creating_mixtures
+from .simulating_bulk_rnaseq import creating_mixtures

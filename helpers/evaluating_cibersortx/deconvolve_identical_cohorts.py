@@ -5,7 +5,7 @@ import pandas as pd
 
 import helpers
 from helpers import creating_mixtures, datasets
-from helpers.generating_pseudobulks.saving_to_cloud import save_simulated_data
+from helpers.simulating_bulk_rnaseq.saving_to_cloud import save_simulated_data
 
 logger = logging.getLogger(__name__)
 
