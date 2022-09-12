@@ -1,5 +1,4 @@
 import logging
-from typing import Tuple
 
 import pandas as pd
 from google.cloud import bigquery
@@ -144,3 +143,12 @@ def make_labels_for_aliquots(df_cell_type_fractions, df_sample_metadata):
     df_sample_metadata = df_sample_metadata.assign(immune_low=immune_quintile == 0)
     df_sample_metadata = df_sample_metadata.assign(immune_high=immune_quintile == 4)
     return df_sample_metadata
+
+
+def load_tcga_skcm_mets_fractions_from_csx() -> pd.DataFrame:
+    tcga_skcm_mets = get_tcga_skcm_metastatic_sample_metadata()
+    tcga_skcm_fractions = load_tcga_skcm_fractions_from_csx()
+    tcga_skcm_mets_fractions = tcga_skcm_fractions.loc[
+        tcga_skcm_mets["aliquot_barcode"]
+    ]
+    return tcga_skcm_mets_fractions
