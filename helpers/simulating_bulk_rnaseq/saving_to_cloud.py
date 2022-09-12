@@ -11,9 +11,23 @@ def save_simulated_data(
     simulated_cell_type_geps: dict[pd.DataFrame],
     path_root: cloudpathlib.CloudPath,
 ) -> None:
+    save_simulated_bulkrnaseq(df_simulated_bulkrnaseq, path_root)
+    save_simulated_cell_type_geps(simulated_cell_type_geps, path_root)
+
+
+def save_simulated_bulkrnaseq(
+    df_simulated_bulkrnaseq: pd.DataFrame,
+    path_root: cloudpathlib.CloudPath,
+) -> None:
     uri_simulated_bulkrnaseq = str(path_root / "simulated_bulkrnaseq.parquet")
     logger.debug("saving simulated bulkrnaseq to %s", uri_simulated_bulkrnaseq)
     df_simulated_bulkrnaseq.to_parquet(uri_simulated_bulkrnaseq)
+
+
+def save_simulated_cell_type_geps(
+    simulated_cell_type_geps: dict[pd.DataFrame],
+    path_root: cloudpathlib.CloudPath,
+) -> None:
     df_simulated_cell_type_geps = pd.concat(
         simulated_cell_type_geps, names=["sample_id"]
     )
