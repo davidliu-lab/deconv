@@ -10,7 +10,7 @@ parts:
       sections:
       - file: evaluating_cibersortx/identically_generated_cohorts/1_generated_data_like_tcga_skcm_mets.ipynb
       - file: evaluating_cibersortx/identically_generated_cohorts/check_gene_sparsity_in_generated_data.ipynb
-
+    
     - file: evaluating_cibersortx/perturbed_gene_expression/intro.md
       sections:
       # - file: evaluating_cibersortx/perturbed_gene_expression/detecting_perturbed_gene_expression_in_malignant_cells.ipynb
