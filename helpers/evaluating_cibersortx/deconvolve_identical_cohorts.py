@@ -4,7 +4,8 @@ import cloudpathlib
 import pandas as pd
 
 import helpers
-from helpers import creating_mixtures, datasets
+from helpers import datasets
+from helpers.simulating_bulk_rnaseq import creating_mixtures
 from helpers.simulating_bulk_rnaseq.saving_to_cloud import save_simulated_data
 
 logger = logging.getLogger(__name__)

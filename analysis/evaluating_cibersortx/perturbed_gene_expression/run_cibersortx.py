@@ -7,7 +7,6 @@ import pandas as pd
 
 import helpers
 
-
 logger = logging.getLogger(__name__)
 
 
