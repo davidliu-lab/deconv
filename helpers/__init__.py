@@ -6,6 +6,7 @@ __author__ = "William Grisaitis"
 from . import (
     cell_type_naming,
     columns,
+    data_qa_cleaning,
     datasets,
     evaluating_cibersortx,
     evaluating_pseudobulks,
