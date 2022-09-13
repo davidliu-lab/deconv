@@ -1,12 +1,13 @@
 {
     "editor.fontSize": 14,
-    "python.defaultInterpreterPath": "/opt/conda/bin/python",
+    "editor.formatOnSave": true,
+    "explorer.excludeGitIgnore": true,
     "github.copilot.autocomplete.enable": true,
     "github.copilot.enable": {
         "python": true,
         "markdown": true
     },
-    "editor.formatOnSave": true,
+    "python.defaultInterpreterPath": "/opt/conda/bin/python",
     "python.linting.enabled": true,
     "python.linting.pylintEnabled": true,
     "python.sortImports.path": "isort"
