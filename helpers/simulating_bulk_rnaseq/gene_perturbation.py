@@ -25,8 +25,8 @@ def determine_genes_to_perturb(
     return genes_with_sparsity
 
 
-def perturb_scrnaseq_gene_2x(
-    df_scrnaseq: pd.DataFrame, genes_to_perturb: pd.Series
+def perturb_scrnaseq_gene_expression_by_scaling_factor(
+    df_scrnaseq: pd.DataFrame, genes_to_perturb: pd.Series, scaling_factor: float
 ) -> pd.DataFrame:
     genes = genes_to_perturb.index
     df_scrnaseq_perturbed = df_scrnaseq.copy()
@@ -35,7 +35,7 @@ def perturb_scrnaseq_gene_2x(
         df_scrnaseq_perturbed.loc[genes].mean(axis=1),
     )
     assert df_scrnaseq_perturbed.loc[genes].shape[0] == len(genes_to_perturb)
-    df_scrnaseq_perturbed.loc[genes] *= 2.0
+    df_scrnaseq_perturbed.loc[genes] *= scaling_factor
     logger.debug(
         "Mean expression after: %s",
         df_scrnaseq_perturbed.loc[genes].mean(axis=1),

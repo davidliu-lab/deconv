@@ -9,7 +9,7 @@ from helpers import datasets
 from helpers.simulating_bulk_rnaseq import creating_mixtures
 from helpers.simulating_bulk_rnaseq.gene_perturbation import (
     determine_genes_to_perturb,
-    perturb_scrnaseq_gene_2x,
+    perturb_scrnaseq_gene_expression_by_scaling_factor,
 )
 
 logger = logging.getLogger(__name__)
@@ -52,7 +52,9 @@ if __name__ == "__main__":
     logger.debug("Loaded sample fractions, such as: %s", df_sample_fractions.head())
     df_scrnaseq, df_sc_metadata = load_scrnaseq_and_filter_genes()
     genes_to_perturb = determine_genes_to_perturb(df_scrnaseq, df_sc_metadata, rng)
-    df_scrnaseq_perturbed = perturb_scrnaseq_gene_2x(df_scrnaseq, genes_to_perturb)
+    df_scrnaseq_perturbed = perturb_scrnaseq_gene_expression_by_scaling_factor(
+        df_scrnaseq, genes_to_perturb, 2.0
+    )
 
     # simulate bulk RNA-seq
     df_simulated_bulkrnaseq, simulated_cell_type_geps = creating_mixtures.make_mixtures(
