@@ -6,10 +6,10 @@
       - `gs://liulab/data/simulated/50_samples_no_perturbations/2022-09-13_16:02:18/`
       - `gs://liulab/data/simulated/50_samples_no_perturbations/2022-09-13_21:37:53/`
       - [ ] check if these have identical cell type fractions
-    - [ ] run cibersortx
-      - [ ] provide true cell type proportions
+    - [x] run cibersortx
+      - [x] provide true cell type proportions
     - generate volcano plots
-      - [ ] at bulk level (Mann-Whitney of simulated bulk RNA-seq)
+      - [x] at bulk level (Mann-Whitney of simulated bulk RNA-seq)
       - [ ] for malignant cell GEPs inferred by CIBERSORTx
   - experiment: compare (1) unperturbed generated bulk RNA-seq vs (2) simulated bulk RNA-seq with 100 genes 2x perturbed in malignant cells
     - [x] generate perturbed data
@@ -42,12 +42,14 @@
   - no specific suggestion for sampling fractions (maybe random combinations of fractions, dirichlet process, etc.)
 
 - refactors
+  - [ ] use `bulk_rnaseq` in variable and file names
   - [ ] change timestamps to be more file system friendly (e.g. `2021-01-01_12-34-56`)
   - write dataframes with `cloudpathlib.AnyPath` instead of URI `str` (e.g. `pd.to_csv(path)`)
     - [ ] in `helpers.running_cibersortx.copying_to_gcs.copy_local_directory_to_gcs`
     - [ ] in `helpers.running_cibersortx.creating_input_files`
     - [ ] in `helpers.running_cibersortx.*.run_and_upload`
   - [ ] make `run_and_upload_from_dataframes` for other cibersortx endpoints
+  - [ ] move `columns`, `cell_type_naming` to `data_io_and_formatting`
   - [x] in `analysis/evaluating_cibersortx/perturbed_gene_expression/run_cibersortx.py` move `load_and_concatenate` functions to somewhere in `helpers`, because i'm reusing it elsewhere.
 
 - add back evaluation of simulated data
