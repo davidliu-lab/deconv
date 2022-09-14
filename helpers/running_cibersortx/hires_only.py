@@ -4,14 +4,17 @@ import pathlib
 import tempfile
 
 import docker
-from google.cloud import storage
 import pandas as pd
+from google.cloud import storage
 
 import helpers
-from helpers.running_cibersortx.creating_input_files import create_csx_mixtures_tsv, create_csx_fractions_tsv
 from helpers.running_cibersortx.copying_to_gcs import (
     copy_file_maybe_in_the_cloud_to_local_path,
     copy_local_directory_to_gcs,
+)
+from helpers.running_cibersortx.creating_input_files import (
+    create_csx_fractions_tsv,
+    create_csx_mixtures_tsv,
 )
 
 logger = logging.getLogger(__name__)
