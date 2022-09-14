@@ -3,8 +3,8 @@
 - can deconv methods infer cell type-specific differential gene expression? for what fold change magnitudes?
   - experiment: compare (1) unperturbed generated bulk RNA-seq vs (2) simulated bulk RNA-seq with 100 genes 2x perturbed in malignant cells
     - [ ] run CIBERSORTx
-      - [ ] provide true fractions
-        - [ ] in helper library, make function for generating fraction file to provide CIBERSORTx
+      - [x] provide true fractions
+        - [x] in helper library, make function for generating fraction file to provide CIBERSORTx
     - generate volano plots for
       - [ ] DGE in bulk RNA-seq
       - [ ] DGE in inferred malignant-specific expression
@@ -23,6 +23,11 @@
   - limit variable things in each experiment.
     - e.g., provide true fractions when running cell type-specific gene expression inference
     - want to know the impact of each step on performance
+  - no specific suggestion for sampling fractions (maybe random combinations of fractions, dirichlet process, etc.)
+
+- nice refactors
+  - [ ] in `helpers.running_cibersortx.copying_to_gcs.copy_local_directory_to_gcs`, use `cloudpathlib.CloudPath` instead of URI `str` for target
+  - [ ] in `analysis/evaluating_cibersortx/perturbed_gene_expression/run_cibersortx.py` move `load_and_concatenate` functions to somewhere in `helpers`, because i'm reusing it elsewhere.
 
 # cibersortx evaluations: 
 
