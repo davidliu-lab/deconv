@@ -7,8 +7,12 @@ logger = logging.getLogger(__name__)
 
 
 def load_and_concatenate_bulk_rnaseq(
-    cohort_paths: dict[str, cloudpathlib.CloudPath]
+    cohort_paths: dict[str, cloudpathlib.AnyPath]
 ) -> pd.DataFrame:
+    """Load bulk RNA-seq data from multiple cohorts and concatenate them.
+
+    Example of cohort_paths: {"A": pathlib.Path("/path/to/A"), "B": pathlib.Path("/path/to/B")}
+    """
     dataframes = {
         cohort: pd.read_parquet(path / "bulk_rnaseq.parquet")
         for cohort, path in cohort_paths.items()
@@ -22,8 +26,12 @@ def load_and_concatenate_bulk_rnaseq(
 
 
 def load_and_concatenate_fractions(
-    cohort_paths: dict[str, cloudpathlib.CloudPath]
+    cohort_paths: dict[str, cloudpathlib.AnyPath]
 ) -> pd.DataFrame:
+    """Load fractions from multiple cohorts and concatenate them.
+
+    Example of cohort_paths: {"A": pathlib.Path("/path/to/A"), "B": pathlib.Path("/path/to/B")}
+    """
     dataframes = {
         cohort: pd.read_parquet(path / "fractions.parquet")
         for cohort, path in cohort_paths.items()
