@@ -2,12 +2,49 @@ import logging
 import tempfile
 
 import cloudpathlib
-import dask.dataframe as dd
 import pandas as pd
 
 import helpers
 
 logger = logging.getLogger(__name__)
+
+
+def load_and_concatenate_bulk_rnaseq(
+    cohort_paths: dict[str, cloudpathlib.CloudPath]
+) -> pd.DataFrame:
+    df_simulated_bulkrnaseq = pd.concat(
+        {
+            cohort: pd.read_parquet(path / "bulk_rnaseq.parquet")
+            for cohort, path in cohort_paths.items()
+        },
+        axis="columns",
+    )
+    df_simulated_bulkrnaseq.columns = (
+        df_simulated_bulkrnaseq.columns.to_flat_index().map(lambda x: "/".join(x))
+    )
+    df_simulated_bulkrnaseq.rename_axis(index="gene_symbol", columns="sample_id", inplace=True)
+    logger.debug("Shape of simulated data: %s", df_simulated_bulkrnaseq.shape)
+    assert df_simulated_bulkrnaseq.shape[1] == 100, df_simulated_bulkrnaseq.shape
+    return df_simulated_bulkrnaseq
+
+
+def load_and_concatenate_fractions(
+    cohort_paths: dict[str, cloudpathlib.CloudPath]
+) -> pd.DataFrame:
+    df_simulated_fractions = pd.concat(
+        {
+            cohort: pd.read_parquet(path / "fractions.parquet")
+            for cohort, path in cohort_paths.items()
+        },
+        axis="rows",
+    )
+    df_simulated_fractions.index = df_simulated_fractions.index.to_flat_index().map(
+        lambda x: "/".join(x)
+    )
+    df_simulated_fractions.rename_axis(index="sample_id", columns="cell_type", inplace=True)
+    logger.debug("Shape of simulated data: %s", df_simulated_fractions.shape)
+    assert df_simulated_fractions.shape[0] == 100, df_simulated_fractions.shape
+    return df_simulated_fractions
 
 
 if __name__ == "__main__":
@@ -17,37 +54,29 @@ if __name__ == "__main__":
     logging.getLogger("helpers.creating_mixtures").setLevel("INFO")
 
     # load simulated data
-    uris = {
-        "control": "gs://liulab/data/simulated/50_samples_no_perturbations/0/bulk_rnaseq.parquet",
-        "perturbed_2x": "gs://liulab/data/simulated/50_samples_100_genes_perturbed_in_malignant_cells/0/bulk_rnaseq.parquet",
+    simulated_cohorts = {
+        "control": cloudpathlib.CloudPath(
+            "gs://liulab/data/simulated/50_samples_no_perturbations/2022-09-13_21:37:53"
+        ),
+        "perturbed_2x": cloudpathlib.CloudPath(
+            "gs://liulab/data/simulated/50_samples_100_genes_perturbed_2x_in_malignant_cells/2022-09-13_21:36:32"
+        ),
     }
-    # df_simulated_bulkrnaseq = pd.concat([pd.read_parquet(uri) for uri in uris])
-    df_simulated_bulkrnaseq = pd.concat(
-        {cohort: pd.read_parquet(uri) for cohort, uri in uris.items()}, axis="columns"
-    )
-    df_simulated_bulkrnaseq.columns = (
-        df_simulated_bulkrnaseq.columns.to_flat_index().map(lambda x: "/".join(x))
-    )
-    logger.debug("Shape of simulated data: %s", df_simulated_bulkrnaseq.shape)
-    assert len(df_simulated_bulkrnaseq) == 100
+    df_simulated_bulk_rnaseq = load_and_concatenate_bulk_rnaseq(simulated_cohorts)
+    logger.debug(df_simulated_bulk_rnaseq)
+    df_fractions = load_and_concatenate_fractions(simulated_cohorts)
+    logger.debug(df_fractions)
 
     # define output path
     timestamp_str = helpers.useful_small_things.make_a_nice_timestamp_of_now()
     path_to_save_results_in_cloud = (
         cloudpathlib.CloudPath(
-            "gs://liulab/evaluating_cibersortx/perturbed_gene_expression"
+            "gs://liulab/evaluating_cibersortx/perturbed_gene_expression/2x"
         )
         / timestamp_str
     )
 
-    with tempfile.NamedTemporaryFile(suffix=".tsv") as tmp_file:
-        uri_bulk_rnaseq = tmp_file.name
-        helpers.running_cibersortx.creating_input_files.create_csx_mixtures_tsv(
-            df_simulated_bulkrnaseq, uri_bulk_rnaseq
-        )
-        helpers.running_cibersortx.hires_with_fractions.run_and_upload(
-            str(path_to_save_results_in_cloud),
-            uri_bulk_rnaseq,
-            uri_sigmatrix="gs://liulab/data/pseudobulk_evaluation/csx_runs/tcga_skcm/out/CIBERSORTx_inputrefscrnaseq_inferred_phenoclasses.CIBERSORTx_inputrefscrnaseq_inferred_refsample.bm.K999.txt",
-            uri_sourcegeps="gs://liulab/data/pseudobulk_evaluation/csx_runs/tcga_skcm/out/CIBERSORTx_cell_type_sourceGEP.txt",
-        )
+    # run CIBERSORTx
+    helpers.running_cibersortx.hires_only.run_and_upload_from_dataframes(
+        str(path_to_save_results_in_cloud), df_simulated_bulk_rnaseq, df_fractions
+    )

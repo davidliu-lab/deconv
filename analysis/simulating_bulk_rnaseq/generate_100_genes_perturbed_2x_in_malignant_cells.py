@@ -65,7 +65,7 @@ if __name__ == "__main__":
     timestamp_str = helpers.useful_small_things.make_a_nice_timestamp_of_now()
     path_root = (
         cloudpathlib.CloudPath(
-            "gs://liulab/data/simulated/50_samples_100_genes_perturbed_in_malignant_cells"
+            "gs://liulab/data/simulated/50_samples_100_genes_perturbed_2x_in_malignant_cells"
         )
         / timestamp_str
     )
