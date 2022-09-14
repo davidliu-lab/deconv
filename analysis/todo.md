@@ -41,10 +41,14 @@
     - want to know the impact of each step on performance
   - no specific suggestion for sampling fractions (maybe random combinations of fractions, dirichlet process, etc.)
 
-- nice refactors
-  - [ ] in `helpers.running_cibersortx.copying_to_gcs.copy_local_directory_to_gcs`, use `cloudpathlib.CloudPath` instead of URI `str` for target
-  - [ ] in `analysis/evaluating_cibersortx/perturbed_gene_expression/run_cibersortx.py` move `load_and_concatenate` functions to somewhere in `helpers`, because i'm reusing it elsewhere.
-  - [ ] write dataframes with `cloudpathlib.AnyPath` instead of URI `str` (e.g. `pd.to_csv(path)`)
+- refactors
+  - [ ] change timestamps to be more file system friendly (e.g. `2021-01-01_12-34-56`)
+  - write dataframes with `cloudpathlib.AnyPath` instead of URI `str` (e.g. `pd.to_csv(path)`)
+    - [ ] in `helpers.running_cibersortx.copying_to_gcs.copy_local_directory_to_gcs`
+    - [ ] in `helpers.running_cibersortx.creating_input_files`
+    - [ ] in `helpers.running_cibersortx.*.run_and_upload`
+  - [ ] make `run_and_upload_from_dataframes` for other cibersortx endpoints
+  - [x] in `analysis/evaluating_cibersortx/perturbed_gene_expression/run_cibersortx.py` move `load_and_concatenate` functions to somewhere in `helpers`, because i'm reusing it elsewhere.
 
 - add back evaluation of simulated data
   - means and stddevs of gene expression
