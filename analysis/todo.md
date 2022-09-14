@@ -1,26 +1,42 @@
 # todo / tasks
 
-- can deconv methods infer cell type-specific differential gene expression? for what fold change magnitudes?
+- can deconv methods infer cell type-specific differential gene expression?
+  - control: compare two unperturbed generated bulk RNA-seq cohorts
+    - [x] generate data
+      - `gs://liulab/data/simulated/50_samples_no_perturbations/2022-09-13_16:02:18/`
+      - `gs://liulab/data/simulated/50_samples_no_perturbations/2022-09-13_21:37:53/`
+      - [ ] check if these have identical cell type fractions
+    - [ ] run cibersortx
+      - [ ] provide true cell type proportions
+    - generate volcano plots
+      - [ ] at bulk level (Mann-Whitney of simulated bulk RNA-seq)
+      - [ ] for malignant cell GEPs inferred by CIBERSORTx
   - experiment: compare (1) unperturbed generated bulk RNA-seq vs (2) simulated bulk RNA-seq with 100 genes 2x perturbed in malignant cells
-    - [ ] run CIBERSORTx
+    - [x] generate perturbed data
+      - `gs://liulab/data/simulated/50_samples_100_genes_perturbed_2x_in_malignant_cells/2022-09-13_21:36:32/`
+      - [ ] confirm that cell type fractions are the same as in the unperturbed data
+    - [x] run CIBERSORTx
       - [x] provide true fractions
         - [x] in helper library, make function for generating fraction file to provide CIBERSORTx
     - generate volano plots for
       - [ ] DGE in bulk RNA-seq
       - [ ] DGE in inferred malignant-specific expression
+- does accuracy vary by fold change magnitudes?
   - experiment: comparisons with other fold change perturbations (e.g. $(0.25, 0.5, 2, 4)$)
     - [ ] generate simulated data for each fold change
       - [ ] make sure fold change is documented in path or saved in data output
     - [ ] make array of plots for each fold change, comparing bulk DEG vs inferred malignant-specific DEG
 
-- improve DEG plots
+- improve DEG volcano plots
   - FDR thresholds...
     - [ ] add thresholds to metadata (e.g. fdr $\in (0.05, 0.1, 0.25, 0.5)$)
     - [ ] adjust y axes of volcano plots to include thresholds
   - [ ] make sure multiple hypothesis stats are computed _after_ any filters (e.g. limiting cell type)
+  - make scatter + kde plots
+    - see [plotly.figure_factory.create_2d_density](https://plotly.com/python/v3/density-plots/) and [px.density_contour](https://plotly.com/python/2d-histogram-contour/)
 
 - general feedback...
-  - limit variable things in each experiment.
+  - limit things that can change in each experiment
     - e.g., provide true fractions when running cell type-specific gene expression inference
     - want to know the impact of each step on performance
   - no specific suggestion for sampling fractions (maybe random combinations of fractions, dirichlet process, etc.)
@@ -28,6 +44,17 @@
 - nice refactors
   - [ ] in `helpers.running_cibersortx.copying_to_gcs.copy_local_directory_to_gcs`, use `cloudpathlib.CloudPath` instead of URI `str` for target
   - [ ] in `analysis/evaluating_cibersortx/perturbed_gene_expression/run_cibersortx.py` move `load_and_concatenate` functions to somewhere in `helpers`, because i'm reusing it elsewhere.
+
+- add back evaluation of simulated data
+  - means and stddevs of gene expression
+  - PCA of gene expression
+    - for first PC, analysis of which genes contribute most to the PC (e.g. sparsity)
+  - correlation of gene expression between simulated samples, real TCGA SKCM samples
+  - intra-cohort variation
+  - parameter tuning
+
+- eventually
+  - add runner functions for other deconv methods (BayesPrism, CODEFACS, ...)
 
 # cibersortx evaluations: 
 
