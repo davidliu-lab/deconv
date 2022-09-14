@@ -8,6 +8,7 @@ from . import (
     columns,
     data_io_and_formatting,
     datasets,
+    deg_analysis,
     evaluating_cibersortx,
     evaluating_pseudobulks,
     logging,

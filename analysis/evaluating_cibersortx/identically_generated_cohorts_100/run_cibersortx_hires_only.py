@@ -38,7 +38,7 @@ if __name__ == "__main__":
     timestamp_str = helpers.useful_small_things.make_a_nice_timestamp_of_now()
     path_to_save_results_in_cloud = (
         cloudpathlib.CloudPath(
-            "gs://liulab/evaluating_cibersortx/perturbed_gene_expression/2x"
+            "gs://liulab/evaluating_cibersortx/identically_generated_cohorts_100"
         )
         / timestamp_str
     )

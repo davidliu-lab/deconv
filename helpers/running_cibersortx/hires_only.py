@@ -58,8 +58,12 @@ def run_and_upload_from_dataframes(
         csx_path = pathlib.Path(tmp_dir)
         (csx_path / "data").mkdir()
         (csx_path / "outdir").mkdir()
-        create_csx_mixtures_tsv(df_bulk_rnaseq, str(csx_path / "data" / "bulkrnaseq.txt"))
-        create_csx_fractions_tsv(df_cibersort_results, str(csx_path / "outdir" / "fractions.txt"))
+        create_csx_mixtures_tsv(
+            df_bulk_rnaseq, str(csx_path / "data" / "bulkrnaseq.txt")
+        )
+        create_csx_fractions_tsv(
+            df_cibersort_results, str(csx_path / "outdir" / "fractions.txt")
+        )
         run(tmp_dir)
         storage_client = storage.Client()
         bucket = storage_client.bucket("liulab")
