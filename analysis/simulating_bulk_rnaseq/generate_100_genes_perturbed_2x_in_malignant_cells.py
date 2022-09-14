@@ -28,7 +28,7 @@ def load_scrnaseq_and_filter_genes():
     )
     df_bulkrnaseq_tcga_skcm = datasets.load_tcga_skcm_hg19_scaled_estimate_firebrowse()
     logger.debug("determining good genes")
-    good_genes = helpers.data_qa_cleaning.qa_gene_filtering.get_good_genes(
+    good_genes = helpers.data_formatting.qa_gene_filtering.get_good_genes(
         df_bulkrnaseq_tcga_skcm, df_scrnaseq, 0.5
     )
     logger.debug("limiting scRNA-seq data to good genes")
