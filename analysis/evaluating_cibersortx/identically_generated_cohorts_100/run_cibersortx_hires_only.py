@@ -3,7 +3,7 @@ import logging
 import cloudpathlib
 
 import helpers
-from helpers.data_formatting.concatenating import (
+from helpers.data_io_and_formatting.concatenating import (
     load_and_concatenate_bulk_rnaseq,
     load_and_concatenate_fractions,
 )
