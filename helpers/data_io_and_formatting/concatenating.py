@@ -25,6 +25,21 @@ def load_and_concatenate_bulk_rnaseq(
     return df
 
 
+def load_concatenated_bulk_rnaseq(path_to_bulk_rnaseq):
+    df_bulk_rnaseq = pd.read_csv(
+        path_to_csx_bulk_rnaseq,
+        sep="\t",
+        engine="pyarrow",
+        index_col=0,
+    )
+    df_bulk_rnaseq.columns = pd.MultiIndex.from_tuples(
+        df_bulk_rnaseq.columns.map(lambda x: x.split("/")).map(tuple),
+        names=["cohort_id", "sample_id"],
+    )
+    df_bulk_rnaseq = df_bulk_rnaseq.stack(level="sample_id")
+    return df_bulk_rnaseq
+
+
 def load_and_concatenate_fractions(
     cohort_paths: dict[str, cloudpathlib.AnyPath]
 ) -> pd.DataFrame:
@@ -42,3 +57,7 @@ def load_and_concatenate_fractions(
     df.rename_axis(index=index_axis_name, inplace=True)
     logger.debug("Shape of concatenated data: %s", df.shape)
     return df
+
+
+def load_concatenated_fractions(path):
+    raise NotImplementedError
