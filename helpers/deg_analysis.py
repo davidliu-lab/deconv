@@ -67,7 +67,7 @@ def make_volcano_figure(df_stats):
         font=dict(family="Courier New, monospace", color="RebeccaPurple"),
         height=750,
     )
-    fig.update_traces(marker=dict(size=5))
+    fig.update_traces(marker=dict(size=3))
     fig.update_layout(legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01))
     fig.add_hline(y=df_stats.attrs["-log10_pval_threshold_bh"])
     return fig
