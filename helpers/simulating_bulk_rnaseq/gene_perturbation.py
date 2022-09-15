@@ -18,7 +18,8 @@ def determine_genes_to_perturb(
     malignant_scrnaseq = df_scrnaseq[malignant_single_cell_ids]
     logger.debug("shape of malignant_scrnaseq: %s", malignant_scrnaseq.shape)
     gene_sparsity_in_malignant_cells = (malignant_scrnaseq == 0).mean(axis="columns")
-    genes_top_500 = gene_sparsity_in_malignant_cells.sort_values().iloc[-500:]
+    genes_top_500 = gene_sparsity_in_malignant_cells.nsmallest(500)
+    logger.debug("summary of genes_top_500: %s", genes_top_500.describe())
     genes_with_sparsity = genes_top_500.sample(100, replace=False, random_state=rng)
     logger.debug("shape of genes_with_sparsity: %s", genes_with_sparsity.shape)
     logger.debug("genes_with_sparsity.head(): %s", genes_with_sparsity.head())
