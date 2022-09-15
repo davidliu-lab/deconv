@@ -7,9 +7,6 @@ parts:
 
   - caption: Evaluating CIBERSORTx
     chapters:
-    
-    - file: evaluating_cibersortx/intro.md
-
     - file: evaluating_cibersortx/identically_generated_cohorts_100/volcano_plots.ipynb
 
     - file: evaluating_cibersortx/identically_generated_cohorts/samples_like_tcga_skcm_mets.ipynb
