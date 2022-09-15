@@ -2,6 +2,7 @@ import logging
 
 import numpy as np
 import pandas as pd
+import plotly.express as px
 import scipy.stats
 from statsmodels.stats.multitest import multipletests
 
@@ -48,3 +49,25 @@ def compute_stats(groups):
     df_stats_by_group = df_stats_by_group.reset_index()
     df_stats_by_group = add_multipletests_stats(df_stats_by_group)
     return df_stats_by_group
+
+
+def make_volcano_figure(df_stats):
+    fig = px.scatter(
+        df_stats,
+        x="log2_fold_change",
+        y="-log10_pval",
+        color="significant_bh_fdr=0.5",
+        hover_name="GeneSymbol",
+        hover_data=["pval", "pval_adj_bh", "sparsity_overall"],
+    )
+    fig.update_layout(
+        xaxis_title=r"$\log_{2} [\text{fold change}]$",
+        yaxis_title=r"$-\log_{10} [\text{p-value (Mann-Whitney U)}]$",
+        legend_title="Significant with FDR=0.5?",
+        font=dict(family="Courier New, monospace", color="RebeccaPurple"),
+        height=750,
+    )
+    fig.update_traces(marker=dict(size=5))
+    fig.update_layout(legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01))
+    fig.add_hline(y=df_stats.attrs["-log10_pval_threshold_bh"])
+    return fig
