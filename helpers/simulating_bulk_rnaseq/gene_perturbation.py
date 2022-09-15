@@ -42,3 +42,24 @@ def perturb_scrnaseq_gene_expression_by_scaling_factor(
     )
     assert df_scrnaseq_perturbed.shape == df_scrnaseq.shape, df_scrnaseq_perturbed.shape
     return df_scrnaseq_perturbed
+
+
+def perturb_scrnaseq_gene_expression_by_scaling_factor_in_cell_type(
+    df_scrnaseq: pd.DataFrame,
+    df_scrnaseq_metadata: pd.DataFrame,
+    cell_type: str,
+    genes_to_perturb: pd.Series,
+    scaling_factor: float,
+) -> pd.DataFrame:
+    df = df_scrnaseq.copy()
+    cells_of_desired_type = df_scrnaseq_metadata[
+        df_scrnaseq_metadata[helpers.columns.CELL_TYPE] == cell_type
+    ].index
+    assert len(cells_of_desired_type) > 0
+    df_cell_type = df[cells_of_desired_type]
+    df_cell_type = perturb_scrnaseq_gene_expression_by_scaling_factor(
+        df_cell_type, genes_to_perturb, scaling_factor
+    )
+    df[cells_of_desired_type] = df_cell_type
+    assert df.shape == df_scrnaseq.shape, df.shape
+    return df

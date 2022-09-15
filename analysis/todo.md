@@ -10,12 +10,12 @@
       - [x] provide true cell type proportions
     - generate volcano plots
       - [x] at bulk level (Mann-Whitney of simulated bulk RNA-seq)
-      - [ ] for malignant cell GEPs inferred by CIBERSORTx
+      - [x] for malignant cell GEPs inferred by CIBERSORTx
   - experiment: compare (1) unperturbed generated bulk RNA-seq vs (2) simulated bulk RNA-seq with 100 genes 2x perturbed in malignant cells
-    - [x] generate perturbed data
-      - `gs://liulab/data/simulated/50_samples_100_genes_perturbed_2x_in_malignant_cells/2022-09-13_21:36:32/`
+    - [ ] generate perturbed data
+      - [x] fixed bug in perturbing cell type GEPs
       - [ ] confirm that cell type fractions are the same as in the unperturbed data
-    - [x] run CIBERSORTx
+    - [ ] run CIBERSORTx
       - [x] provide true fractions
         - [x] in helper library, make function for generating fraction file to provide CIBERSORTx
     - generate volano plots for

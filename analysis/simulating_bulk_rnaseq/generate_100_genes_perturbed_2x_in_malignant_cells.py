@@ -9,7 +9,7 @@ from helpers import datasets
 from helpers.simulating_bulk_rnaseq import creating_mixtures
 from helpers.simulating_bulk_rnaseq.gene_perturbation import (
     determine_genes_to_perturb,
-    perturb_scrnaseq_gene_expression_by_scaling_factor,
+    perturb_scrnaseq_gene_expression_by_scaling_factor_in_cell_type,
 )
 
 logger = logging.getLogger(__name__)
@@ -39,6 +39,7 @@ def load_scrnaseq_and_filter_genes():
 
 if __name__ == "__main__":
     configure_logging()
+    timestamp_str = helpers.useful_small_things.make_a_nice_timestamp_of_now()
     N = 50
     rng = np.random.default_rng(seed=0)
 
@@ -52,8 +53,10 @@ if __name__ == "__main__":
     logger.debug("Loaded sample fractions, such as: %s", df_sample_fractions.head())
     df_scrnaseq, df_sc_metadata = load_scrnaseq_and_filter_genes()
     genes_to_perturb = determine_genes_to_perturb(df_scrnaseq, df_sc_metadata, rng)
-    df_scrnaseq_perturbed = perturb_scrnaseq_gene_expression_by_scaling_factor(
-        df_scrnaseq, genes_to_perturb, 2.0
+    df_scrnaseq_perturbed = (
+        perturb_scrnaseq_gene_expression_by_scaling_factor_in_cell_type(
+            df_scrnaseq, df_sc_metadata, "Malignant", genes_to_perturb, 2.0
+        )
     )
 
     # simulate bulk RNA-seq
@@ -62,7 +65,6 @@ if __name__ == "__main__":
     )
 
     # save stuff
-    timestamp_str = helpers.useful_small_things.make_a_nice_timestamp_of_now()
     path_root = (
         cloudpathlib.CloudPath(
             "gs://liulab/data/simulated/50_samples_100_genes_perturbed_2x_in_malignant_cells"
