@@ -51,6 +51,9 @@
   - [ ] make `run_and_upload_from_dataframes` for other cibersortx endpoints
   - [ ] move `columns`, `cell_type_naming` to `data_io_and_formatting`
   - [x] in `analysis/evaluating_cibersortx/perturbed_gene_expression/run_cibersortx.py` move `load_and_concatenate` functions to somewhere in `helpers`, because i'm reusing it elsewhere.
+  - [ ] look into cloudpathlib alternatives
+    - https://github.com/Advestis/transparentpath#usage 
+    - https://github.com/fsspec/universal_pathlib
 
 - add back evaluation of simulated data
   - means and stddevs of gene expression
