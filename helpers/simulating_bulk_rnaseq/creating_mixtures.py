@@ -69,6 +69,27 @@ def make_fractions_from_dirichlet(
     return fractions
 
 
+def compute_bulk_rnaseq(
+    df_fractions: pd.DataFrame, cell_type_geps: dict[str, pd.DataFrame]
+) -> pd.DataFrame:
+    """Perform matrix multiplication to combine fractions with cell type expression
+
+    Args:
+        df_fractions (pd.DataFrame): dataframe of fractions where index is samples, columns are cell types
+        cell_type_geps (dict[str, pd.DataFrame]): keys are samples, values are dataframes where index is gene, columns are cell types
+
+    Returns:
+        pd.DataFrame: bulk RNA-seq where index is gene, columns are samples
+    """
+    return pd.concat(
+        {
+            sample: cell_type_geps[sample] @ df_fractions.loc[sample]
+            for sample in df_fractions.index
+        },
+        axis=1,
+    )
+
+
 def make_mixtures(
     sc_data: pd.DataFrame,
     sc_metadata: pd.DataFrame,
@@ -93,13 +114,7 @@ def make_mixtures(
         )
         for sample in sample_fractions.index
     }
-    mixtures = pd.concat(
-        {
-            sample: cell_type_geps[sample] @ sample_fractions.loc[sample]
-            for sample in sample_fractions.index
-        },
-        axis=1,
-    )
+    mixtures = compute_bulk_rnaseq(sample_fractions, cell_type_geps)
     mixtures = add_noise_multiplying_uniform(mixtures, rng)
     mixtures = normalize_expression(mixtures, normalization_factor)
     return mixtures, cell_type_geps
