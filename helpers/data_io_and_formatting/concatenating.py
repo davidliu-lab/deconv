@@ -27,7 +27,7 @@ def load_and_concatenate_bulk_rnaseq(
 
 def load_concatenated_bulk_rnaseq(path_to_bulk_rnaseq):
     df_bulk_rnaseq = pd.read_csv(
-        path_to_csx_bulk_rnaseq,
+        path_to_bulk_rnaseq,
         sep="\t",
         engine="pyarrow",
         index_col=0,
