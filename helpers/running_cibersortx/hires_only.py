@@ -2,15 +2,16 @@ import json
 import logging
 import pathlib
 import tempfile
+from typing import Union
 
 import docker
+import gcsfs
 import pandas as pd
-from google.cloud import storage
+import upath
 
 import helpers
 from helpers.running_cibersortx.copying_to_gcs import (
     copy_file_maybe_in_the_cloud_to_local_path,
-    copy_local_directory_to_gcs,
 )
 from helpers.running_cibersortx.creating_input_files import (
     create_csx_fractions_tsv,
@@ -30,9 +31,7 @@ def run_and_upload(
         logger.debug("watch -n 0.1 tree -ghpu %s", tmp_dir)
         set_up_csx_dir(tmp_dir, uri_bulk_rnaseq, uri_cibersort_results)
         run(tmp_dir)
-        storage_client = storage.Client()
-        bucket = storage_client.bucket("liulab")
-        copy_local_directory_to_gcs(tmp_dir, bucket, uri_save_job_files_to)
+        gcsfs.GCSFileSystem().put(tmp_dir, uri_save_job_files_to, recursive=True)
 
 
 def set_up_csx_dir(csx_dir, uri_bulk_rnaseq, uri_cibersort_results):
@@ -48,9 +47,9 @@ def set_up_csx_dir(csx_dir, uri_bulk_rnaseq, uri_cibersort_results):
 
 
 def run_and_upload_from_dataframes(
-    uri_save_job_files_to: str,
     df_bulk_rnaseq: pd.DataFrame,
     df_cibersort_results: pd.DataFrame,
+    path_target: upath.UPath,
 ):
     with tempfile.TemporaryDirectory() as tmp_dir:
         logger.debug("tmp_dir: %s", tmp_dir)
@@ -58,16 +57,13 @@ def run_and_upload_from_dataframes(
         csx_path = pathlib.Path(tmp_dir)
         (csx_path / "data").mkdir()
         (csx_path / "outdir").mkdir()
-        create_csx_mixtures_tsv(
-            df_bulk_rnaseq, str(csx_path / "data" / "bulkrnaseq.txt")
-        )
+        create_csx_mixtures_tsv(df_bulk_rnaseq, csx_path / "data" / "bulkrnaseq.txt")
         create_csx_fractions_tsv(
-            df_cibersort_results, str(csx_path / "outdir" / "fractions.txt")
+            df_cibersort_results, csx_path / "outdir" / "fractions.txt"
         )
         run(tmp_dir)
-        storage_client = storage.Client()
-        bucket = storage_client.bucket("liulab")
-        copy_local_directory_to_gcs(tmp_dir, bucket, uri_save_job_files_to)
+        logger.debug("copying tmp_dir %s to %s", tmp_dir, path_target)
+        gcsfs.GCSFileSystem().put(tmp_dir, path_target, recursive=True)
 
 
 def run(csx_dir):

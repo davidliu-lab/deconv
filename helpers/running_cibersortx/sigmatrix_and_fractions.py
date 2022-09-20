@@ -4,12 +4,11 @@ import pathlib
 import tempfile
 
 import docker
-from google.cloud import storage
+import gcsfs
 
 import helpers
 from helpers.running_cibersortx.copying_to_gcs import (
     copy_file_maybe_in_the_cloud_to_local_path,
-    copy_local_directory_to_gcs,
 )
 
 logger = logging.getLogger(__name__)
@@ -68,9 +67,7 @@ def run_fractions_and_upload(
         logger.debug("running fractions in %s", tmp_dir)
         set_up_fractions_dir(uri_bulk_rnaseq, uri_refsample_sc_rnaseq, tmp_dir)
         run_fractions_in_prepared_local_directory(tmp_dir)
-        storage_client = storage.Client()
-        bucket = storage_client.bucket("liulab")
-        copy_local_directory_to_gcs(tmp_dir, bucket, uri_save_job_files_to)
+        gcsfs.GCSFileSystem().put(tmp_dir, uri_save_job_files_to, recursive=True)
 
 
 if __name__ == "__main__":

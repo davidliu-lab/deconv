@@ -1,6 +1,6 @@
 import logging
 
-import cloudpathlib
+import upath
 
 import helpers
 from helpers.data_io_and_formatting.concatenating import (
@@ -19,10 +19,10 @@ if __name__ == "__main__":
 
     # load data
     simulated_cohorts = {
-        "control": cloudpathlib.CloudPath(
+        "control": upath.UPath(
             "gs://liulab/data/simulated/50_samples_no_perturbations/2022-09-13_21:37:53"
         ),
-        "perturbed_2x": cloudpathlib.CloudPath(
+        "perturbed_2x": upath.UPath(
             "gs://liulab/data/simulated/50_samples_100_genes_perturbed_2x_in_malignant_cells/2022-09-13_21:36:32"
         ),
     }
@@ -37,9 +37,7 @@ if __name__ == "__main__":
     # define output path
     timestamp_str = helpers.useful_small_things.make_a_nice_timestamp_of_now()
     path_to_save_results_in_cloud = (
-        cloudpathlib.CloudPath(
-            "gs://liulab/evaluating_cibersortx/perturbed_gene_expression/2x"
-        )
+        upath.UPath("gs://liulab/evaluating_cibersortx/perturbed_gene_expression/2x")
         / timestamp_str
     )
 

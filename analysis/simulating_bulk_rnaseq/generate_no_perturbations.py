@@ -1,8 +1,8 @@
 import logging
 
-import cloudpathlib
 import numpy as np
 import pandas as pd
+import upath
 
 import helpers
 from helpers import datasets
@@ -56,7 +56,7 @@ if __name__ == "__main__":
     # save stuff
     timestamp_str = helpers.useful_small_things.make_a_nice_timestamp_of_now()
     path_root = (
-        cloudpathlib.CloudPath("gs://liulab/data/simulated/50_samples_no_perturbations")
+        upath.UPath("gs://liulab/data/simulated/50_samples_no_perturbations")
         / timestamp_str
     )
     df_simulated_bulkrnaseq.to_parquet(str(path_root / "bulk_rnaseq.parquet"))

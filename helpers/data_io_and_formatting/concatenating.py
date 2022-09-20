@@ -1,13 +1,13 @@
 import logging
 
-import cloudpathlib
 import pandas as pd
+import upath
 
 logger = logging.getLogger(__name__)
 
 
 def load_and_concatenate_bulk_rnaseq(
-    cohort_paths: dict[str, cloudpathlib.AnyPath]
+    cohort_paths: dict[str, upath.UPath]
 ) -> pd.DataFrame:
     """Load bulk RNA-seq data from multiple cohorts and concatenate them.
 
@@ -41,7 +41,7 @@ def load_concatenated_bulk_rnaseq(path_to_bulk_rnaseq):
 
 
 def load_and_concatenate_fractions(
-    cohort_paths: dict[str, cloudpathlib.AnyPath]
+    cohort_paths: dict[str, upath.UPath]
 ) -> pd.DataFrame:
     """Load fractions from multiple cohorts and concatenate them.
 

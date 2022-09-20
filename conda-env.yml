@@ -26,8 +26,8 @@ dependencies:
   - scikit-learn
   - scipy
   - seaborn
+  - universal_pathlib=0.0.19
   - pip:
-    - cloudpathlib[gs]
     - GEOparse
     - gsea-api
     - isort

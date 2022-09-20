@@ -57,8 +57,8 @@ def make_volcano_figure(df_stats):
         x="log2_fold_change",
         y="-log10_pval",
         color="significant_bh_fdr=0.5",
-        hover_name="GeneSymbol",
-        hover_data=["pval", "pval_adj_bh", "sparsity_overall"],
+        hover_name="gene_symbol",
+        hover_data=["pval", "sparsity_overall"],
     )
     fig.update_layout(
         xaxis_title=r"$\log_{2} [\text{fold change}]$",

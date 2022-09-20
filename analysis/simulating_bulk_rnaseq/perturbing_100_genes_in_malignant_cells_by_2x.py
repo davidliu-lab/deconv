@@ -1,8 +1,8 @@
 import logging
 
-import cloudpathlib
 import numpy as np
 import pandas as pd
+import upath
 
 import helpers
 from helpers import datasets
@@ -66,7 +66,7 @@ if __name__ == "__main__":
 
     # save stuff
     path_root = (
-        cloudpathlib.CloudPath(
+        upath.UPath(
             "gs://liulab/data/simulated/50_samples_100_genes_perturbed_2x_in_malignant_cells"
         )
         / timestamp_str

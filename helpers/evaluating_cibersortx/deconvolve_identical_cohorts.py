@@ -1,7 +1,7 @@
 import logging
 
-import cloudpathlib
 import pandas as pd
+import upath
 
 import helpers
 from helpers import datasets
@@ -15,7 +15,7 @@ def make_pseudobulks_and_run_hires(
     df_scrnaseq: pd.DataFrame,
     df_scrnaseq_metadata: pd.DataFrame,
     pseudobulk_sample_fractions: pd.DataFrame,
-    path_to_save_results_in_cloud: cloudpathlib.CloudPath,
+    path_to_save_results_in_cloud: upath.UPath,
 ) -> None:
     df_simulated_bulkrnaseq, simulated_cell_type_geps = creating_mixtures.make_mixtures(
         df_scrnaseq, df_scrnaseq_metadata, pseudobulk_sample_fractions
@@ -25,13 +25,13 @@ def make_pseudobulks_and_run_hires(
         simulated_cell_type_geps,
         path_to_save_results_in_cloud / "all_simulated_data",
     )
-    uri_bulk_rnaseq = str(path_to_save_results_in_cloud / "pseudobulk_rnaseq.tsv")
+    path_bulk_rnaseq = path_to_save_results_in_cloud / "pseudobulk_rnaseq.tsv"
     helpers.running_cibersortx.creating_input_files.create_csx_mixtures_tsv(
-        df_simulated_bulkrnaseq, uri_bulk_rnaseq
+        df_simulated_bulkrnaseq, path_bulk_rnaseq
     )
     helpers.running_cibersortx.hires_with_fractions.run_and_upload(
         str(path_to_save_results_in_cloud),
-        uri_bulk_rnaseq,
+        path_bulk_rnaseq,
         uri_sigmatrix="gs://liulab/data/pseudobulk_evaluation/csx_runs/tcga_skcm/out/CIBERSORTx_inputrefscrnaseq_inferred_phenoclasses.CIBERSORTx_inputrefscrnaseq_inferred_refsample.bm.K999.txt",
         uri_sourcegeps="gs://liulab/data/pseudobulk_evaluation/csx_runs/tcga_skcm/out/CIBERSORTx_cell_type_sourceGEP.txt",
     )
@@ -65,9 +65,7 @@ if __name__ == "__main__":
     timestamp_str = helpers.useful_small_things.make_a_nice_timestamp_of_now()
     for ith_trial in range(2):
         path_results = (
-            cloudpathlib.CloudPath(
-                "gs://liulab/evaluating_cibersortx/identical_cohorts"
-            )
+            upath.UPath("gs://liulab/evaluating_cibersortx/identical_cohorts")
             / timestamp_str
             / str(ith_trial)
         )

@@ -1,8 +1,8 @@
 import logging
 
-import cloudpathlib
 import numpy as np
 import pandas as pd
+import upath
 
 import helpers
 from helpers import datasets
@@ -76,7 +76,7 @@ if __name__ == "__main__":
 
         # save stuff
         path_root = (
-            cloudpathlib.CloudPath("gs://liulab/data/simulated/")
+            upath.UPath("gs://liulab/data/simulated/")
             / "perturbing_100_genes_in_malignant_cells_by_many_factors_of_2"
             / timestamp_str
             / f"scaling_factor={scaling_factor:.3f}"

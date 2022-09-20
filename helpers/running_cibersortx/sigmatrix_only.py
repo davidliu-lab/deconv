@@ -2,16 +2,13 @@ import logging
 import pathlib
 import tempfile
 
-import cloudpathlib
 import docker
-from google.cloud import storage
+import gcsfs
+import upath
 
 import helpers
 
-from .copying_to_gcs import (
-    copy_file_maybe_in_the_cloud_to_local_path,
-    copy_local_directory_to_gcs,
-)
+from .copying_to_gcs import copy_file_maybe_in_the_cloud_to_local_path
 
 logger = logging.getLogger(__name__)
 
@@ -67,9 +64,7 @@ def set_up_run_and_upload(
         logger.debug("generating signature matrix in %s", tmp_dir)
         set_up_local_dir(uri_refsample_sc_rnaseq, tmp_dir)
         run(tmp_dir)
-        storage_client = storage.Client()
-        bucket = storage_client.bucket("liulab")
-        copy_local_directory_to_gcs(tmp_dir, bucket, uri_save_job_files_to)
+        gcsfs.GCSFileSystem().put(tmp_dir, uri_save_job_files_to, recursive=True)
 
 
 if __name__ == "__main__":
@@ -79,7 +74,7 @@ if __name__ == "__main__":
 
     # uri_refsample = "gs://liulab/data/pseudobulk_evaluation/csx_input_files/refsample_jerby_arnon_hg19_tpm.tsv"
     base_path = (
-        cloudpathlib.AnyPath("gs://liulab/tmp")
+        upath.UPath("gs://liulab/tmp")
         / helpers.useful_small_things.make_a_nice_timestamp_of_now()
     )
     uri_refsample = str(base_path / "sigmatrix_only_refsample.tsv")
