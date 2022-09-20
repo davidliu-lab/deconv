@@ -37,6 +37,7 @@ def load_concatenated_bulk_rnaseq(path_to_bulk_rnaseq):
         names=["cohort_id", "sample_id"],
     )
     df_bulk_rnaseq = df_bulk_rnaseq.stack(level="sample_id")
+    df_bulk_rnaseq.rename_axis(index={"GeneSymbol": "gene_symbol"}, inplace=True)
     return df_bulk_rnaseq
 
 

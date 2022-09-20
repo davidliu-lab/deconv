@@ -1,4 +1,6 @@
 import logging
+import pathlib
+from typing import Union
 
 import pandas as pd
 import upath
@@ -8,7 +10,9 @@ import helpers
 logger = logging.getLogger(__name__)
 
 
-def create_csx_mixtures_tsv(df_bulk_rnaseq: pd.DataFrame, path_target: upath.UPath):
+def create_csx_mixtures_tsv(
+    df_bulk_rnaseq: pd.DataFrame, path_target: Union[pathlib.Path, upath.UPath]
+):
     df_bulk_rnaseq = df_bulk_rnaseq.rename_axis(index="GeneSymbol", columns=None)
     df_bulk_rnaseq = df_bulk_rnaseq.reset_index()
     df_bulk_rnaseq.to_csv(path_target, index=False, sep="\t")
@@ -17,7 +21,7 @@ def create_csx_mixtures_tsv(df_bulk_rnaseq: pd.DataFrame, path_target: upath.UPa
 def create_csx_refsample_tsv(
     df_refsample_sc_rnaseq: pd.DataFrame,
     df_refsample_sc_metadata: pd.DataFrame,
-    path_target: upath.UPath,
+    path_target: Union[pathlib.Path, upath.UPath],
 ):
     def look_up_cell_type(single_cell_id):
         return df_refsample_sc_metadata.loc[single_cell_id][helpers.columns.CELL_TYPE]
@@ -30,13 +34,15 @@ def create_csx_refsample_tsv(
     df_refsample_sc_rnaseq.to_csv(path_target, index=False, sep="\t")
 
 
-def create_csx_fractions_tsv(df_fractions: pd.DataFrame, path_target: upath.UPath):
+def create_csx_fractions_tsv(
+    df_fractions: pd.DataFrame, path_target: Union[pathlib.Path, upath.UPath]
+):
     df_fractions = df_fractions.rename_axis(index="Mixture", columns=None)
     df_fractions = df_fractions.reset_index()
     df_fractions.to_csv(path_target, index=False, sep="\t")
 
 
-def create_refsample_from_jerby_arnon(path_target):
+def create_refsample_from_jerby_arnon(path_target: Union[pathlib.Path, upath.UPath]):
     logger.debug("loading sc data")
     df_sc_rnaseq, df_metadata = helpers.datasets.load_jerby_arnon_hg19_tpm()
     df_sc_rnaseq *= 1e6 / df_sc_rnaseq.sum()
@@ -52,7 +58,7 @@ def create_refsample_from_jerby_arnon(path_target):
     create_csx_refsample_tsv(df_sc_rnaseq, df_metadata, path_target)
 
 
-def create_csx_mixtures_for_tcga_skcm(path_target):
+def create_csx_mixtures_for_tcga_skcm(path_target: Union[pathlib.Path, upath.UPath]):
     logger.debug("loading bulk rna-seq for tcga skcm")
     df_bulk_rnaseq = pd.read_parquet(
         "gs://liulab/data/pseudobulk_optimization/3_with_tcga_qc/mixtures_real_tcga_skcm/tpm.parquet"
@@ -65,7 +71,7 @@ def create_csx_mixtures_for_tcga_skcm(path_target):
     )
 
 
-def create_csx_mixtures_for_pseudobulk(path_target):
+def create_csx_mixtures_for_pseudobulk(path_target: Union[pathlib.Path, upath.UPath]):
     logger.debug("loading pseudobulk rna-seq")
     df_bulk_rnaseq = pd.read_parquet(
         "gs://liulab/data/pseudobulk_optimization/3_with_tcga_qc/mixtures/n_cells=5/malignant_from_one_sample=True/data.parquet"
@@ -81,14 +87,7 @@ def create_csx_mixtures_for_pseudobulk(path_target):
 
 
 if __name__ == "__main__":
-    handler = logging.StreamHandler()
-    handler.setFormatter(
-        logging.Formatter(
-            "%(asctime)s %(process)d/%(threadName)s %(name)s %(levelname)s\n%(message)s"
-        )
-    )
-    logging.getLogger().addHandler(handler)
-    logger.setLevel("DEBUG")
+    helpers.logging.configure_logging()
     logging.getLogger("helpers").setLevel("DEBUG")
     logging.getLogger("helpers.datasets").setLevel("DEBUG")
 

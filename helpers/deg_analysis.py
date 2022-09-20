@@ -12,14 +12,14 @@ logger = logging.getLogger(__name__)
 def compute_stats_for_group(df: pd.DataFrame) -> pd.Series:
     logger.debug("computing stats for group %s", df.name)
     assert len(df.columns) == 2, df.columns
-    data_0, data_1 = df.iloc[:, 0], df.iloc[:, 1]
-    logger.debug((data_0.shape, data_1.shape))
+    data_baseline, data_other = df.iloc[:, 0], df.iloc[:, 1]
+    logger.debug((data_baseline.shape, data_other.shape))
     sparsity_overall = (df == 0).values.mean()
     results = pd.Series(
         {
-            "pval": scipy.stats.mannwhitneyu(data_0, data_1)[1],
+            "pval": scipy.stats.mannwhitneyu(data_baseline, data_other)[1],
             # "pval_ttest": scipy.stats.ttest_ind(data_0, data_1).pvalue,
-            "fold_change": data_0.mean() / data_1.mean(),
+            "fold_change": data_other.mean() / data_baseline.mean(),
             "sparsity_overall": sparsity_overall,
         }
     )

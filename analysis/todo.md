@@ -1,72 +1,61 @@
 # todo / tasks
 
-## where i left off (monday evening)
-
-- some cloudpathlib.GSPath error when copying from local to cloud...
-  - edited that source code
-- made template volcano plots ipynb
-  - need to...
-    - update base path
-    - add code for iterating through experiments
-      - add plot for bulk DEG
-      - add plot for inferred malignant DEG
-    - make sure `"gene_symbol"` is used, not `"GeneSymbol"`
-
-## todo
-
 - can deconv methods infer cell type-specific differential gene expression?
-  - control: compare two unperturbed generated bulk RNA-seq cohorts
+  - negative control: compare two iid generated (unperturbed) bulk RNA-seq cohorts
     - [x] generate data
-      - `gs://liulab/data/simulated/50_samples_no_perturbations/2022-09-13_16:02:18/`
-      - `gs://liulab/data/simulated/50_samples_no_perturbations/2022-09-13_21:37:53/`
-      - [x] check if these have identical cell type fractions
+      - [x] sample fractions independently with replacement
     - [x] run cibersortx
       - [x] provide true cell type proportions
     - generate volcano plots
-      - [x] at bulk level (Mann-Whitney of simulated bulk RNA-seq)
-      - [x] for malignant cell GEPs inferred by CIBERSORTx
-  - experiment: compare (1) unperturbed generated bulk RNA-seq vs (2) simulated bulk RNA-seq with 100 genes 2x perturbed in malignant cells
-    - [x] generate perturbed data
-      - [x] fixed bug in perturbing cell type GEPs
-      - [x] confirm that cell type fractions are the same as in the unperturbed data
+      - [ ] at bulk level (Mann-Whitney of simulated bulk RNA-seq)
+      - [ ] for malignant cell GEPs inferred by CIBERSORTx
+  - experiment: compare with various fold change perturbations of gene expression in malignant cells
+    - [ ] generate perturbed data
+      - in `analysis/simulating_bulk_rnaseq/perturbing_100_genes_in_malignant_cells_by_many_factors_of_2.py`
+      - [x] do scaling factors $2^n, n \in \{-3, -2, -1, 1, 2, 3\}$)
+      - [ ] use iid randomly sampled fraction vectors
+      - [ ] use iid randomly sampled cell type-specific GEPs
+      - [x] save fractions
+      - [x] save bulk_rnaseq
+      - [x] save cell type-specific GEPs
+      - [ ] save perturbed genes (eg cell type, gene-specific fold changes)
     - [ ] run CIBERSORTx
       - [x] provide true fractions
         - [x] in helper library, make function for generating fraction file to provide CIBERSORTx
-- does accuracy vary by fold change magnitudes?
-  - experiment: comparisons with other fold change perturbations (e.g. $(0.25, 0.5, 2, 4)$)
-    - [x] generate simulated data for each fold change
-      - [x] make sure fold change is documented in path or saved in data output
-    - generate volano plots for
-      - [x] DGE in bulk RNA-seq
+    -[ ] make array of volcano plots for each fold change
+      - [ ] DGE in bulk RNA-seq
       - [ ] DGE in inferred malignant-specific expression
-    - [ ] make array of plots for each fold change
 
 - improve DEG volcano plots
-  - FDR thresholds...
-    - [ ] adjust y axes of volcano plots to include thresholds
-  - [ ] make sure multiple hypothesis stats are computed _after_ any filters (e.g. limiting cell type)
+  - change FDR thresholds...
+    - [ ] in stats results, add 0.1, 0.25 FDR thresholds
+    - [ ] add lines for these to volcano plot
+  - [ ] adjust y axis to be long enough to include FDR thresholds when no DEGs are found
+  - [ ] make x axes symmetrical (`fig.update_xaxes(range=[-same, same])`)
   - make scatter + kde plots
     - see [plotly.figure_factory.create_2d_density](https://plotly.com/python/v3/density-plots/) and [px.density_contour](https://plotly.com/python/2d-histogram-contour/)
-  - does ScatterGL help? plots are big, take a while to load
-  - `fig.update_xaxes(range=[-same, same])`
+  - [ ] look into making a `go.ScatterGL` plot instead of `px.scatter`, or using `backend='webgl'`
+  - [ ] make sure multiple hypothesis stats are computed _after_ any filters (e.g. limiting cell type)
 
 - general feedback...
   - limit things that can change in each experiment
     - e.g., provide true fractions when running cell type-specific gene expression inference
     - want to know the impact of each step on performance
-  - no specific suggestion for sampling fractions (maybe random combinations of fractions, dirichlet process, etc.)
+  - but be clinically plausible
+    - sample things iid, not exactly the same (eg fraction composition, cell type GEPs)
 
 - refactors
+  - in DEG analysis
+    - [ ] compute stats from a `pd.Series` with `"sample_group"` included as an index, not a DataFrame with two columns.
+    - [ ] use "baseline" and "other"
   - [ ] use `bulk_rnaseq` in variable and file names
-  - [x] change timestamps to be more file system friendly (e.g. `2021-01-01_12-34-56`)
   - write dataframes with `upath.UPath of URI `str` (e.g. `pd.to_csv(path)`)
     - [ ] in `helpers.running_cibersortx.creating_input_files`
     - [ ] in `helpers.running_cibersortx.*.run_and_upload`
   - [ ] make `run_and_upload_from_dataframes` for other cibersortx endpoints
   - [ ] move `columns`, `cell_type_naming` to `data_io_and_formatting`
   - [x] in `analysis/evaluating_cibersortx/perturbed_gene_expression/run_cibersortx.py` move `load_and_concatenate` functions to somewhere in `helpers`, because i'm reusing it elsewhere.
-  - [x] look into cloudpathlib alternatives
-    - https://github.com/fsspec/universal_pathlib
+  - add caching
 
 - add back evaluation of simulated data
   - means and stddevs of gene expression
@@ -87,28 +76,3 @@
     - infer *DEGs* and *cell type proportions* when both are different?
         - perturbing 100 genes in malignant cells
         - perturbing malignant cell fractions
-
-# previously
-
-## late august
-
-- improve analyses / incorporate feedback
-    - DEG plots...
-        -  [x] add line for FDR-adjusted significance
-            - [x] in deg code, compute the threshold, store it with results: `signif_bh_adjusted`
-            - [x] add line to plots: `fig.add_hline(y=signif_bh_threshold)`
-        - [x] On y-axis, plot original p-values (not BH-corrected q-values)
-    - only analyze malignant cell DEGs (otherwise too complicated)
-        - [x] add plot of DEG limited to malignant cells
-            - https://14963bb53b0d1b7a-dot-us-east4.notebooks.googleusercontent.com/http-server/deconv/analysis/_build/html/evaluating_cibersortx/identically_generated_cohorts/samples_like_tcga_skcm_mets.html#malignant-cells-only
-- set up experiments:
-    - inferring cell type DEGs
-    - inferring differential cell type proportions, but with no DEGs
-        - [x]  make script - perturb relative abundance by 2x, 1/2x
-    - inferring differential proportions _and_ gene expression
-        - [ ]  make script for generating data, deconvolving
-    - to do in cohort gen...
-        - just do 100 samples total (50 vs 50)
-        - apply gene filters
-        - normalize to TPM
-        - save out all data: (1) final bulk rna-seq, (2) fractions, (3) cell type geps, (4) perturbations

@@ -4,7 +4,7 @@ import asyncio
 import logging
 import pickle
 
-from .configuring_logging import formatter
+from helpers.logging.configuring_logging import formatter
 
 
 class DatagramLoggingProtocol(asyncio.DatagramProtocol):

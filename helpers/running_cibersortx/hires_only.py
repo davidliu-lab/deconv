@@ -2,17 +2,11 @@ import json
 import logging
 import pathlib
 import tempfile
-from typing import Union
 
 import docker
-import gcsfs
 import pandas as pd
 import upath
 
-import helpers
-from helpers.running_cibersortx.copying_to_gcs import (
-    copy_file_maybe_in_the_cloud_to_local_path,
-)
 from helpers.running_cibersortx.creating_input_files import (
     create_csx_fractions_tsv,
     create_csx_mixtures_tsv,
@@ -21,35 +15,10 @@ from helpers.running_cibersortx.creating_input_files import (
 logger = logging.getLogger(__name__)
 
 
-def run_and_upload(
-    uri_save_job_files_to: str,
-    uri_bulk_rnaseq: str,
-    uri_cibersort_results: str,
-):
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        logger.debug("tmp_dir: %s", tmp_dir)
-        logger.debug("watch -n 0.1 tree -ghpu %s", tmp_dir)
-        set_up_csx_dir(tmp_dir, uri_bulk_rnaseq, uri_cibersort_results)
-        run(tmp_dir)
-        gcsfs.GCSFileSystem().put(tmp_dir, uri_save_job_files_to, recursive=True)
-
-
-def set_up_csx_dir(csx_dir, uri_bulk_rnaseq, uri_cibersort_results):
-    csx_path = pathlib.Path(csx_dir)
-    (csx_path / "data").mkdir()
-    (csx_path / "outdir").mkdir()
-    copy_file_maybe_in_the_cloud_to_local_path(
-        uri_bulk_rnaseq, csx_path / "data" / "bulkrnaseq.txt"
-    )
-    copy_file_maybe_in_the_cloud_to_local_path(
-        uri_cibersort_results, csx_path / "outdir" / "fractions.txt"
-    )
-
-
 def run_and_upload_from_dataframes(
     df_bulk_rnaseq: pd.DataFrame,
     df_cibersort_results: pd.DataFrame,
-    path_target: upath.UPath,
+    path_target_on_gcs: upath.UPath,
 ):
     with tempfile.TemporaryDirectory() as tmp_dir:
         logger.debug("tmp_dir: %s", tmp_dir)
@@ -62,8 +31,8 @@ def run_and_upload_from_dataframes(
             df_cibersort_results, csx_path / "outdir" / "fractions.txt"
         )
         run(tmp_dir)
-        logger.debug("copying tmp_dir %s to %s", tmp_dir, path_target)
-        gcsfs.GCSFileSystem().put(tmp_dir, path_target, recursive=True)
+        logger.debug("copying tmp_dir %s to %s", tmp_dir, path_target_on_gcs)
+        path_target_on_gcs.fs.put(tmp_dir, path_target_on_gcs, recursive=True)
 
 
 def run(csx_dir):
@@ -101,23 +70,3 @@ def run(csx_dir):
     for message in container.logs(follow=True, stream=True):
         print(message.decode("utf-8"), end="")
     container.wait()
-
-
-if __name__ == "__main__":
-    helpers.logging.configure_logging()
-    logging.getLogger("gcsfs").setLevel("INFO")
-    logging.getLogger("google.cloud.bigquery").setLevel("DEBUG")
-    logging.getLogger("helpers").setLevel("DEBUG")
-    logging.getLogger("pandas").setLevel("DEBUG")
-    logging.getLogger("pyarrow").setLevel("DEBUG")
-    logger.setLevel("DEBUG")
-
-    data_path_prefix = "gs://liulab/data"
-    # data_path_prefix = "/Users/william/Downloads/liulab_mirror/data"
-
-    logger.debug("run cibersortx hires (with fractions) on tcga skcm")
-    run_and_upload(
-        uri_save_job_files_to=f"{data_path_prefix}/pseudobulk_evaluation/csx_runs/hires_only/tcga_skcm/",
-        uri_bulk_rnaseq=f"{data_path_prefix}/pseudobulk_evaluation/csx_input_files/bulk_rnaseq_tcga_skcm.tsv",
-        uri_cibersort_results=f"{data_path_prefix}/pseudobulk_evaluation/csx_input_files/cibersort_results_tcga_skcm.tsv",
-    )
