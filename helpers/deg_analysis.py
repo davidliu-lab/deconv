@@ -45,14 +45,14 @@ def add_multipletests_stats(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def compute_stats(groups):
+def compute_stats(groups) -> pd.DataFrame:
     df_stats_by_group = groups.apply(compute_stats_for_group)
     df_stats_by_group = df_stats_by_group.reset_index()
     df_stats_by_group = add_multipletests_stats(df_stats_by_group)
     return df_stats_by_group
 
 
-def make_volcano_figure(df_stats):
+def make_volcano_figure(df_stats: pd.DataFrame):
     fig = px.scatter(
         df_stats,
         x="log2_fold_change",
