@@ -2,23 +2,26 @@
 
 - can deconv methods infer cell type-specific differential gene expression?
   - negative control: compare two iid generated (unperturbed) bulk RNA-seq cohorts
-    - [x] generate data
-      - [x] sample fractions independently with replacement
-    - [x] run cibersortx
-      - [x] provide true cell type proportions
+    - [ ] generate data
+      - in `analysis/simulating_bulk_rnaseq/generate_no_perturbations.py`
+      - [ ] use iid randomly sampled fraction vectors
+      - [ ] use iid randomly sampled cell type-specific GEPs
+    - [ ] run cibersortx
+      - [ ] provide true cell type proportions
     - generate volcano plots
       - [ ] at bulk level (Mann-Whitney of simulated bulk RNA-seq)
       - [ ] for malignant cell GEPs inferred by CIBERSORTx
   - experiment: compare with various fold change perturbations of gene expression in malignant cells
-    - [ ] generate perturbed data
+    - [x] generate perturbed data (but check results)
       - in `analysis/simulating_bulk_rnaseq/perturbing_100_genes_in_malignant_cells_by_many_factors_of_2.py`
       - [x] do scaling factors $2^n, n \in \{-3, -2, -1, 1, 2, 3\}$)
-      - [ ] use iid randomly sampled fraction vectors
-      - [ ] use iid randomly sampled cell type-specific GEPs
+      - [x] use iid randomly sampled fraction vectors
+      - [x] use iid randomly sampled cell type-specific GEPs
       - [x] save fractions
       - [x] save bulk_rnaseq
       - [x] save cell type-specific GEPs
-      - [ ] save perturbed genes (eg cell type, gene-specific fold changes)
+      - [x] save perturbed genes (eg cell type, gene-specific fold changes)
+      - [ ] log the save paths for each scaling factor
     - [ ] run CIBERSORTx
       - [x] provide true fractions
         - [x] in helper library, make function for generating fraction file to provide CIBERSORTx
