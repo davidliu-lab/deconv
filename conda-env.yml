@@ -16,7 +16,7 @@ dependencies:
   - matplotlib
   - opentelemetry-api
   - opentelemetry-instrumentation
-  - pandas>=1.4
+  - pandas=1.5.*
   - pandas-profiling
   - pip
   - plotly>=5.6
