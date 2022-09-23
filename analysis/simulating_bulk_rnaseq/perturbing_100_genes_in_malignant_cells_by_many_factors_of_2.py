@@ -96,5 +96,5 @@ if __name__ == "__main__":
         df_sample_fractions.to_parquet(path_root / "fractions.parquet")
         logger.debug("saving genes_to_perturb")
         genes_to_perturb.reset_index()["gene_symbol"].to_csv(
-            path_root / "genes_perturbed.csv"
+            path_root / "genes_perturbed.csv", index=False
         )
