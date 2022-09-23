@@ -26,21 +26,22 @@ def compute_stats_for_group(df: pd.DataFrame) -> pd.Series:
     return results
 
 
-def add_multipletests_stats(df):
-    alpha = 0.5  # false discovery rate
+def add_multipletests_stats(df: pd.DataFrame) -> pd.DataFrame:
+    alphas = [0.1, 0.25]  # false discovery rates
     df["-log10_pval"] = -np.log10(df["pval"])
     df["log2_fold_change"] = np.log2(df["fold_change"])
     sign = np.sign(df["log2_fold_change"])
     df["-log10_pval_signed"] = df["-log10_pval"] * sign
     # multiple hypothesis testing with benjamini-hochberg
-    df["significant_bh_fdr=0.5"], df["pval_adj_bh"] = multipletests(
-        df["pval"], alpha=alpha, method="fdr_bh"
-    )[0:2]
-    df["-log10_pval_adj_bh"] = -np.log10(df["pval_adj_bh"])
-    df["-log10_pval_adj_bh_signed"] = df["-log10_pval_adj_bh"] * sign
-    n_signif_results = df["significant_bh_fdr=0.5"].sum()
-    df.attrs["pval_threshold_bh"] = (n_signif_results + 1) * alpha / len(df)
-    df.attrs["-log10_pval_threshold_bh"] = -np.log10(df.attrs["pval_threshold_bh"])
+    for alpha in alphas:
+        significance_column = f"significant_bh_fdr={alpha:.2f}"
+        df[significance_column] = multipletests(
+            df["pval"], alpha=alpha, method="fdr_bh"
+        )[0]
+        n_signif_results = df[significance_column].sum()
+        pval_threshold_str = f"pval_threshold_fdr={alpha:.2f}"
+        df.attrs[pval_threshold_str] = (n_signif_results + 1) * alpha / len(df)
+        df.attrs[f"-log10_{pval_threshold_str}"] = -np.log10(df.attrs["pval_threshold_bh"])
     return df
 
 
@@ -56,18 +57,19 @@ def make_volcano_figure(df_stats):
         df_stats,
         x="log2_fold_change",
         y="-log10_pval",
-        color="significant_bh_fdr=0.5",
+        color="perturbed",
         hover_name="gene_symbol",
-        hover_data=["pval", "sparsity_overall"],
+        hover_data=["pval", "sparsity_overall", "perturbation_factor"],
     )
     fig.update_layout(
         xaxis_title=r"$\log_{2} [\text{fold change}]$",
         yaxis_title=r"$-\log_{10} [\text{p-value (Mann-Whitney U)}]$",
-        legend_title="Significant with FDR=0.5?",
+        legend_title="Perturbed?",
         font=dict(family="Courier New, monospace", color="RebeccaPurple"),
         height=750,
     )
     fig.update_traces(marker=dict(size=3))
     fig.update_layout(legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01))
-    fig.add_hline(y=df_stats.attrs["-log10_pval_threshold_bh"])
+    fig.add_hline(y=df_stats.attrs["-log10_pval_threshold_fdr=0.10"])
+    fig.add_hline(y=df_stats.attrs["-log10_pval_threshold_fdr=0.25"])
     return fig
