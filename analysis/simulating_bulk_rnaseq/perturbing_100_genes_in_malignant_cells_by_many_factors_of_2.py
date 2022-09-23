@@ -85,12 +85,16 @@ if __name__ == "__main__":
             / timestamp_str
             / f"scaling_factor={scaling_factor:.3f}"
         )
-        df_simulated_bulkrnaseq.to_parquet(str(path_root / "bulk_rnaseq.parquet"))
+        logger.debug("saving df_simulated_bulkrnaseq")
+        df_simulated_bulkrnaseq.to_parquet(path_root / "bulk_rnaseq.parquet")
+        logger.debug("saving df_simulated_cell_type_geps")
         df_simulated_cell_type_geps = pd.concat(
             simulated_cell_type_geps, names=["sample_id"]
         )
-        df_simulated_cell_type_geps.to_parquet(
-            str(path_root / "cell_type_geps.parquet")
+        df_simulated_cell_type_geps.to_parquet(path_root / "cell_type_geps.parquet")
+        logger.debug("saving df_sample_fractions")
+        df_sample_fractions.to_parquet(path_root / "fractions.parquet")
+        logger.debug("saving genes_to_perturb")
+        genes_to_perturb.reset_index()["gene_symbol"].to_csv(
+            path_root / "genes_perturbed.csv"
         )
-        df_sample_fractions.to_parquet(str(path_root / "fractions.parquet"))
-        perturbed_genes = pd.Series(genes_to_perturb, name="gene")
