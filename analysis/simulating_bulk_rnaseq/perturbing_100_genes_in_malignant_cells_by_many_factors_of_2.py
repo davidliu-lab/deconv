@@ -47,14 +47,18 @@ if __name__ == "__main__":
     tcga_skcm_mets_fractions = (
         datasets.tcga_skcm.load_tcga_skcm_mets_fractions_from_csx()
     )
-    df_sample_fractions = tcga_skcm_mets_fractions.sample(
-        N, replace=False, random_state=rng
-    )
-    logger.debug("Loaded sample fractions, such as: %s", df_sample_fractions.head())
     df_scrnaseq, df_sc_metadata = load_scrnaseq_and_filter_genes()
     genes_to_perturb = determine_genes_to_perturb(df_scrnaseq, df_sc_metadata, rng)
 
-    for scaling_factor in [0.125, 0.25, 0.5, 2.0, 4.0, 8.0]:
+    for seed, scaling_factor in enumerate([0.125, 0.25, 0.5, 2.0, 4.0, 8.0]):
+        rng = np.random.default_rng(seed=seed)
+        df_sample_fractions = tcga_skcm_mets_fractions.sample(
+            N, replace=True, random_state=rng
+        )
+        df_sample_fractions.index = pd.Index(
+            [f"sample_{i:03d}" for i in range(N)], name="sample_id"
+        )
+        logger.debug("Loaded sample fractions, such as: %s", df_sample_fractions.head())
         df_scrnaseq_perturbed = (
             perturb_scrnaseq_gene_expression_by_scaling_factor_in_cell_type(
                 df_scrnaseq,
