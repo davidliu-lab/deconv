@@ -28,6 +28,7 @@
     -[ ] make array of volcano plots for each fold change
       - [ ] DGE in bulk RNA-seq
       - [ ] DGE in inferred malignant-specific expression
+      - [ ] add malignant fraction to hover data
 
 - improve DEG volcano plots
   - change FDR thresholds...
