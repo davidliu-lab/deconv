@@ -7,25 +7,24 @@ parts:
 
   - caption: Evaluating CIBERSORTx
     chapters:
-    - file: evaluating_cibersortx/identically_generated_cohorts_100/volcano_plots.ipynb
+    - file: cibersortx/negative_control/volcano_plots.ipynb
 
-    - file: evaluating_cibersortx/identically_generated_cohorts/samples_like_tcga_skcm_mets.ipynb
+    - file: cibersortx/identically_generated_cohorts/samples_like_tcga_skcm_mets.ipynb
       sections:
-      - file: evaluating_cibersortx/identically_generated_cohorts/1_generated_data_like_tcga_skcm_mets.ipynb
-      - file: evaluating_cibersortx/identically_generated_cohorts/check_gene_sparsity_in_generated_data.ipynb
-    
-    - file: evaluating_cibersortx/perturbed_gene_expression/intro.md
-      sections:
-      # - file: evaluating_cibersortx/perturbed_gene_expression/detecting_perturbed_gene_expression_in_malignant_cells.ipynb
-      - glob: evaluating_cibersortx/perturbed_gene_expression/*
+      - file: cibersortx/identically_generated_cohorts/1_generated_data_like_tcga_skcm_mets.ipynb
+      - file: cibersortx/identically_generated_cohorts/check_gene_sparsity_in_generated_data.ipynb
 
-    - file: evaluating_cibersortx/perturbed_cell_type_proportions/intro.md
+    - file: cibersortx/perturbed_malignant_expression/intro.md
       sections:
-      - file: evaluating_cibersortx/perturbed_cell_type_proportions/malignant_cells_proportion.ipynb
-  
-    - file: evaluating_cibersortx/perturbed_both/intro.md
+      - glob: cibersortx/perturbed_malignant_expression/*
+
+    - file: cibersortx/perturbed_cell_type_proportions/intro.md
       sections:
-      - glob: evaluating_cibersortx/perturbed_both/*
+      - file: cibersortx/perturbed_cell_type_proportions/malignant_cells_proportion.ipynb
+
+    - file: cibersortx/perturbed_both/intro.md
+      sections:
+      - glob: cibersortx/perturbed_both/*
 
   - caption: Simulating bulk RNA-seq samples
     chapters:

@@ -3,7 +3,7 @@
 - can deconv methods infer cell type-specific differential gene expression?
   - negative control: compare two iid generated (unperturbed) bulk RNA-seq cohorts
     - [ ] generate data
-      - in `analysis/simulating_bulk_rnaseq/generate_no_perturbations.py`
+      - in `analysis/simulating_bulk_rnaseq/no_perturbations.py`
       - [ ] use iid randomly sampled fraction vectors
       - [ ] use iid randomly sampled cell type-specific GEPs
     - [ ] run cibersortx
@@ -13,7 +13,7 @@
       - [ ] for malignant cell GEPs inferred by CIBERSORTx
   - experiment: compare with various fold change perturbations of gene expression in malignant cells
     - [x] generate perturbed data (but check results)
-      - in `analysis/simulating_bulk_rnaseq/perturbing_100_genes_in_malignant_cells_by_many_factors_of_2.py`
+      - in `analysis/simulating_bulk_rnaseq/perturbed_malignant_expression.py`
       - [x] do scaling factors $2^n, n \in \{-3, -2, -1, 1, 2, 3\}$)
       - [x] use iid randomly sampled fraction vectors
       - [x] use iid randomly sampled cell type-specific GEPs
@@ -57,7 +57,7 @@
     - [ ] in `helpers.running_cibersortx.*.run_and_upload`
   - [ ] make `run_and_upload_from_dataframes` for other cibersortx endpoints
   - [ ] move `columns`, `cell_type_naming` to `data_io_and_formatting`
-  - [x] in `analysis/evaluating_cibersortx/perturbed_gene_expression/run_cibersortx.py` move `load_and_concatenate` functions to somewhere in `helpers`, because i'm reusing it elsewhere.
+  - [x] in `analysis/cibersortx/perturbed_gene_expression/run_cibersortx.py` move `load_and_concatenate` functions to somewhere in `helpers`, because i'm reusing it elsewhere.
   - add caching
 
 - add back evaluation of simulated data

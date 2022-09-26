@@ -31,12 +31,3 @@ def read_hires_cell_type_geps(path_pattern: Union[pathlib.Path, upath.UPath]):
 
 def read_fractions(path: Union[pathlib.Path, upath.UPath]):
     raise NotImplementedError
-
-
-if __name__ == "__main__":
-    path = upath.UPath(
-        "gs://liulab/evaluating_cibersortx/perturbed_gene_expression/2x/2022-09-14_15:17:34"
-    )
-    path_pattern = path / "outdir" / "CIBERSORTxHiRes_NA_*_Window*txt"
-    df = read_hires_cell_type_geps(path_pattern)
-    print(df)
