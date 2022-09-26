@@ -19,11 +19,11 @@ if __name__ == "__main__":
 
     # load data
     cohorts = {
-        "no_perturbations_1": upath.UPath(
-            "gs://liulab/simulated/control/2022-09-13_16:02:18"
+        "control_1": upath.UPath(
+            "gs://liulab/simulated/control/20220926_22h06m11s/"
         ),
-        "no_perturbations_2": upath.UPath(
-            "gs://liulab/simulated/control/2022-09-13_21:37:53"
+        "control_2": upath.UPath(
+            "gs://liulab/simulated/control/20220926_22h07m38s/"
         ),
     }
     df_bulk_rnaseq = load_and_concatenate_bulk_rnaseq(cohorts)

@@ -69,6 +69,18 @@ def make_fractions_from_dirichlet(
     return fractions
 
 
+def randomly_sample_fractions(
+    df_fractions_given: pd.DataFrame,
+    N: int,
+    rng: np.random.Generator,
+):
+    df_fractions = df_fractions_given.sample(N, replace=True, random_state=rng)
+    df_fractions.index = pd.Index(
+        [f"sample_{i:03d}" for i in range(N)], name=columns.SAMPLE_ID
+    )
+    return df_fractions
+
+
 def compute_bulk_rnaseq(
     df_fractions: pd.DataFrame, cell_type_geps: dict[str, pd.DataFrame]
 ) -> pd.DataFrame:

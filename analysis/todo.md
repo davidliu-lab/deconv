@@ -4,8 +4,8 @@
   - negative control: compare two iid generated (unperturbed) bulk RNA-seq cohorts
     - [ ] generate data
       - in `analysis/simulating_bulk_rnaseq/no_perturbations.py`
-      - [ ] use iid randomly sampled fraction vectors
-      - [ ] use iid randomly sampled cell type-specific GEPs
+      - [x] use iid randomly sampled fraction vectors
+      - [x] use iid randomly sampled cell type-specific GEPs
     - [ ] run cibersortx
       - [ ] provide true cell type proportions
     - generate volcano plots
@@ -21,7 +21,7 @@
       - [x] save bulk_rnaseq
       - [x] save cell type-specific GEPs
       - [x] save perturbed genes (eg cell type, gene-specific fold changes)
-      - [ ] log the save paths for each scaling factor
+      - [x] log the save paths for each scaling factor
     - [ ] run CIBERSORTx
       - [x] provide true fractions
         - [x] in helper library, make function for generating fraction file to provide CIBERSORTx

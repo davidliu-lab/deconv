@@ -41,7 +41,9 @@ def add_multipletests_stats(df: pd.DataFrame) -> pd.DataFrame:
         n_signif_results = df[significance_column].sum()
         pval_threshold_str = f"pval_threshold_fdr={alpha:.2f}"
         df.attrs[pval_threshold_str] = (n_signif_results + 1) * alpha / len(df)
-        df.attrs[f"-log10_{pval_threshold_str}"] = -np.log10(df.attrs["pval_threshold_bh"])
+        df.attrs[f"-log10_{pval_threshold_str}"] = -np.log10(
+            df.attrs["pval_threshold_bh"]
+        )
     return df
 
 

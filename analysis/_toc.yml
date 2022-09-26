@@ -9,26 +9,24 @@ parts:
     chapters:
     - file: cibersortx/negative_control/volcano_plots.ipynb
 
-    - file: cibersortx/identically_generated_cohorts/samples_like_tcga_skcm_mets.ipynb
-      sections:
-      - file: cibersortx/identically_generated_cohorts/1_generated_data_like_tcga_skcm_mets.ipynb
-      - file: cibersortx/identically_generated_cohorts/check_gene_sparsity_in_generated_data.ipynb
-
     - file: cibersortx/perturbed_malignant_expression/intro.md
       sections:
       - glob: cibersortx/perturbed_malignant_expression/*
 
-    - file: cibersortx/perturbed_cell_type_proportions/intro.md
-      sections:
-      - file: cibersortx/perturbed_cell_type_proportions/malignant_cells_proportion.ipynb
+    # - file: cibersortx/perturbed_cell_type_proportions/intro.md
+    #   sections:
+    #   - file: cibersortx/perturbed_cell_type_proportions/malignant_cells_proportion.ipynb
 
-    - file: cibersortx/perturbed_both/intro.md
-      sections:
-      - glob: cibersortx/perturbed_both/*
+    # - file: cibersortx/perturbed_both/intro.md
+    #   sections:
+    #   - glob: cibersortx/perturbed_both/*
 
   - caption: Simulating bulk RNA-seq samples
     chapters:
     - file: simulating_bulk_rnaseq/intro.md
+    - file: simulating_bulk_rnaseq/1_generated_data_like_tcga_skcm_mets.ipynb
+    - file: simulating_bulk_rnaseq/samples_like_tcga_skcm_mets.ipynb
+    - file: simulating_bulk_rnaseq/check_gene_sparsity_in_generated_data.ipynb
 
   - caption: Debugging
     chapters:

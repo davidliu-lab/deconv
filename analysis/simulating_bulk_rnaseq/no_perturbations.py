@@ -11,54 +11,37 @@ from helpers.simulating_bulk_rnaseq import creating_mixtures
 logger = logging.getLogger(__name__)
 
 
-def configure_logging():
+if __name__ == "__main__":
     helpers.logging.configure_logging()
     logger.setLevel("DEBUG")
     logging.getLogger("helpers").setLevel("DEBUG")
     logging.getLogger("helpers.creating_mixtures").setLevel("INFO")
-
-
-def load_scrnaseq_and_filter_genes():
-    df_scrnaseq, df_sc_metadata = datasets.load_jerby_arnon(
-        ref_genome="hg19", units="tpm"
-    )
-    df_bulkrnaseq_tcga_skcm = datasets.load_tcga_skcm_hg19_scaled_estimate_firebrowse()
-    logger.debug("determining good genes")
-    good_genes = helpers.data_io_and_formatting.qa_gene_filtering.get_good_genes(
-        df_bulkrnaseq_tcga_skcm, df_scrnaseq, 0.5
-    )
-    logger.debug("limiting scRNA-seq data to good genes")
-    df_scrnaseq = df_scrnaseq.loc[list(sorted(good_genes))]
-    logger.debug("Shape of scRNA-seq data after filtering: %s", df_scrnaseq.shape)
-    return df_scrnaseq, df_sc_metadata
-
-
-if __name__ == "__main__":
-    configure_logging()
+    timestamp_str = helpers.useful_small_things.make_a_nice_timestamp_of_now()
     N = 50
     rng = np.random.default_rng(seed=0)
 
     # load data
-    tcga_skcm_mets_fractions = (
-        datasets.tcga_skcm.load_tcga_skcm_mets_fractions_from_csx()
+    df_fractions_tcga_skcm_mets = datasets.tcga_skcm.load_fractions_mets_only()
+    df_scrnaseq, df_sc_metadata = datasets.jerby_arnon.load_scrnaseq_and_filter_genes()
+
+    # randomly sample fractions
+    df_fractions = creating_mixtures.randomly_sample_fractions(
+        df_fractions_tcga_skcm_mets, N, rng
     )
-    df_sample_fractions = tcga_skcm_mets_fractions.sample(
-        N, replace=False, random_state=rng
-    )
-    logger.debug("Loaded sample fractions, such as: %s", df_sample_fractions.head())
-    df_scrnaseq, df_sc_metadata = load_scrnaseq_and_filter_genes()
+    logger.debug("Randomly sampled fractions, such as: %s", df_fractions.head())
 
     # simulate bulk RNA-seq
-    df_simulated_bulkrnaseq, simulated_cell_type_geps = creating_mixtures.make_mixtures(
-        df_scrnaseq, df_sc_metadata, df_sample_fractions
+    df_bulk_rnaseq, cell_type_geps = creating_mixtures.make_mixtures(
+        df_scrnaseq, df_sc_metadata, df_fractions, rng=rng
     )
+    df_cell_type_geps = pd.concat(cell_type_geps, names=["sample_id"])
 
     # save stuff
-    timestamp_str = helpers.useful_small_things.make_a_nice_timestamp_of_now()
     path_root = upath.UPath("gs://liulab/simulated/control") / timestamp_str
-    df_simulated_bulkrnaseq.to_parquet(str(path_root / "bulk_rnaseq.parquet"))
-    df_simulated_cell_type_geps = pd.concat(
-        simulated_cell_type_geps, names=["sample_id"]
-    )
-    df_simulated_cell_type_geps.to_parquet(str(path_root / "cell_type_geps.parquet"))
-    df_sample_fractions.to_parquet(str(path_root / "fractions.parquet"))
+    logger.debug("saving data to %s", path_root)
+    logger.debug("saving df_bulk_rnaseq")
+    df_bulk_rnaseq.to_parquet(path_root / "bulk_rnaseq.parquet")
+    logger.debug("saving df_cell_type_geps")
+    df_cell_type_geps.to_parquet(path_root / "cell_type_geps.parquet")
+    logger.debug("saving df_fractions")
+    df_fractions.to_parquet(path_root / "fractions.parquet")

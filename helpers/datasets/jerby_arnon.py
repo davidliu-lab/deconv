@@ -1,17 +1,18 @@
 import logging
-from typing import Tuple
 
 import pandas as pd
 
 from helpers import columns
 from helpers.cell_type_naming import weird_to_nice
+from helpers.datasets.tcga_skcm import load_tcga_skcm_hg19_scaled_estimate_firebrowse
+from helpers.data_io_and_formatting.qa_gene_filtering import get_good_genes
 
 logger = logging.getLogger(__name__)
 
 
 def load_jerby_arnon(
     ref_genome="hg19", units="tpm"
-) -> Tuple[pd.DataFrame, pd.DataFrame]:
+) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Load Jerby-Arnon scRNA-seq data (hg19 tpm) from GEO (GSE115978)
 
     :return: sc_data, sc_metadata
@@ -22,7 +23,7 @@ def load_jerby_arnon(
         raise NotImplementedError
 
 
-def load_jerby_arnon_hg19_tpm() -> Tuple[pd.DataFrame, pd.DataFrame]:
+def load_jerby_arnon_hg19_tpm() -> tuple[pd.DataFrame, pd.DataFrame]:
     """Load Jerby-Arnon scRNA-seq data (hg19 tpm) from GEO (GSE115978)
 
     :return: sc_hg19_tpm, metadata
@@ -55,3 +56,16 @@ def load_jerby_arnon_hg19_tpm() -> Tuple[pd.DataFrame, pd.DataFrame]:
     metadata = metadata.set_index(columns.SINGLE_CELL_ID, drop=False)
     metadata = metadata.sort_index()
     return sc_hg19_tpm, metadata
+
+
+def load_scrnaseq_and_filter_genes() -> tuple[pd.DataFrame, pd.DataFrame]:
+    logger.debug("loading scRNA-seq data")
+    df_scrnaseq, df_sc_metadata = load_jerby_arnon(ref_genome="hg19", units="tpm")
+    logger.debug("loading bulk RNA-seq data for filtering")
+    df_bulkrnaseq_tcga_skcm = load_tcga_skcm_hg19_scaled_estimate_firebrowse()
+    logger.debug("determining good genes")
+    good_genes = get_good_genes(df_bulkrnaseq_tcga_skcm, df_scrnaseq, 0.5)
+    logger.debug("limiting scRNA-seq data to good genes")
+    df_scrnaseq = df_scrnaseq.loc[list(sorted(good_genes))]
+    logger.debug("Shape of scRNA-seq data after filtering: %s", df_scrnaseq.shape)
+    return df_scrnaseq, df_sc_metadata
