@@ -1,14 +1,14 @@
 import logging
 
 import pandas as pd
-import upath
+from upath import UPath
+
+import helpers
 
 logger = logging.getLogger(__name__)
 
 
-def load_and_concatenate_bulk_rnaseq(
-    cohort_paths: dict[str, upath.UPath]
-) -> pd.DataFrame:
+def load_and_concatenate_bulk_rnaseq(cohort_paths: dict[str, UPath]) -> pd.DataFrame:
     """Load bulk RNA-seq data from multiple cohorts and concatenate them.
 
     Example of cohort_paths: {"A": pathlib.Path("/path/to/A"), "B": pathlib.Path("/path/to/B")}
@@ -25,25 +25,22 @@ def load_and_concatenate_bulk_rnaseq(
     return df
 
 
-def load_concatenated_bulk_rnaseq(path_to_bulk_rnaseq):
+def load_concatenated_bulk_rnaseq(path_to_bulk_rnaseq) -> pd.Series:
     df_bulk_rnaseq = pd.read_csv(
         path_to_bulk_rnaseq,
         sep="\t",
         engine="pyarrow",
         index_col=0,
     )
+    df_bulk_rnaseq.rename_axis(index={"GeneSymbol": "gene_symbol"}, inplace=True)
     df_bulk_rnaseq.columns = pd.MultiIndex.from_tuples(
         df_bulk_rnaseq.columns.map(lambda x: x.split("/")).map(tuple),
-        names=["cohort_id", "sample_id"],
+        names=["group_id", "sample_id"],
     )
-    df_bulk_rnaseq = df_bulk_rnaseq.stack(level="sample_id")
-    df_bulk_rnaseq.rename_axis(index={"GeneSymbol": "gene_symbol"}, inplace=True)
-    return df_bulk_rnaseq
+    return df_bulk_rnaseq.stack(["group_id", "sample_id"])
 
 
-def load_and_concatenate_fractions(
-    cohort_paths: dict[str, upath.UPath]
-) -> pd.DataFrame:
+def load_and_concatenate_fractions(cohort_paths: dict[str, UPath]) -> pd.DataFrame:
     """Load fractions from multiple cohorts and concatenate them.
 
     Example of cohort_paths: {"A": pathlib.Path("/path/to/A"), "B": pathlib.Path("/path/to/B")}
@@ -60,5 +57,11 @@ def load_and_concatenate_fractions(
     return df
 
 
-def load_concatenated_fractions(path):
-    raise NotImplementedError
+def load_concatenated_fractions(path: UPath) -> pd.DataFrame:
+    df_fractions = pd.read_csv(path, sep="\t", engine="pyarrow", index_col=0)
+    df_fractions.index = pd.MultiIndex.from_tuples(
+        df_fractions.index.map(lambda x: x.split("/")).map(tuple),
+        names=["group_id", "sample_id"],
+    )
+    df_fractions.rename_axis(columns=helpers.columns.CELL_TYPE, inplace=True)
+    return df_fractions

@@ -2,12 +2,12 @@
 
 - can deconv methods infer cell type-specific differential gene expression?
   - negative control: compare two iid generated (unperturbed) bulk RNA-seq cohorts
-    - [ ] generate data
+    - [x] generate data
       - in `analysis/simulating_bulk_rnaseq/no_perturbations.py`
       - [x] use iid randomly sampled fraction vectors
       - [x] use iid randomly sampled cell type-specific GEPs
     - [ ] run cibersortx
-      - [ ] provide true cell type proportions
+      - [x] provide true cell type proportions
     - generate volcano plots
       - [ ] at bulk level (Mann-Whitney of simulated bulk RNA-seq)
       - [ ] for malignant cell GEPs inferred by CIBERSORTx

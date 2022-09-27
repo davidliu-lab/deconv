@@ -4,8 +4,8 @@ import pandas as pd
 
 from helpers import columns
 from helpers.cell_type_naming import weird_to_nice
-from helpers.datasets.tcga_skcm import load_tcga_skcm_hg19_scaled_estimate_firebrowse
 from helpers.data_io_and_formatting.qa_gene_filtering import get_good_genes
+from helpers.datasets.tcga_skcm import load_tcga_skcm_hg19_scaled_estimate_firebrowse
 
 logger = logging.getLogger(__name__)
 

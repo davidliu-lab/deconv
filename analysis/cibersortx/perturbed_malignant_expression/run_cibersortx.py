@@ -1,6 +1,6 @@
 import logging
 
-import upath
+from upath import UPath
 
 import helpers
 from helpers.data_io_and_formatting.concatenating import (
@@ -17,37 +17,40 @@ if __name__ == "__main__":
     # logging.getLogger("gcsfs").setLevel("DEBUG")
     logging.getLogger("upath").setLevel("DEBUG")
     logging.getLogger("helpers").setLevel("DEBUG")
-    logging.getLogger("helpers.creating_mixtures").setLevel("INFO")
     timestamp_str = helpers.useful_small_things.make_a_nice_timestamp_of_now()
 
     # load data
-    path_root = upath.UPath("gs://liulab/simulated/")
-    path_unperturbed = path_root / "control" / "2022-09-13_21:37:53"
-    path_perturbed = (
-        path_root / "perturbed_malignant_expression/" / "20220915_23h30m22s/"
+    path_control = UPath("gs://liulab/simulated/control/20220927_15h06m39s/seed=0")
+    root_perterbed = UPath(
+        "gs://liulab/simulated/perturbed_malignant_expression/20220927_15h33m26s"
     )
-    for scaling_factor in [0.125, 0.25, 0.5, 2.0, 4.0, 8.0]:
-        simulated_cohorts = {
-            "unperturbed": path_unperturbed,
-            "perturbed": path_perturbed / f"scaling_factor={scaling_factor:.3f}",
+    paths_perturbed = [p.parent for p in root_perterbed.glob("**/bulk_rnaseq.parquet")]
+    logger.debug(paths_perturbed)
+    for path_perturbed in paths_perturbed:
+        logger.debug("starting %s", path_perturbed)
+        scaling_factor_str = path_perturbed.name
+        simulated_datasets = {
+            "control": path_control,
+            scaling_factor_str: path_perturbed,
         }
-        df_bulk_rnaseq = load_and_concatenate_bulk_rnaseq(simulated_cohorts)
+        logger.debug(simulated_datasets)
+        df_bulk_rnaseq = load_and_concatenate_bulk_rnaseq(simulated_datasets)
         assert df_bulk_rnaseq.shape[1] == 100, df_bulk_rnaseq.shape
         logger.debug(df_bulk_rnaseq)
         logger.debug(df_bulk_rnaseq.sum())
-        df_fractions = load_and_concatenate_fractions(simulated_cohorts)
+        df_fractions = load_and_concatenate_fractions(simulated_datasets)
         assert df_fractions.shape[0] == 100, df_fractions.shape
         logger.debug(df_fractions)
 
         # define output path
-        path_to_save_results_in_cloud = (
-            upath.UPath("gs://liulab/cibersortx")
-            / "perturbed_malignant_expression"
+        path_results = (
+            UPath("gs://liulab/cibersortx/perturbed_malignant_expression")
             / timestamp_str
-            / f"scaling_factor={scaling_factor:.3f}"
+            / scaling_factor_str
         )
+        logger.debug(path_results)
 
         # run CIBERSORTx
         helpers.running_cibersortx.hires_only.run_and_upload_from_dataframes(
-            df_bulk_rnaseq, df_fractions, path_to_save_results_in_cloud
+            df_bulk_rnaseq, df_fractions, path_results
         )

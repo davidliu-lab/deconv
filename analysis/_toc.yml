@@ -11,15 +11,8 @@ parts:
 
     - file: cibersortx/perturbed_malignant_expression/intro.md
       sections:
-      - glob: cibersortx/perturbed_malignant_expression/*
-
-    # - file: cibersortx/perturbed_cell_type_proportions/intro.md
-    #   sections:
-    #   - file: cibersortx/perturbed_cell_type_proportions/malignant_cells_proportion.ipynb
-
-    # - file: cibersortx/perturbed_both/intro.md
-    #   sections:
-    #   - glob: cibersortx/perturbed_both/*
+      - file: cibersortx/perturbed_malignant_expression/checking_data.ipynb
+      - file: cibersortx/perturbed_malignant_expression/volcano_plots.ipynb
 
   - caption: Simulating bulk RNA-seq samples
     chapters:
@@ -33,3 +26,11 @@ parts:
     - file: debugging/plotly_rendering/intro.md
       sections:
       - glob: debugging/plotly_rendering/*
+
+    # - file: cibersortx/perturbed_cell_type_proportions/intro.md
+    #   sections:
+    #   - file: cibersortx/perturbed_cell_type_proportions/malignant_cells_proportion.ipynb
+
+    # - file: cibersortx/perturbed_both/intro.md
+    #   sections:
+    #   - glob: cibersortx/perturbed_both/*
