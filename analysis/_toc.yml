@@ -9,10 +9,9 @@ parts:
     chapters:
     - file: cibersortx/negative_control/volcano_plots.ipynb
 
-    - file: cibersortx/perturbed_malignant_expression/intro.md
+    - file: cibersortx/perturbed_malignant_expression/volcano_plots.ipynb
       sections:
-      - file: cibersortx/perturbed_malignant_expression/checking_data.ipynb
-      - file: cibersortx/perturbed_malignant_expression/volcano_plots.ipynb
+      - glob: cibersortx/perturbed_malignant_expression/*
 
   - caption: Simulating bulk RNA-seq samples
     chapters:
