@@ -26,6 +26,9 @@ parts:
     - file: debugging/plotly_rendering/intro.md
       sections:
       - glob: debugging/plotly_rendering/*
+    - file: debugging/plotly_with_ipywidgets/about.md
+      sections:
+      - glob: debugging/plotly_with_ipywidgets/*
 
     # - file: cibersortx/perturbed_cell_type_proportions/intro.md
     #   sections:

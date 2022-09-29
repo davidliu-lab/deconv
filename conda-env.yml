@@ -12,6 +12,7 @@ dependencies:
   - gcsfs
   - google-cloud-bigquery
   - google-cloud-storage
+  - ipywidgets<8  # github.com/plotly/plotly.py/issues/3686
   - jupyter  # includes ipykernel, nbformat
   - matplotlib
   - opentelemetry-api
