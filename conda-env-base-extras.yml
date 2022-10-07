@@ -15,6 +15,7 @@ dependencies:
   - jupyterlab-markup
   - jupyterlab_miami_nights
   - mamba
+  - mdformat
   - nb_conda_kernels
   - nbconvert
   - nbqa
