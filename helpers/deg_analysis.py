@@ -294,13 +294,14 @@ def make_volcano_facets(path_root, log2_scalars, horizontal=True):
     n_scalars = len(log2_scalars)
     files = dict()
     for log2_scaling_factor in log2_scalars:
-        scaling_factor = 2**log2_scaling_factor
-        scaling_factor_str = f"scaling_factor={scaling_factor:.3f}"
-        files[(scaling_factor, "Bulk simulated")] = pd.read_parquet(
-            path_root / scaling_factor_str / "gene_stats_bulk.parquet"
+        # scaling_factor = 2**log2_scaling_factor
+        # scaling_factor_str = f"scaling_factor={scaling_factor:.3f}"
+        log2_fc_str = f"log2_fc={log2_scaling_factor:.3f}"
+        files[(log2_scaling_factor, "Bulk simulated")] = pd.read_parquet(
+            path_root / log2_fc_str / "gene_stats_bulk.parquet"
         )
-        files[(scaling_factor, "Malignant inferred")] = pd.read_parquet(
-            path_root / scaling_factor_str / "gene_stats_malignant.parquet"
+        files[(log2_scaling_factor, "Malignant inferred")] = pd.read_parquet(
+            path_root / log2_fc_str / "gene_stats_malignant.parquet"
         )
     df = pd.concat(files, names=["scaling_factor", "data_origin"]).reset_index()
     df = df.rename(
@@ -342,9 +343,8 @@ def make_volcano_facets(path_root, log2_scalars, horizontal=True):
                 row_number,
                 column_number,
             )
-            scaling_factor = 2**log2_scaling_factor
             for alpha in [0.1, 0.25]:
-                key = (scaling_factor, data_origin)
+                key = (log2_scaling_factor, data_origin)
                 significances = files[key][f"significant_bh_fdr={alpha:.2f}"]
                 pval_threshold = calculate_pval_threshold(significances, alpha)
                 logger.debug(

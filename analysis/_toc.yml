@@ -11,6 +11,8 @@ parts:
 
     - file: cibersortx/perturbed_malignant_expression/volcano_plots.ipynb
       sections:
+      - file: cibersortx/perturbed_malignant_expression/Untitled.ipynb
+      - file: cibersortx/perturbed_malignant_expression/Untitled.nbconvert.ipynb
       - glob: cibersortx/perturbed_malignant_expression/*
 
   - caption: Simulating bulk RNA-seq samples

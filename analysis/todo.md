@@ -14,28 +14,21 @@
   - experiment: compare with various fold change perturbations of gene expression in malignant cells
     - [x] generate perturbed data (but check results)
       - in `analysis/simulating_bulk_rnaseq/perturbed_malignant_expression.py`
-      - [x] do scaling factors $2^n, n \in \{-3, -2, -1, 1, 2, 3\}$
-      - [x] use iid randomly sampled fraction vectors
-      - [x] use iid randomly sampled cell type-specific GEPs
-      - [x] save fractions
-      - [x] save bulk_rnaseq
-      - [x] save cell type-specific GEPs
-      - [x] save perturbed genes (eg cell type, gene-specific fold changes)
-      - [x] log the save paths for each scaling factor
+      - [ ] do scaling factors $2^n, n \in \{-3, -2, -1.5, -1, -0.75, -0.5, -0.25, 0, 0.25, 0.5, 0.75, 1, 1.5, 2, 3\}$
     - [ ] run CIBERSORTx
       - [x] provide true fractions
         - [x] in helper library, make function for generating fraction file to provide CIBERSORTx
-      - [ ] make array of volcano plots for each fold change
+          - [x] make array of volcano plots for each fold change
       - [ ] DGE in bulk RNA-seq
       - [ ] DGE in inferred malignant-specific expression
       - [ ] add malignant fraction to hover data
 
 - improve DEG volcano plots
   - change FDR thresholds...
-    - [ ] in stats results, add 0.1, 0.25 FDR thresholds
-    - [ ] add lines for these to volcano plot
-  - [ ] adjust y axis to be long enough to include FDR thresholds when no DEGs are found
-  - [ ] make x axes symmetrical (`fig.update_xaxes(range=[-same, same])`)
+    - [x] in stats results, add 0.1, 0.25 FDR thresholds
+    - [x] add lines for these to volcano plot
+  - [x] adjust y axis to be long enough to include FDR thresholds when no DEGs are found
+  - [x] make x axes symmetrical (`fig.update_xaxes(range=[-same, same])`)
   - make scatter + kde plots
     - see [plotly.figure_factory.create_2d_density](https://plotly.com/python/v3/density-plots/) and [px.density_contour](https://plotly.com/python/2d-histogram-contour/)
   - [ ] look into making a `go.ScatterGL` plot instead of `px.scatter`, or using `backend='webgl'`

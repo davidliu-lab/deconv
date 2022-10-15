@@ -8,7 +8,6 @@ import helpers
 from helpers import datasets
 from helpers.simulating_bulk_rnaseq import creating_mixtures
 from helpers.simulating_bulk_rnaseq.gene_perturbation import (
-    determine_genes_to_perturb,
     perturb_scrnaseq_gene_expression,
 )
 
@@ -31,19 +30,22 @@ if __name__ == "__main__":
     df_scrnaseq, df_sc_metadata = datasets.jerby_arnon.load_scrnaseq_and_filter_genes()
 
     # randomly sample genes to perturb
-    genes_to_perturb = determine_genes_to_perturb(
-        df_scrnaseq, df_sc_metadata, np.random.default_rng(seed=0)
-    )
+    rng = np.random.default_rng(seed=0)
+    genes_to_perturb = df_scrnaseq.sample(100, replace=False, random_state=rng).index
+
     # save genes to perturb
     logger.debug("saving genes_to_perturb")
     pd.DataFrame(genes_to_perturb).to_csv(
         path_root / "genes_perturbed.csv", index=False
     )
 
-    for i, scaling_factor in enumerate([0.125, 0.25, 0.5, 2.0, 4.0, 8.0]):
-        SEED = 10 + i
-        rng = np.random.default_rng(seed=SEED)
-        path = path_root / f"seed={SEED}" / f"scaling_factor={scaling_factor:.3f}"
+    for i, log2_fc in enumerate(
+        [-3, -2, -1.5, -1, -0.75, -0.5, -0.25, 0, 0.25, 0.5, 0.75, 1, 1.5, 2, 3]
+    ):
+        scaling_factor = 2**log2_fc
+        seed = 10 + i
+        rng = np.random.default_rng(seed=seed)
+        path = path_root / f"seed={seed}" / f"log2_fc={log2_fc:.3f}"
         logger.debug("saving data to %s", path)
 
         # perturb gene expression

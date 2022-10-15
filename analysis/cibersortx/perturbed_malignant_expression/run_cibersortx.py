@@ -22,13 +22,14 @@ if __name__ == "__main__":
     # load data
     path_control = UPath("gs://liulab/simulated/control/20220927_15h06m39s/seed=0")
     root_perterbed = UPath(
-        "gs://liulab/simulated/perturbed_malignant_expression/20220927_15h33m26s"
+        "gs://liulab/simulated/perturbed_malignant_expression/20221015_21h52m40s"
     )
     paths_perturbed = [p.parent for p in root_perterbed.glob("**/bulk_rnaseq.parquet")]
     logger.debug(paths_perturbed)
     for path_perturbed in paths_perturbed:
         logger.debug("starting %s", path_perturbed)
         scaling_factor_str = path_perturbed.name
+        assert scaling_factor_str[:8] == "log2_fc=", scaling_factor_str
         simulated_datasets = {
             "control": path_control,
             scaling_factor_str: path_perturbed,

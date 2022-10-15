@@ -8,7 +8,7 @@ import helpers
 logger = logging.getLogger(__name__)
 
 
-def determine_genes_to_perturb(
+def select_100_densely_expressed_genes(
     df_scrnaseq: pd.DataFrame, df_sc_metadata: pd.DataFrame, rng: np.random.Generator
 ) -> pd.Index:
     is_malignant_cell = df_sc_metadata[helpers.columns.CELL_TYPE] == "Malignant"

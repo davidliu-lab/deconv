@@ -20,8 +20,8 @@ def add_perturbed_gene_column(df_gene_stats: pd.DataFrame) -> pd.DataFrame:
 
 
 def load_data(path: Union[UPath, Path]) -> pd.Series:
-    # rows_to_skip = []
-    rows_to_skip = lambda i: i % 25
+    rows_to_skip = []
+    # rows_to_skip = lambda i: i % 25
     df = pd.read_csv(path, sep="\t", index_col=0, skiprows=rows_to_skip)
     df = df.rename_axis(index="gene_symbol")
     df.columns = pd.MultiIndex.from_tuples(
@@ -48,24 +48,32 @@ if __name__ == "__main__":
     logging.getLogger("helpers").setLevel("DEBUG")
     logging.getLogger("helpers.deg_analysis").setLevel("INFO")
     logging.basicConfig(format=helpers.logging.format_string)
-    path_root = UPath(
-        "gs://liulab/cibersortx/perturbed_malignant_expression/20220927_16h46m41s"
+    path_root_cibersortx_results = (
+        UPath("gs://liulab/cibersortx/perturbed_malignant_expression")
+        / "20221015_22h05m29s"
     )
+    paths_cibersortx_results = [
+        p.parent for p in path_root_cibersortx_results.glob("**/outdir")
+    ]
+    logger.debug("paths: %s", paths_cibersortx_results)
     path_target_root = UPath("gs://liulab/deg_analysis") / timestamp_str
     logger.debug("path_target_root: %s", path_target_root)
-    for scaling_factor in [2.0**n for n in [-3, -2, -1, 1, 2, 3]]:
-        scaling_factor_str = f"scaling_factor={scaling_factor:.3f}"
-
+    for path_cibersortx_result in paths_cibersortx_results:
+        logger.debug("processing %s", path_cibersortx_result)
+        result_description = path_cibersortx_result.name
+        assert result_description.startswith("log2_fc="), result_description
         # bulk simulated
         logger.debug("computing for bulk")
         path_bulk_rnaseq = next(
-            (path_root / scaling_factor_str).glob("**/bulkrnaseq.txt")
+            (path_root_cibersortx_results / result_description).glob(
+                "**/bulkrnaseq.txt"
+            )
         )
-        df_gene_stats_bulk = compute_for(path_bulk_rnaseq, scaling_factor_str)
+        df_gene_stats_bulk = compute_for(path_bulk_rnaseq, result_description)
         # logger.debug("df_gene_stats_bulk: %s", df_gene_stats_bulk)
         if SAVE:
             path_target_bulk = (
-                path_target_root / scaling_factor_str / "gene_stats_bulk.parquet"
+                path_target_root / result_description / "gene_stats_bulk.parquet"
             )
             logger.debug("writing %s", path_target_bulk)
             df_gene_stats_bulk.to_parquet(path_target_bulk)
@@ -73,13 +81,15 @@ if __name__ == "__main__":
         # malignant inferred
         logger.debug("computing for inferred malignant")
         path_malignant = next(
-            (path_root / scaling_factor_str).glob("**/CIBERSORTxHiRes_NA_Malignant*txt")
+            (path_root_cibersortx_results / result_description).glob(
+                "**/CIBERSORTxHiRes_NA_Malignant*txt"
+            )
         )
-        df_gene_stats_malignant = compute_for(path_malignant, scaling_factor_str)
+        df_gene_stats_malignant = compute_for(path_malignant, result_description)
         # logger.debug("df_gene_stats_malignant: %s", df_gene_stats_malignant)
         if SAVE:
             path_target_malignant = (
-                path_target_root / scaling_factor_str / "gene_stats_malignant.parquet"
+                path_target_root / result_description / "gene_stats_malignant.parquet"
             )
             logger.debug("writing %s", path_target_malignant)
             df_gene_stats_malignant.to_parquet(path_target_malignant)
