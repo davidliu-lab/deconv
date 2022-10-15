@@ -14,7 +14,7 @@
   - experiment: compare with various fold change perturbations of gene expression in malignant cells
     - [x] generate perturbed data (but check results)
       - in `analysis/simulating_bulk_rnaseq/perturbed_malignant_expression.py`
-      - [x] do scaling factors $2^n, n \in \{-3, -2, -1, 1, 2, 3\}$)
+      - [x] do scaling factors $2^n, n \in \{-3, -2, -1, 1, 2, 3\}$
       - [x] use iid randomly sampled fraction vectors
       - [x] use iid randomly sampled cell type-specific GEPs
       - [x] save fractions
@@ -25,7 +25,7 @@
     - [ ] run CIBERSORTx
       - [x] provide true fractions
         - [x] in helper library, make function for generating fraction file to provide CIBERSORTx
-    -[ ] make array of volcano plots for each fold change
+      - [ ] make array of volcano plots for each fold change
       - [ ] DGE in bulk RNA-seq
       - [ ] DGE in inferred malignant-specific expression
       - [ ] add malignant fraction to hover data
@@ -53,7 +53,7 @@
     - [ ] compute stats from a `pd.Series` with `"sample_group"` included as an index, not a DataFrame with two columns.
     - [ ] use "baseline" and "other"
   - [ ] use `bulk_rnaseq` in variable and file names
-  - write dataframes with `upath.UPath of URI `str` (e.g. `pd.to_csv(path)`)
+  - write dataframes with `upath.UPath` of URI (e.g. `pd.to_csv(path)`)
     - [ ] in `helpers.running_cibersortx.creating_input_files`
     - [ ] in `helpers.running_cibersortx.*.run_and_upload`
   - [ ] make `run_and_upload_from_dataframes` for other cibersortx endpoints
@@ -72,11 +72,11 @@
 - eventually
   - add runner functions for other deconv methods (BayesPrism, CODEFACS, ...)
 
-# cibersortx evaluations: 
+# cibersortx evaluations:
 
 - how well does cibersortx...
-    - infer *cell type proportions* when no genes are diff expressed?
-    - infer *DEGs* when cell type proportions are the same?
-    - infer *DEGs* and *cell type proportions* when both are different?
-        - perturbing 100 genes in malignant cells
-        - perturbing malignant cell fractions
+  - infer *cell type proportions* when no genes are diff expressed?
+  - infer *DEGs* when cell type proportions are the same?
+  - infer *DEGs* and *cell type proportions* when both are different?
+    - perturbing 100 genes in malignant cells
+    - perturbing malignant cell fractions
