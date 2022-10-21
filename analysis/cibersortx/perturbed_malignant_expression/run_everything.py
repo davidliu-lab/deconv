@@ -48,8 +48,8 @@ if __name__ == "__main__":
     N = 50
     rng = np.random.default_rng(seed=0)
     path_results = UPath(f"gs://liulab/run_everything/{make_a_nice_timestamp_of_now()}")
-    # log2_fc_values = [-3, -2, -1.5, -1, -0.5, -0.25, 0, 0.25, 0.5, 1, 1.5, 2, 3]
-    log2_fc_values = [-2, 0, 2]
+    log2_fc_values = [-3, -2, -1.5, -1, -0.5, -0.25, 0, 0.25, 0.5, 1, 1.5, 2, 3]
+    # log2_fc_values = [-2, 0, 2]
 
     logger.debug("reading source data")
     sc_rnaseq, sc_metadata = datasets.jerby_arnon.load_scrnaseq_and_filter_genes()
