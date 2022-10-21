@@ -11,14 +11,6 @@ import helpers
 logger = logging.getLogger(__name__)
 
 
-def add_perturbed_gene_column(df_gene_stats: pd.DataFrame) -> pd.DataFrame:
-    df_genes_perturbed = pd.read_csv(
-        "gs://liulab/simulated/perturbed_malignant_expression/20220927_15h33m26s/genes_perturbed.csv"
-    )["gene_symbol"]
-    df_gene_stats["perturbed"] = df_gene_stats["gene_symbol"].isin(df_genes_perturbed)
-    return df_gene_stats
-
-
 def load_data(path: Union[UPath, Path]) -> pd.Series:
     rows_to_skip = []
     # rows_to_skip = lambda i: i % 25
@@ -37,7 +29,6 @@ def compute_for(path: Union[UPath, Path], scaling_factor_str: str) -> pd.DataFra
     df_gene_stats = helpers.deg_analysis.compute_stats(
         groups, "group_id", "control", scaling_factor_str
     )
-    df_gene_stats = add_perturbed_gene_column(df_gene_stats)
     return df_gene_stats
 
 
@@ -48,10 +39,14 @@ if __name__ == "__main__":
     logging.getLogger("helpers").setLevel("DEBUG")
     logging.getLogger("helpers.deg_analysis").setLevel("INFO")
     logging.basicConfig(format=helpers.logging.format_string)
+    genes_perturbed = pd.read_csv(
+        "gs://liulab/simulated/perturbed_malignant_expression/20221015_21h52m40s/genes_perturbed.csv"
+    )["gene_symbol"]
     path_root_cibersortx_results = (
         UPath("gs://liulab/cibersortx/perturbed_malignant_expression")
-        / "20221015_22h05m29s"
+        / "20221019_15h23m14s"
     )
+
     paths_cibersortx_results = [
         p.parent for p in path_root_cibersortx_results.glob("**/outdir")
     ]
@@ -70,6 +65,9 @@ if __name__ == "__main__":
             )
         )
         df_gene_stats_bulk = compute_for(path_bulk_rnaseq, result_description)
+        df_gene_stats_bulk["perturbed"] = df_gene_stats_bulk["gene_symbol"].isin(
+            genes_perturbed
+        )
         # logger.debug("df_gene_stats_bulk: %s", df_gene_stats_bulk)
         if SAVE:
             path_target_bulk = (
@@ -86,6 +84,9 @@ if __name__ == "__main__":
             )
         )
         df_gene_stats_malignant = compute_for(path_malignant, result_description)
+        df_gene_stats_malignant["perturbed"] = df_gene_stats_malignant[
+            "gene_symbol"
+        ].isin(genes_perturbed)
         # logger.debug("df_gene_stats_malignant: %s", df_gene_stats_malignant)
         if SAVE:
             path_target_malignant = (

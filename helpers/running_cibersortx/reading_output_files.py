@@ -2,6 +2,7 @@ import pathlib
 from typing import Union
 
 import dask.dataframe as dd
+import pandas as pd
 import upath
 
 
@@ -27,6 +28,13 @@ def read_hires_cell_type_geps(path_pattern: Union[pathlib.Path, upath.UPath]):
     df = df.pivot(index=["cell_type", "gene_symbol"], columns=[])
     df = df.rename_axis(columns="sample_id")
     df = df.stack()
+    return df
+
+
+def read_hires_cell_type_gep(path: Union[pathlib.Path, upath.UPath]) -> pd.DataFrame:
+    df = pd.read_csv(path, sep="\t")
+    df = df.rename(columns={"GeneSymbol": "gene_symbol"})
+    df = df.set_index("gene_symbol")
     return df
 
 

@@ -8,6 +8,7 @@ import helpers
 from helpers import datasets
 from helpers.simulating_bulk_rnaseq import creating_mixtures
 from helpers.simulating_bulk_rnaseq.gene_perturbation import (
+    select_100_genes_at_least_somewhat_expressed_in_malignant,
     perturb_scrnaseq_gene_expression,
 )
 
@@ -31,7 +32,9 @@ if __name__ == "__main__":
 
     # randomly sample genes to perturb
     rng = np.random.default_rng(seed=0)
-    genes_to_perturb = df_scrnaseq.sample(100, replace=False, random_state=rng).index
+    genes_to_perturb = select_100_genes_at_least_somewhat_expressed_in_malignant(
+        df_scrnaseq, df_sc_metadata, rng
+    )
 
     # save genes to perturb
     logger.debug("saving genes_to_perturb")

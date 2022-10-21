@@ -2,6 +2,7 @@ import json
 import logging
 import pathlib
 import tempfile
+from typing import Union
 
 import docker
 import pandas as pd
@@ -18,7 +19,7 @@ logger = logging.getLogger(__name__)
 def run_and_upload_from_dataframes(
     df_bulk_rnaseq: pd.DataFrame,
     df_cibersort_results: pd.DataFrame,
-    path_target_on_gcs: upath.UPath,
+    path_target_on_gcs: Union[upath.UPath, pathlib.Path],
 ):
     with tempfile.TemporaryDirectory() as tmp_dir:
         logger.debug("tmp_dir: %s", tmp_dir)

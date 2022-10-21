@@ -290,35 +290,24 @@ def make_volcano_subplots_figure_vertical(path_root, log2_scalars):
     return fig
 
 
-def make_volcano_facets(path_root, log2_scalars, horizontal=True):
-    n_scalars = len(log2_scalars)
-    files = dict()
-    for log2_scaling_factor in log2_scalars:
-        # scaling_factor = 2**log2_scaling_factor
-        # scaling_factor_str = f"scaling_factor={scaling_factor:.3f}"
-        log2_fc_str = f"log2_fc={log2_scaling_factor:.3f}"
-        files[(log2_scaling_factor, "Bulk simulated")] = pd.read_parquet(
-            path_root / log2_fc_str / "gene_stats_bulk.parquet"
-        )
-        files[(log2_scaling_factor, "Malignant inferred")] = pd.read_parquet(
-            path_root / log2_fc_str / "gene_stats_malignant.parquet"
-        )
-    df = pd.concat(files, names=["scaling_factor", "data_origin"]).reset_index()
-    df = df.rename(
-        columns={
-            "log2_fold_change": r"$\log_{2} [\text{fold change}]$",
-            "-log10_pval": r"$-\log_{10} [\text{p-value}]$",
-        }
-    )
+def make_volcano_facets(gene_stats: pd.DataFrame, horizontal: bool = True) -> go.Figure:
+    # gene_stats = gene_stats.rename(
+    #     columns={
+    #         "log2_fold_change": r"$\log_{2} [\text{fold change}]$",
+    #         "-log10_pval": r"$-\log_{10} [\text{p-value}]$",
+    #     }
+    # )
     fig = px.scatter(
-        df,
-        x=r"$\log_{2} [\text{fold change}]$",
-        y=r"$-\log_{10} [\text{p-value}]$",
+        gene_stats,
+        # x=r"$\log_{2} [\text{fold change}]$",
+        # y=r"$-\log_{10} [\text{p-value}]$",
+        x="log2_fold_change",
+        y="-log10_pval",
         color="perturbed",
-        # color=df["perturbed"].map({True: "red", False: "blue"}),
-        # size=df["perturbed"].map({True: 2, False: 1.5}),
-        facet_col="scaling_factor" if horizontal else "data_origin",
-        facet_row="data_origin" if horizontal else "scaling_factor",
+        # color=gene_stats["perturbed"].map({True: "red", False: "blue"}),
+        # size=gene_stats["perturbed"].map({True: 2, False: 1.5}),
+        facet_col="experiment_name" if horizontal else "data_origin",
+        facet_row="data_origin" if horizontal else "experiment_name",
         hover_name="gene_symbol",
         hover_data=[
             "gene_symbol",
@@ -331,10 +320,27 @@ def make_volcano_facets(path_root, log2_scalars, horizontal=True):
     fig.update_xaxes(range=[-8, 8])
     fig.update_yaxes(range=[0, 18])
     fig.for_each_annotation(lambda a: a.update(text=a.text.split("data_origin=")[-1]))
-    for k, log2_scaling_factor in enumerate(log2_scalars):
+    n_experiments = len(gene_stats["experiment_name"].unique())
+    fig.update_layout(
+        height=800 if horizontal else 400 * n_experiments,
+        width=n_experiments * 400 if horizontal else 1000,
+        font=dict(family="Courier New, monospace"),
+        legend=dict(yanchor="top", y=0.95, xanchor="right", x=0.95),
+        # marker=dict(line=dict(width=0)),
+    )
+    fig.update_xaxes(dtick=2.0)  # , col="all")
+    fig.update_xaxes(showticklabels=True)
+    fig.update_yaxes(showticklabels=True)
+    return fig
+
+
+def add_fdr_lines(fig, gene_stats, horizontal=True):
+    experiments = gene_stats.groupby("experiment_name").unique()
+    n_experiments = len(experiments)
+    for k, experiment_name in enumerate(experiments):
         for i, data_origin in enumerate(["Bulk simulated", "Malignant inferred"]):
             row_number = (
-                i + 1 if horizontal else n_scalars - k
+                i + 1 if horizontal else n_experiments - k
             )  # bug with plotly row selection!
             column_number = k + 1 if horizontal else i + 1
             logger.debug(
@@ -344,7 +350,7 @@ def make_volcano_facets(path_root, log2_scalars, horizontal=True):
                 column_number,
             )
             for alpha in [0.1, 0.25]:
-                key = (log2_scaling_factor, data_origin)
+                key = (experiment_name, data_origin)
                 significances = files[key][f"significant_bh_fdr={alpha:.2f}"]
                 pval_threshold = calculate_pval_threshold(significances, alpha)
                 logger.debug(
@@ -361,14 +367,4 @@ def make_volcano_facets(path_root, log2_scalars, horizontal=True):
                     row=row_number,
                     col=column_number,
                 )
-    fig.update_layout(
-        height=800 if horizontal else 300 * n_scalars,
-        width=n_scalars * 300 if horizontal else 1000,
-        font=dict(family="Courier New, monospace"),
-        legend=dict(yanchor="top", y=0.95, xanchor="right", x=0.95),
-        # marker=dict(line=dict(width=0)),
-    )
-    fig.update_xaxes(dtick=2.0)  # , col="all")
-    fig.update_xaxes(showticklabels=True)
-    fig.update_yaxes(showticklabels=True)
     return fig

@@ -8,7 +8,11 @@ import helpers
 logger = logging.getLogger(__name__)
 
 
-def select_100_densely_expressed_genes(
+def select_100_genes(df_scrnaseq: pd.DataFrame, rng: np.random.Generator) -> pd.Index:
+    return df_scrnaseq.sample(100, replace=False, random_state=rng).index
+
+
+def select_100_genes_densely_expressed_in_malignant(
     df_scrnaseq: pd.DataFrame, df_sc_metadata: pd.DataFrame, rng: np.random.Generator
 ) -> pd.Index:
     is_malignant_cell = df_sc_metadata[helpers.columns.CELL_TYPE] == "Malignant"
@@ -25,6 +29,19 @@ def select_100_densely_expressed_genes(
     logger.debug("n genes_to_perturb: %s", len(genes_to_perturb))
     logger.debug("genes_to_perturb: %s", genes_to_perturb)
     return genes_to_perturb
+
+
+def select_100_genes_at_least_somewhat_expressed_in_malignant(
+    df_scrnaseq: pd.DataFrame, df_sc_metadata: pd.DataFrame, rng: np.random.Generator
+) -> pd.Index:
+    is_malignant_cell = df_sc_metadata[helpers.columns.CELL_TYPE] == "Malignant"
+    malignant_single_cell_ids = df_sc_metadata[is_malignant_cell][
+        helpers.columns.SINGLE_CELL_ID
+    ]
+    malignant_scrnaseq = df_scrnaseq[malignant_single_cell_ids]
+    gene_sparsity_in_malignant_cells = (malignant_scrnaseq == 0).mean(axis="columns")
+    genes_in_malignant_cells = gene_sparsity_in_malignant_cells < 0.9
+    return genes_in_malignant_cells.sample(100, replace=False, random_state=rng).index
 
 
 def perturb_scrnaseq_gene_expression(

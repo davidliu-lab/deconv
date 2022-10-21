@@ -22,7 +22,7 @@ if __name__ == "__main__":
     # load data
     path_control = UPath("gs://liulab/simulated/control/20220927_15h06m39s/seed=0")
     root_perterbed = UPath(
-        "gs://liulab/simulated/perturbed_malignant_expression/20221015_21h52m40s"
+        "gs://liulab/simulated/perturbed_malignant_expression/20221018_20h17m42s"
     )
     paths_perturbed = [p.parent for p in root_perterbed.glob("**/bulk_rnaseq.parquet")]
     logger.debug(paths_perturbed)

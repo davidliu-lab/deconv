@@ -8,6 +8,16 @@ import helpers
 logger = logging.getLogger(__name__)
 
 
+def concatenate_bulk_rnaseq(cohort_dataframes: dict[str, pd.DataFrame]) -> pd.DataFrame:
+    """Concatenate bulk RNA-seq data from multiple cohorts."""
+    df = pd.concat(cohort_dataframes, axis="columns")
+    column_axis_name = df.columns.names[1]
+    df.columns = df.columns.map("/".join)
+    df.rename_axis(columns=column_axis_name, inplace=True)
+    logger.debug("Shape of concatenated data: %s", df.shape)
+    return df
+
+
 def load_and_concatenate_bulk_rnaseq(cohort_paths: dict[str, UPath]) -> pd.DataFrame:
     """Load bulk RNA-seq data from multiple cohorts and concatenate them.
 
@@ -17,12 +27,7 @@ def load_and_concatenate_bulk_rnaseq(cohort_paths: dict[str, UPath]) -> pd.DataF
         cohort: pd.read_parquet(path / "bulk_rnaseq.parquet")
         for cohort, path in cohort_paths.items()
     }
-    df = pd.concat(dataframes, axis="columns")
-    column_axis_name = df.columns.names[1]
-    df.columns = df.columns.map("/".join)
-    df.rename_axis(columns=column_axis_name, inplace=True)
-    logger.debug("Shape of concatenated data: %s", df.shape)
-    return df
+    return concatenate_bulk_rnaseq(dataframes)
 
 
 def load_concatenated_bulk_rnaseq(path_to_bulk_rnaseq) -> pd.Series:

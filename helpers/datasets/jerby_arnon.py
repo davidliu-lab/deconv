@@ -33,7 +33,8 @@ def load_jerby_arnon_hg19_tpm() -> tuple[pd.DataFrame, pd.DataFrame]:
         pd.read_csv(
             "gs://liulab/ftp/GSE115978/GSE115978_tpm.csv",
             index_col=0,
-            engine="pyarrow",
+            # engine="pyarrow",
+            skiprows=lambda i: i % 25,
         )
         .rename_axis(index=columns.GENE_SYMBOL, columns=columns.SINGLE_CELL_ID)
         .sort_index(axis="columns")
