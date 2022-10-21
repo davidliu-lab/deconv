@@ -19,6 +19,7 @@ dependencies:
   - nb_conda_kernels
   - nbconvert
   - nbqa
+  - orjson
   - pip
   - plotly>=5  # needed for jupyter lab to render plots
   - python-lsp-server
