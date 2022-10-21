@@ -15,7 +15,8 @@ evaluating gene expression inference with known cell type composition
   - [ ] sparsity in malignant cells
   - [ ] differential expression in malignant cells?
 - volcano plots for different fold changes
-  - [ ] change how plots are generated: pass a dictionary of dataframes, not paths
+  - [ ] add back FDR lines for plotting volcanos
+  - [x] change how plots are generated: pass a dictionary of dataframes, not paths
 - [ ] add hires inference using CIBERSORT-estimated fractions
 
 evaluating fraction inference
@@ -43,11 +44,14 @@ comparing synthetic data vs TCGA SKCM
   - [ ] intra-group correlation
 
 other
+- [ ] set up new VM
 - refactors
   - [ ] use `DataFrame.squeeze` instead of `DataFrame.stack` (but does `dask.dataframe` implement `squeeze`?)
   - make `run_and_upload_from_dataframes` for other cibersortx endpoints
     - [x] `hires_only`
-    - [ ] `fractions`
+    - `fractions`
+      - [x] started
+      - [ ] test
     - [ ] `hires_and_fractions`
   - write dataframes with `upath.UPath` of URI (e.g. `pd.to_csv(path)`)
     - [ ] in `helpers.running_cibersortx.creating_input_files`
