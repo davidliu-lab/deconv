@@ -8,8 +8,8 @@ from upath import UPath
 import helpers
 from helpers import datasets
 from helpers.simulating_bulk_rnaseq.gene_perturbation import (
-    select_100_genes_at_least_somewhat_expressed_in_malignant,
-    # select_100_genes,
+    # select_100_genes_at_least_somewhat_expressed_in_malignant,
+    select_100_genes,
     # select_100_genes_densely_expressed_in_malignant,
     perturb_scrnaseq_gene_expression,
 )
@@ -55,10 +55,10 @@ if __name__ == "__main__":
     sc_rnaseq, sc_metadata = datasets.jerby_arnon.load_scrnaseq_and_filter_genes()
     fractions_tcga_skcm_mets = datasets.tcga_skcm.load_fractions_mets_only()
     logger.debug("determining genes to perturb")
-    genes_to_perturb = select_100_genes_at_least_somewhat_expressed_in_malignant(
-        sc_rnaseq, sc_metadata, rng
-    )
-    # genes_to_perturb = select_100_genes(sc_rnaseq, rng)
+    # genes_to_perturb = select_100_genes_at_least_somewhat_expressed_in_malignant(
+    #     sc_rnaseq, sc_metadata, rng
+    # )
+    genes_to_perturb = select_100_genes(sc_rnaseq, rng)
     # genes_to_perturb = select_100_genes_densely_expressed_in_malignant(sc_rnaseq, sc_metadata, rng)
     pd.DataFrame(genes_to_perturb).to_csv(
         path_results / "genes_perturbed.csv", index=False
