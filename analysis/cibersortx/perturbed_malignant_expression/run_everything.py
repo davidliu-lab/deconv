@@ -23,7 +23,7 @@ def compute_stats(
     rnaseq: pd.DataFrame,
     group_1: str,
     group_2: str,
-):
+) -> pd.DataFrame:
     rnaseq = rnaseq.copy()
     rnaseq.columns = pd.MultiIndex.from_tuples(
         rnaseq.columns.str.split("/", expand=True), names=["group_id", "sample_id"]
