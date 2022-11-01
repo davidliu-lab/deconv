@@ -40,7 +40,7 @@ def select_100_genes_at_least_somewhat_expressed_in_malignant(
     ]
     malignant_scrnaseq = df_scrnaseq[malignant_single_cell_ids]
     gene_sparsity_in_malignant_cells = (malignant_scrnaseq == 0).mean(axis="columns")
-    genes_in_malignant_cells = gene_sparsity_in_malignant_cells < 0.9
+    genes_in_malignant_cells = gene_sparsity_in_malignant_cells.where(lambda x: x < 0.9).dropna()
     return genes_in_malignant_cells.sample(100, replace=False, random_state=rng).index
 
 
