@@ -2,6 +2,30 @@
 
 ## to-do
 
+experiments
+- `gs://liulab/run_everything/20221101_08h45m56s`
+  - big
+  - `select_100_genes_at_least_somewhat_expressed_in_malignant`
+- `gs://liulab/run_everything/20221028_21h18m11s`
+  - big
+  - `select_100_genes`
+
+others
+- `gs://liulab/run_everything/20221021_22h18m15s`
+  - big
+  - `select_100_genes_at_least_somewhat_expressed_in_malignant`
+  - bug!
+
+
+```
+# gs://liulab/run_everything/20221020_17h13m21s/ # big, select_100_genes
+# gs://liulab/run_everything/20221020_18h54m44s/ # big, select_100_genes_at_least_somewhat_expressed_in_malignant
+# gs://liulab/run_everything/20221021_18h43m00s/ # small
+# gs://liulab/run_everything/20221021_20h17m28s/ # ???
+# gs://liulab/run_everything/20221021_22h18m15s/ # big, select_100_genes_at_least_somewhat_expressed_in_malignant
+# gs://liulab/run_everything/20221028_21h18m11s/ big, select_100_genes
+```
+
 evaluating gene expression inference with known cell type composition
 - [x] create first draft of one big script that executes all steps
 - [x] change which genes to perturb: select 100 at random from all
