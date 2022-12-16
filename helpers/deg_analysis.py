@@ -316,6 +316,10 @@ def make_volcano_facets(gene_stats: pd.DataFrame, horizontal: bool = True) -> go
             "fold_change",
             "sparsity_overall",
         ],
+        labels={
+            "log2_fold_change": r"$\log_{2} [\text{fold change}]$",
+            "-log10_pval": r"$-\log_{10} [\text{p-value}]$",
+        },
     )
     fig.update_xaxes(range=[-8, 8])
     fig.update_yaxes(range=[0, 18])
@@ -335,7 +339,7 @@ def make_volcano_facets(gene_stats: pd.DataFrame, horizontal: bool = True) -> go
 
 
 def add_fdr_lines(fig, gene_stats, horizontal=True):
-    experiments = gene_stats.groupby("experiment_name").unique()
+    experiments = gene_stats["experiment_name"].unique()
     n_experiments = len(experiments)
     for k, experiment_name in enumerate(experiments):
         for i, data_origin in enumerate(["Bulk simulated", "Malignant inferred"]):
@@ -351,7 +355,10 @@ def add_fdr_lines(fig, gene_stats, horizontal=True):
             )
             for alpha in [0.1, 0.25]:
                 key = (experiment_name, data_origin)
-                significances = files[key][f"significant_bh_fdr={alpha:.2f}"]
+                experiment_gene_stats = gene_stats[
+                    gene_stats["experiment_name"] == experiment_name
+                ]
+                significances = experiment_gene_stats[f"significant_bh_fdr={alpha:.2f}"]
                 pval_threshold = calculate_pval_threshold(significances, alpha)
                 logger.debug(
                     "-log10(pval_threshold) for alpha=%s, key=%s:, %s",
