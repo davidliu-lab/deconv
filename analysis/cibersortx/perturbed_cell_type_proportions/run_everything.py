@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+import itertools
 import logging
 
 import dask.dataframe as dd
@@ -42,85 +44,89 @@ def perturb_malignant_fractions(
 if __name__ == "__main__":
     helpers.logging.configure_logging()
     logger.setLevel("DEBUG")
-    logging.getLogger("pandas").setLevel("DEBUG")
     logging.getLogger("upath").setLevel("DEBUG")
     logging.getLogger("helpers").setLevel("DEBUG")
     logging.getLogger("helpers.deg_analysis").setLevel("INFO")
     logging.getLogger("helpers.simulating_bulk_rnaseq").setLevel("INFO")
 
-    N = 50
-    rng = np.random.default_rng(seed=0)
-    path_results = UPath(f"gs://liulab/differential_composition/{make_a_nice_timestamp_of_now()}")
-    malignant_fraction_log2_fc_values = [-2.0, -1.0, -0.5, -0.25, 0.0, 0.25, 0.5, 1.0, 2.0] * 3
+    N = 50  # number of samples per group
+    root_all_results = UPath(
+        f"gs://liulab/differential_composition/{make_a_nice_timestamp_of_now()}"
+    )
+    seed_counter = itertools.count()
+    perturbations_malignant_frac_log2 = [-2.0, -1.0, -0.5, -0.25, 0.0, 0.25, 0.5, 1.0, 2.0]
 
     logger.debug("reading source data")
     sc_rnaseq, sc_metadata = datasets.jerby_arnon.load_scrnaseq_and_filter_genes()
     fractions_tcga_skcm_mets = datasets.tcga_skcm.load_fractions_mets_only()
     logger.debug("determining genes to perturb")
 
-    # control data
-    logger.debug("creating control data")
-    fractions_control, bulk_rnaseq_control, cell_type_geps_control = simulate_data(
-        sc_rnaseq, sc_metadata, fractions_tcga_skcm_mets, rng, N, name="control"
-    )
-    logger.debug("saving data to %s", path_results / "control")
-    cell_type_geps_control.to_parquet(path_results / "control" / "cell_type_geps.parquet")
-    bulk_rnaseq_control.to_parquet(path_results / "control" / "bulk_rnaseq.parquet")
-    fractions_control.to_parquet(path_results / "control" / "fractions.parquet")
-
-    # experiments
-    for i, malignant_fraction_log2_fc in enumerate(malignant_fraction_log2_fc_values):
-        rng_seed = i + 1
-        experiment_name = (
-            f"rng_seed={rng_seed:02d},malignant_frac_log2={malignant_fraction_log2_fc:.3f}"
-        )
-        rng = np.random.default_rng(seed=rng_seed)
-        logger.debug("starting experiment %s", experiment_name)
-        experiment_path = path_results / experiment_name
-        assert np.allclose(
+    for run_id in range(50):
+        path_results = root_all_results / f"run_id={run_id:02d}"
+        # control data
+        logger.debug("creating control data and saving to %s", path_results / "control")
+        fractions_control, bulk_rnaseq_control, cell_type_geps_control = simulate_data(
+            sc_rnaseq,
+            sc_metadata,
             fractions_tcga_skcm_mets,
-            perturb_malignant_fractions(fractions_tcga_skcm_mets, 0.0),
+            np.random.default_rng(seed=next(seed_counter)),
+            N,
+            name="control",
         )
-        fractions_perturbed = perturb_malignant_fractions(
-            fractions_tcga_skcm_mets, malignant_fraction_log2_fc
-        )
-        logger.debug("simulating data")
-        fractions_test, bulk_rnaseq_test, cell_type_geps = simulate_data(
-            sc_rnaseq, sc_metadata, fractions_perturbed, rng, N, name=experiment_name
-        )
-        logger.debug("saving data to %s", experiment_path)
-        cell_type_geps.to_parquet(experiment_path / "cell_type_geps.parquet")
-        bulk_rnaseq_test.to_parquet(experiment_path / "bulk_rnaseq.parquet")
-        fractions_test.to_parquet(experiment_path / "fractions.parquet")
-        logger.debug("running cibersortx")
-        bulk_rnaseq_all = pd.concat([bulk_rnaseq_control, bulk_rnaseq_test], axis=1)
-        fractions_all = pd.concat([fractions_control, fractions_test], axis=0)
-        logger.debug("running cibersortx and saving results to %s", experiment_path / "cibersortx")
-        helpers.running_cibersortx.hires_only.run_and_upload_from_dataframes(
-            bulk_rnaseq_all,
-            fractions_all,
-            experiment_path / "cibersortx",
-        )
+        cell_type_geps_control.to_parquet(path_results / "control" / "cell_type_geps.parquet")
+        bulk_rnaseq_control.to_parquet(path_results / "control" / "bulk_rnaseq.parquet")
+        fractions_control.to_parquet(path_results / "control" / "fractions.parquet")
+        # experiments
+        for i, perturbation_malignant_frac_log2 in enumerate(perturbations_malignant_frac_log2):
+            rng_seed = next(seed_counter)
+            experiment_name = f"rng_seed={rng_seed:03d},malignant_frac_log2={perturbation_malignant_frac_log2:.3f}"
+            logger.debug("starting experiment %s", experiment_name)
+            rng = np.random.default_rng(seed=rng_seed)
+            experiment_path = path_results / experiment_name
+            assert np.allclose(
+                fractions_tcga_skcm_mets,
+                perturb_malignant_fractions(fractions_tcga_skcm_mets, 0.0),
+            )
+            fractions_perturbed = perturb_malignant_fractions(
+                fractions_tcga_skcm_mets, perturbation_malignant_frac_log2
+            )
+            logger.debug("simulating data")
+            fractions_test, bulk_rnaseq_test, cell_type_geps = simulate_data(
+                sc_rnaseq, sc_metadata, fractions_perturbed, rng, N, name=experiment_name
+            )
+            logger.debug("saving data to %s", experiment_path)
+            cell_type_geps.to_parquet(experiment_path / "cell_type_geps.parquet")
+            bulk_rnaseq_test.to_parquet(experiment_path / "bulk_rnaseq.parquet")
+            fractions_test.to_parquet(experiment_path / "fractions.parquet")
+            logger.debug("running cibersortx")
+            bulk_rnaseq_all = pd.concat([bulk_rnaseq_control, bulk_rnaseq_test], axis=1)
+            fractions_all = pd.concat([fractions_control, fractions_test], axis=0)
+            logger.debug("running cibersortx and saving results to %s", experiment_path / "cibersortx")
+            helpers.running_cibersortx.hires_only.run_and_upload_from_dataframes(
+                bulk_rnaseq_all,
+                fractions_all,
+                experiment_path / "cibersortx",
+            )
 
-        logger.debug("computing stats for bulk rna-seq")
-        logger.debug("computing stats and saving to %s", experiment_path / "deg_analysis")
-        gene_stats_bulk = compute_stats(bulk_rnaseq_all, "control", experiment_name)
-        gene_stats_bulk["perturbed"] = False
-        gene_stats_bulk.to_parquet(experiment_path / "deg_analysis" / "gene_stats_bulk.parquet")
+            logger.debug("computing stats for bulk rna-seq")
+            logger.debug("computing stats and saving to %s", experiment_path / "deg_analysis")
+            gene_stats_bulk = compute_stats(bulk_rnaseq_all, "control", experiment_name)
+            gene_stats_bulk["perturbed"] = False
+            gene_stats_bulk.to_parquet(experiment_path / "deg_analysis" / "gene_stats_bulk.parquet")
 
-        logger.debug("computing stats for malignant rna-seq inferred by CIBERSORTx")
-        pattern = experiment_path / "cibersortx" / "**" / "*Malignant*txt"
-        logger.debug("reading cibersortx inferred rnaseq for malignant cells from %s", pattern)
-        rnaseq_malignant_cibersortx = (
-            dd.read_csv(pattern, sep="\t")
-            .rename(columns={"GeneSymbol": "gene_symbol"})
-            .set_index("gene_symbol")
-            .compute()
-        )
-        gene_stats_malignant_cibersortx = compute_stats(
-            rnaseq_malignant_cibersortx, "control", experiment_name
-        )
-        gene_stats_malignant_cibersortx["perturbed"] = False
-        gene_stats_malignant_cibersortx.to_parquet(
-            experiment_path / "deg_analysis" / "gene_stats_malignant_cibersortx.parquet"
-        )
+            logger.debug("computing stats for malignant rna-seq inferred by CIBERSORTx")
+            pattern = experiment_path / "cibersortx" / "**" / "*Malignant*txt"
+            logger.debug("reading cibersortx inferred rnaseq for malignant cells from %s", pattern)
+            rnaseq_malignant_cibersortx = (
+                dd.read_csv(pattern, sep="\t")
+                .rename(columns={"GeneSymbol": "gene_symbol"})
+                .set_index("gene_symbol")
+                .compute()
+            )
+            gene_stats_malignant_cibersortx = compute_stats(
+                rnaseq_malignant_cibersortx, "control", experiment_name
+            )
+            gene_stats_malignant_cibersortx["perturbed"] = False
+            gene_stats_malignant_cibersortx.to_parquet(
+                experiment_path / "deg_analysis" / "gene_stats_malignant_cibersortx.parquet"
+            )
