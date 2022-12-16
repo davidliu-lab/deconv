@@ -80,7 +80,9 @@ if __name__ == "__main__":
     logger.setLevel("DEBUG")
     logger.debug("test debug-level message")
 
-    uri_refsample = "gs://liulab/data/pseudobulk_evaluation/csx_input_files/refsample_jerby_arnon_hg19_tpm.tsv"
+    uri_refsample = (
+        "gs://liulab/data/pseudobulk_evaluation/csx_input_files/refsample_jerby_arnon_hg19_tpm.tsv"
+    )
 
     logger.debug("run cibersortx on tcga skcm bulk rna-seq")
     run_fractions_and_upload(

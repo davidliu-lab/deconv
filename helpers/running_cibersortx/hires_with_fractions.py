@@ -14,9 +14,7 @@ from helpers.running_cibersortx.copying_to_gcs import (
 logger = logging.getLogger(__name__)
 
 
-def run_and_upload(
-    uri_save_job_files_to, uri_bulk_rnaseq, uri_sigmatrix, uri_sourcegeps
-):
+def run_and_upload(uri_save_job_files_to, uri_bulk_rnaseq, uri_sigmatrix, uri_sourcegeps):
     with tempfile.TemporaryDirectory() as tmp_dir:
         logger.debug("tmp_dir: %s", tmp_dir)
         logger.debug("watch -n 0.1 tree -ghpu %s", tmp_dir)
@@ -32,12 +30,8 @@ def set_up_csx_dir(csx_dir, uri_bulk_rnaseq, uri_sigmatrix, uri_sourcegeps):
     copy_file_maybe_in_the_cloud_to_local_path(
         uri_bulk_rnaseq, csx_path / "data" / "bulkrnaseq.txt"
     )
-    copy_file_maybe_in_the_cloud_to_local_path(
-        uri_sigmatrix, csx_path / "data" / "sigmatrix.txt"
-    )
-    copy_file_maybe_in_the_cloud_to_local_path(
-        uri_sourcegeps, csx_path / "data" / "sourcegeps.txt"
-    )
+    copy_file_maybe_in_the_cloud_to_local_path(uri_sigmatrix, csx_path / "data" / "sigmatrix.txt")
+    copy_file_maybe_in_the_cloud_to_local_path(uri_sourcegeps, csx_path / "data" / "sourcegeps.txt")
 
 
 def run(csx_dir):
@@ -69,9 +63,7 @@ def run(csx_dir):
         ]
     )
     client = docker.from_env()
-    container = client.containers.run(
-        "cibersortx/hires:latest", command_arguments, **run_kwargs
-    )
+    container = client.containers.run("cibersortx/hires:latest", command_arguments, **run_kwargs)
     for message in container.logs(follow=True, stream=True):
         print(message.decode("utf-8"), end="")
     container.wait()

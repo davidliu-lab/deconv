@@ -20,9 +20,7 @@ def read_hires_cell_type_geps(path_pattern: Union[pathlib.Path, upath.UPath]):
         The high-resolution cell type gene expression profiles.
     """
     df = dd.read_csv(path_pattern, sep="\t", include_path_column=True).compute()
-    df[["cell_type"]] = df["path"].str.extract(
-        ".*/CIBERSORTxHiRes_NA_(.*)_Window.*\.txt"
-    )
+    df[["cell_type"]] = df["path"].str.extract(".*/CIBERSORTxHiRes_NA_(.*)_Window.*\.txt")
     df = df.rename(columns={"GeneSymbol": "gene_symbol"})
     df = df.drop(columns="path")
     df = df.pivot(index=["cell_type", "gene_symbol"], columns=[])

@@ -27,9 +27,7 @@ def create_csx_refsample_tsv(
         return df_refsample_sc_metadata.loc[single_cell_id][helpers.columns.CELL_TYPE]
 
     df_refsample_sc_rnaseq = df_refsample_sc_rnaseq.rename(columns=look_up_cell_type)
-    df_refsample_sc_rnaseq = df_refsample_sc_rnaseq.rename_axis(
-        index="GeneSymbol", columns=None
-    )
+    df_refsample_sc_rnaseq = df_refsample_sc_rnaseq.rename_axis(index="GeneSymbol", columns=None)
     df_refsample_sc_rnaseq = df_refsample_sc_rnaseq.reset_index()
     df_refsample_sc_rnaseq.to_csv(path_target, index=False, sep="\t")
 
@@ -47,9 +45,7 @@ def create_refsample_from_jerby_arnon(path_target: Union[pathlib.Path, upath.UPa
     df_sc_rnaseq, df_metadata = helpers.datasets.load_jerby_arnon_hg19_tpm()
     df_sc_rnaseq *= 1e6 / df_sc_rnaseq.sum()
     logger.debug("shape of scRNA-seq: %s", df_sc_rnaseq.shape)
-    nonnull_cell_type_cells = df_metadata[
-        ~df_metadata[helpers.columns.CELL_TYPE].isna()
-    ].index
+    nonnull_cell_type_cells = df_metadata[~df_metadata[helpers.columns.CELL_TYPE].isna()].index
     logger.debug("length of nonnull_cell_type_cells: %s", len(nonnull_cell_type_cells))
     logger.debug("%s", nonnull_cell_type_cells)
     df_sc_rnaseq = df_sc_rnaseq[nonnull_cell_type_cells]

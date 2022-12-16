@@ -8,9 +8,7 @@ def add_noise_multiplying_uniform(
     return df_rnaseq * rng.uniform(0.9, 1.1, size=(df_rnaseq.shape))
 
 
-def normalize_expression(
-    geps: pd.DataFrame, normalization_factor: int = 1_000_000
-) -> pd.DataFrame:
+def normalize_expression(geps: pd.DataFrame, normalization_factor: int = 1_000_000) -> pd.DataFrame:
     """Returns expression matrix with columns that sum to normalization_factor.
 
     Args:

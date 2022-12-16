@@ -22,23 +22,15 @@ def make_cell_type_geps(
 ):
     if malignant_from_one_sample:
         malignant_cells = sc_metadata[columns.CELL_TYPE] == "Malignant"
-        random_sample = rng.choice(
-            sc_metadata[malignant_cells][columns.SAMPLE_ID].unique()
-        )
+        random_sample = rng.choice(sc_metadata[malignant_cells][columns.SAMPLE_ID].unique())
         logger.debug("randomly chose %s for malignant cells", random_sample)
         single_cells_to_include = np.logical_not(
-            np.logical_and(
-                malignant_cells, sc_metadata[columns.SAMPLE_ID] != random_sample
-            )
+            np.logical_and(malignant_cells, sc_metadata[columns.SAMPLE_ID] != random_sample)
         )
         sc_metadata = sc_metadata[single_cells_to_include]
     sampled_single_cells_per_type = (
         sc_metadata.groupby(columns.CELL_TYPE)
-        .apply(
-            lambda group: list(
-                rng.choice(group[columns.SINGLE_CELL_ID], n_cells_per_gep)
-            )
-        )
+        .apply(lambda group: list(rng.choice(group[columns.SINGLE_CELL_ID], n_cells_per_gep)))
         .to_dict()
     )
     cell_type_geps = pd.concat(
@@ -60,12 +52,8 @@ def make_fractions_from_dirichlet(
         name=columns.SAMPLE_ID,
     )
     cell_type_groups = sc_metadata.groupby(columns.CELL_TYPE)
-    fraction_values = rng.dirichlet(
-        alpha=(0.5,) * cell_type_groups.ngroups, size=(n_samples,)
-    )
-    fractions = pd.DataFrame(
-        fraction_values, index=samples, columns=list(cell_type_groups.groups)
-    )
+    fraction_values = rng.dirichlet(alpha=(0.5,) * cell_type_groups.ngroups, size=(n_samples,))
+    fractions = pd.DataFrame(fraction_values, index=samples, columns=list(cell_type_groups.groups))
     return fractions
 
 
@@ -75,9 +63,7 @@ def randomly_sample_fractions(
     rng: np.random.Generator,
 ):
     df_fractions = df_fractions_given.sample(N, replace=True, random_state=rng)
-    df_fractions.index = pd.Index(
-        [f"sample_{i:03d}" for i in range(N)], name=columns.SAMPLE_ID
-    )
+    df_fractions.index = pd.Index([f"sample_{i:03d}" for i in range(N)], name=columns.SAMPLE_ID)
     return df_fractions
 
 

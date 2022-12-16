@@ -23,9 +23,7 @@ if __name__ == "__main__":
     logging.getLogger("helpers.creating_mixtures").setLevel("INFO")
     timestamp_str = helpers.useful_small_things.make_a_nice_timestamp_of_now()
     N = 50
-    path_root = (
-        UPath("gs://liulab/simulated/perturbed_malignant_expression") / timestamp_str
-    )
+    path_root = UPath("gs://liulab/simulated/perturbed_malignant_expression") / timestamp_str
     # load data
     df_fractions_tcga_skcm_mets = datasets.tcga_skcm.load_fractions_mets_only()
     df_scrnaseq, df_sc_metadata = datasets.jerby_arnon.load_scrnaseq_and_filter_genes()
@@ -38,9 +36,7 @@ if __name__ == "__main__":
 
     # save genes to perturb
     logger.debug("saving genes_to_perturb")
-    pd.DataFrame(genes_to_perturb).to_csv(
-        path_root / "genes_perturbed.csv", index=False
-    )
+    pd.DataFrame(genes_to_perturb).to_csv(path_root / "genes_perturbed.csv", index=False)
 
     for i, log2_fc in enumerate(
         [-3, -2, -1.5, -1, -0.75, -0.5, -0.25, 0, 0.25, 0.5, 0.75, 1, 1.5, 2, 3]
@@ -57,9 +53,7 @@ if __name__ == "__main__":
         )
 
         # randomly sample fractions
-        df_fractions = df_fractions_tcga_skcm_mets.sample(
-            N, replace=True, random_state=rng
-        )
+        df_fractions = df_fractions_tcga_skcm_mets.sample(N, replace=True, random_state=rng)
         sample_index = pd.Index([f"sample_{i:03d}" for i in range(N)], name="sample_id")
         df_fractions.set_index(sample_index, inplace=True)
         logger.debug("Randomly sampled fractions, such as: %s", df_fractions.head())

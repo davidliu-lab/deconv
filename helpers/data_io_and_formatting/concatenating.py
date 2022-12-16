@@ -51,8 +51,7 @@ def load_and_concatenate_fractions(cohort_paths: dict[str, UPath]) -> pd.DataFra
     Example of cohort_paths: {"A": pathlib.Path("/path/to/A"), "B": pathlib.Path("/path/to/B")}
     """
     dataframes = {
-        cohort: pd.read_parquet(path / "fractions.parquet")
-        for cohort, path in cohort_paths.items()
+        cohort: pd.read_parquet(path / "fractions.parquet") for cohort, path in cohort_paths.items()
     }
     df = pd.concat(dataframes, axis="rows")
     index_axis_name = df.index.names[1]

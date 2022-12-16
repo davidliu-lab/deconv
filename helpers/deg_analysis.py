@@ -14,9 +14,7 @@ from statsmodels.stats.multitest import multipletests
 logger = logging.getLogger(__name__)
 
 
-def calculate_pval_threshold(
-    test_was_fdr_significant: pd.Series, alpha: float
-) -> float:
+def calculate_pval_threshold(test_was_fdr_significant: pd.Series, alpha: float) -> float:
     n_signif_results = test_was_fdr_significant.sum()
     pval_threshold = (n_signif_results + 1) * alpha / len(test_was_fdr_significant)
     return pval_threshold
@@ -31,15 +29,11 @@ def add_multipletests_stats(df: pd.DataFrame) -> pd.DataFrame:
     # multiple hypothesis testing with benjamini-hochberg
     for alpha in alphas:
         significance_column = f"significant_bh_fdr={alpha:.2f}"
-        df[significance_column] = multipletests(
-            df["pval"], alpha=alpha, method="fdr_bh"
-        )[0]
+        df[significance_column] = multipletests(df["pval"], alpha=alpha, method="fdr_bh")[0]
         n_signif_results = df[significance_column].sum()
         pval_threshold_str = f"pval_threshold_fdr={alpha:.2f}"
         df.attrs[pval_threshold_str] = (n_signif_results + 1) * alpha / len(df)
-        df.attrs[f"-log10_{pval_threshold_str}"] = -np.log10(
-            df.attrs[pval_threshold_str]
-        )
+        df.attrs[f"-log10_{pval_threshold_str}"] = -np.log10(df.attrs[pval_threshold_str])
     return df
 
 
@@ -355,9 +349,7 @@ def add_fdr_lines(fig, gene_stats, horizontal=True):
             )
             for alpha in [0.1, 0.25]:
                 key = (experiment_name, data_origin)
-                experiment_gene_stats = gene_stats[
-                    gene_stats["experiment_name"] == experiment_name
-                ]
+                experiment_gene_stats = gene_stats[gene_stats["experiment_name"] == experiment_name]
                 significances = experiment_gene_stats[f"significant_bh_fdr={alpha:.2f}"]
                 pval_threshold = calculate_pval_threshold(significances, alpha)
                 logger.debug(

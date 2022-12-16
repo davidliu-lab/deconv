@@ -74,8 +74,7 @@ if __name__ == "__main__":
 
     # uri_refsample = "gs://liulab/data/pseudobulk_evaluation/csx_input_files/refsample_jerby_arnon_hg19_tpm.tsv"
     base_path = (
-        upath.UPath("gs://liulab/tmp")
-        / helpers.useful_small_things.make_a_nice_timestamp_of_now()
+        upath.UPath("gs://liulab/tmp") / helpers.useful_small_things.make_a_nice_timestamp_of_now()
     )
     uri_refsample = str(base_path / "sigmatrix_only_refsample.tsv")
     sc_data, sc_metadata = helpers.datasets.load_jerby_arnon()

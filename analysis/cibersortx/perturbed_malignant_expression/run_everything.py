@@ -30,9 +30,7 @@ def compute_stats(
     )
     rnaseq = rnaseq.stack(["group_id", "sample_id"])
     rnaseq_groupby = rnaseq.groupby("gene_symbol")
-    gene_stats = helpers.deg_analysis.compute_stats(
-        rnaseq_groupby, "group_id", group_1, group_2
-    )
+    gene_stats = helpers.deg_analysis.compute_stats(rnaseq_groupby, "group_id", group_1, group_2)
     return gene_stats
 
 
@@ -60,9 +58,7 @@ if __name__ == "__main__":
     )
     # genes_to_perturb = select_100_genes(sc_rnaseq, rng)
     # genes_to_perturb = select_100_genes_densely_expressed_in_malignant(sc_rnaseq, sc_metadata, rng)
-    pd.DataFrame(genes_to_perturb).to_csv(
-        path_results / "genes_perturbed.csv", index=False
-    )
+    pd.DataFrame(genes_to_perturb).to_csv(path_results / "genes_perturbed.csv", index=False)
 
     # control data
     logger.debug("creating control data")
@@ -70,9 +66,7 @@ if __name__ == "__main__":
         sc_rnaseq, sc_metadata, fractions_tcga_skcm_mets, rng, N, name="control"
     )
     logger.debug("saving data to %s", path_results / "control")
-    cell_type_geps_control.to_parquet(
-        path_results / "control" / "cell_type_geps.parquet"
-    )
+    cell_type_geps_control.to_parquet(path_results / "control" / "cell_type_geps.parquet")
     bulk_rnaseq_control.to_parquet(path_results / "control" / "bulk_rnaseq.parquet")
     fractions_control.to_parquet(path_results / "control" / "fractions.parquet")
 
@@ -82,9 +76,7 @@ if __name__ == "__main__":
         experiment_name = f"log2_fc={log2_fc:.3f}"
         experiment_path = path_results / experiment_name
         logger.debug("starting experiment %s", experiment_name)
-        pd.DataFrame(genes_to_perturb).to_csv(
-            experiment_path / "genes_perturbed.csv", index=False
-        )
+        pd.DataFrame(genes_to_perturb).to_csv(experiment_path / "genes_perturbed.csv", index=False)
         logger.debug("perturbing gene expression for experiment %s", experiment_name)
         sc_rnaseq_perturbed = perturb_scrnaseq_gene_expression(
             sc_rnaseq,
@@ -120,22 +112,14 @@ if __name__ == "__main__":
         )
 
         logger.debug("computing stats for bulk rna-seq")
-        logger.debug(
-            "computing stats and saving to %s", experiment_path / "deg_analysis"
-        )
+        logger.debug("computing stats and saving to %s", experiment_path / "deg_analysis")
         gene_stats_bulk = compute_stats(bulk_rnaseq_all, "control", experiment_name)
-        gene_stats_bulk["perturbed"] = gene_stats_bulk["gene_symbol"].isin(
-            genes_to_perturb
-        )
-        gene_stats_bulk.to_parquet(
-            experiment_path / "deg_analysis" / "gene_stats_bulk.parquet"
-        )
+        gene_stats_bulk["perturbed"] = gene_stats_bulk["gene_symbol"].isin(genes_to_perturb)
+        gene_stats_bulk.to_parquet(experiment_path / "deg_analysis" / "gene_stats_bulk.parquet")
 
         logger.debug("computing stats for malignant rna-seq inferred by CIBERSORTx")
         pattern = experiment_path / "cibersortx" / "**" / "*Malignant*txt"
-        logger.debug(
-            "reading cibersortx inferred rnaseq for malignant cells from %s", pattern
-        )
+        logger.debug("reading cibersortx inferred rnaseq for malignant cells from %s", pattern)
         rnaseq_malignant_cibersortx = (
             dd.read_csv(pattern, sep="\t")
             .rename(columns={"GeneSymbol": "gene_symbol"})

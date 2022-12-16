@@ -5,9 +5,7 @@ import pandas as pd
 logger = logging.getLogger(__name__)
 
 
-def get_genes_not_too_sparse(
-    df_rnaseq: pd.DataFrame, sparsity_ceiling: float
-) -> set[str]:
+def get_genes_not_too_sparse(df_rnaseq: pd.DataFrame, sparsity_ceiling: float) -> set[str]:
     return set(df_rnaseq[(df_rnaseq == 0).mean(axis=1) < sparsity_ceiling].index)
 
 
@@ -19,9 +17,7 @@ def get_good_genes(
     genes_not_too_sparse_in_tcga_skcm = get_genes_not_too_sparse(
         df_bulkrnaseq_tcga_skcm, sparsity_ceiling_tcga
     )
-    logger.debug(
-        "genes not too sparse in tcga_skcm: %s", len(genes_not_too_sparse_in_tcga_skcm)
-    )
+    logger.debug("genes not too sparse in tcga_skcm: %s", len(genes_not_too_sparse_in_tcga_skcm))
     genes_in_both_datasets = set(
         df_bulkrnaseq_tcga_skcm.index.intersection(df_scrnaseq_jerby_arnon.index)
     )

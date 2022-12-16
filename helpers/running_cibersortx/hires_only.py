@@ -28,9 +28,7 @@ def run_and_upload_from_dataframes(
         (csx_path / "data").mkdir()
         (csx_path / "outdir").mkdir()
         create_csx_mixtures_tsv(df_bulk_rnaseq, csx_path / "data" / "bulkrnaseq.txt")
-        create_csx_fractions_tsv(
-            df_cibersort_results, csx_path / "outdir" / "fractions.txt"
-        )
+        create_csx_fractions_tsv(df_cibersort_results, csx_path / "outdir" / "fractions.txt")
         run(tmp_dir)
         logger.debug("copying tmp_dir %s to %s", tmp_dir, path_target_on_gcs)
         path_target_on_gcs.fs.put(tmp_dir, path_target_on_gcs, recursive=True)
@@ -65,9 +63,7 @@ def run(csx_dir):
     )
     logger.debug("docker run --rm cibersortx/hires:latest %s", command_arguments)
     client = docker.from_env()
-    container = client.containers.run(
-        "cibersortx/hires:latest", command_arguments, **run_kwargs
-    )
+    container = client.containers.run("cibersortx/hires:latest", command_arguments, **run_kwargs)
     for message in container.logs(follow=True, stream=True):
         print(message.decode("utf-8"), end="")
     container.wait()

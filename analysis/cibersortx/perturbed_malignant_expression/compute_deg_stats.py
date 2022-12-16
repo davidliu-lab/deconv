@@ -43,13 +43,10 @@ if __name__ == "__main__":
         "gs://liulab/simulated/perturbed_malignant_expression/20221015_21h52m40s/genes_perturbed.csv"
     )["gene_symbol"]
     path_root_cibersortx_results = (
-        UPath("gs://liulab/cibersortx/perturbed_malignant_expression")
-        / "20221019_15h23m14s"
+        UPath("gs://liulab/cibersortx/perturbed_malignant_expression") / "20221019_15h23m14s"
     )
 
-    paths_cibersortx_results = [
-        p.parent for p in path_root_cibersortx_results.glob("**/outdir")
-    ]
+    paths_cibersortx_results = [p.parent for p in path_root_cibersortx_results.glob("**/outdir")]
     logger.debug("paths: %s", paths_cibersortx_results)
     path_target_root = UPath("gs://liulab/deg_analysis") / timestamp_str
     logger.debug("path_target_root: %s", path_target_root)
@@ -60,19 +57,13 @@ if __name__ == "__main__":
         # bulk simulated
         logger.debug("computing for bulk")
         path_bulk_rnaseq = next(
-            (path_root_cibersortx_results / result_description).glob(
-                "**/bulkrnaseq.txt"
-            )
+            (path_root_cibersortx_results / result_description).glob("**/bulkrnaseq.txt")
         )
         df_gene_stats_bulk = compute_for(path_bulk_rnaseq, result_description)
-        df_gene_stats_bulk["perturbed"] = df_gene_stats_bulk["gene_symbol"].isin(
-            genes_perturbed
-        )
+        df_gene_stats_bulk["perturbed"] = df_gene_stats_bulk["gene_symbol"].isin(genes_perturbed)
         # logger.debug("df_gene_stats_bulk: %s", df_gene_stats_bulk)
         if SAVE:
-            path_target_bulk = (
-                path_target_root / result_description / "gene_stats_bulk.parquet"
-            )
+            path_target_bulk = path_target_root / result_description / "gene_stats_bulk.parquet"
             logger.debug("writing %s", path_target_bulk)
             df_gene_stats_bulk.to_parquet(path_target_bulk)
 
@@ -84,9 +75,9 @@ if __name__ == "__main__":
             )
         )
         df_gene_stats_malignant = compute_for(path_malignant, result_description)
-        df_gene_stats_malignant["perturbed"] = df_gene_stats_malignant[
-            "gene_symbol"
-        ].isin(genes_perturbed)
+        df_gene_stats_malignant["perturbed"] = df_gene_stats_malignant["gene_symbol"].isin(
+            genes_perturbed
+        )
         # logger.debug("df_gene_stats_malignant: %s", df_gene_stats_malignant)
         if SAVE:
             path_target_malignant = (

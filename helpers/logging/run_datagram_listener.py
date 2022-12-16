@@ -21,9 +21,7 @@ class DatagramLoggingProtocol(asyncio.DatagramProtocol):
 
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()
-    listen = loop.create_datagram_endpoint(
-        DatagramLoggingProtocol, local_addr=("127.0.0.1", 12000)
-    )
+    listen = loop.create_datagram_endpoint(DatagramLoggingProtocol, local_addr=("127.0.0.1", 12000))
     transport, protocol = loop.run_until_complete(listen)
     try:
         loop.run_forever()

@@ -79,9 +79,7 @@ def compute_all_deg_results(
     ddf_bulk_rnaseq: dd.DataFrame, df_sample_metadata: pd.DataFrame
 ) -> pd.DataFrame:
     logger.debug("computing stats")
-    df_gene_stats = compute_gene_stats_with_immune_groups(
-        ddf_bulk_rnaseq, df_sample_metadata
-    )
+    df_gene_stats = compute_gene_stats_with_immune_groups(ddf_bulk_rnaseq, df_sample_metadata)
     logger.debug("creating derived columns (e.g. -log10_pval...)")
     df_gene_stats = process_gene_level_results(df_gene_stats)
     return df_gene_stats
@@ -101,9 +99,7 @@ def make_volcano_plot(df_gene_stats):
     fig.update_yaxes(range=(0, 25))
     fig.update_traces(marker=dict(size=2.5))
     fig.update_layout(
-        legend=dict(
-            yanchor="top", y=0.99, xanchor="left", x=0.01, itemsizing="constant"
-        ),
+        legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01, itemsizing="constant"),
     )
     return fig
 
@@ -124,9 +120,7 @@ def make_scatter_of_signed_pvals(df_gene_stats_merged):
     fig.update_yaxes(range=(-25, 25))
     fig.update_traces(marker=dict(size=2.5))
     fig.update_layout(
-        legend=dict(
-            yanchor="top", y=0.99, xanchor="left", x=0.01, itemsizing="constant"
-        ),
+        legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01, itemsizing="constant"),
     )
     return fig
 
@@ -172,9 +166,7 @@ def make_scatter_of_log2_fold_changes(df_gene_stats_1, df_gene_stats_2):
     fig.update_yaxes(range=(-10, 10))
     fig.update_traces(marker=dict(size=2.5))
     fig.update_layout(
-        legend=dict(
-            yanchor="top", y=0.99, xanchor="left", x=0.01, itemsizing="constant"
-        ),
+        legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01, itemsizing="constant"),
     )
     return fig
 

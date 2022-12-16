@@ -17,14 +17,10 @@ def load_tcga_skcm_hg19_normalized_counts_dereks_file() -> pd.DataFrame:
     # clean up index (gene symbols)
     bulk_rna_seq = bulk_rna_seq.sort_index()
     # clean up columns (sample IDs)
-    bulk_rna_seq = bulk_rna_seq.rename(
-        columns=lambda sample_id: sample_id.replace(".", "-")
-    )
+    bulk_rna_seq = bulk_rna_seq.rename(columns=lambda sample_id: sample_id.replace(".", "-"))
     bulk_rna_seq = bulk_rna_seq.reindex(sorted(bulk_rna_seq.columns), axis=1)
     # clean up everything else
-    bulk_rna_seq = bulk_rna_seq.rename_axis(
-        index=columns.GENE_SYMBOL, columns=columns.SAMPLE_ID
-    )
+    bulk_rna_seq = bulk_rna_seq.rename_axis(index=columns.GENE_SYMBOL, columns=columns.SAMPLE_ID)
     return bulk_rna_seq
 
 
@@ -63,9 +59,7 @@ def load_tcga_skcm_fractions_from_csx() -> pd.DataFrame:
     fractions = fractions.rename(columns=weird_to_nice)
     fractions = fractions.reindex(sorted(fractions.columns), axis=1)
     # clean up everything else
-    fractions = fractions.rename_axis(
-        index=columns.SAMPLE_ID, columns=columns.CELL_TYPE
-    )
+    fractions = fractions.rename_axis(index=columns.SAMPLE_ID, columns=columns.CELL_TYPE)
     return fractions
 
 
@@ -91,9 +85,7 @@ def load_tcga_skcm_hg38_fpkm_bigquery() -> pd.DataFrame:
     bulk_rna_seq = bulk_rna_seq.pivot(
         index="gene_name", columns="aliquot_barcode", values="HTSeq__FPKM_sum"
     )
-    bulk_rna_seq = bulk_rna_seq.rename_axis(
-        index=columns.GENE_SYMBOL, columns=columns.SAMPLE_ID
-    )
+    bulk_rna_seq = bulk_rna_seq.rename_axis(index=columns.GENE_SYMBOL, columns=columns.SAMPLE_ID)
     return bulk_rna_seq
 
 
@@ -131,9 +123,7 @@ def make_labels_for_aliquots(df_cell_type_fractions, df_sample_metadata):
         .reset_index()
         .assign(sample_barcode=lambda row: row["aliquot_barcode"].str[:-12])
     )
-    df_sample_metadata = df_sample_metadata[
-        ["sample_barcode", "sample_type_name"]
-    ].merge(
+    df_sample_metadata = df_sample_metadata[["sample_barcode", "sample_type_name"]].merge(
         df_immune_fraction,
         left_on="sample_barcode",
         right_on="sample_barcode",
@@ -148,7 +138,5 @@ def make_labels_for_aliquots(df_cell_type_fractions, df_sample_metadata):
 def load_fractions_mets_only() -> pd.DataFrame:
     tcga_skcm_mets = get_tcga_skcm_metastatic_sample_metadata()
     tcga_skcm_fractions = load_tcga_skcm_fractions_from_csx()
-    tcga_skcm_mets_fractions = tcga_skcm_fractions.loc[
-        tcga_skcm_mets["aliquot_barcode"]
-    ]
+    tcga_skcm_mets_fractions = tcga_skcm_fractions.loc[tcga_skcm_mets["aliquot_barcode"]]
     return tcga_skcm_mets_fractions

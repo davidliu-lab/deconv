@@ -50,9 +50,7 @@ if __name__ == "__main__":
         tcga_skcm_fractions_mets["aliquot_barcode"]
     ]
     logger.debug("number of pseudobulk samples: %s", len(pseudobulk_sample_fractions))
-    df_scrnaseq, df_sc_metadata = datasets.load_jerby_arnon(
-        ref_genome="hg19", units="tpm"
-    )
+    df_scrnaseq, df_sc_metadata = datasets.load_jerby_arnon(ref_genome="hg19", units="tpm")
     logger.debug("loading TCGA-SKCM bulk RNA-seq data")
     df_bulkrnaseq_tcga_skcm = datasets.load_tcga_skcm_hg19_scaled_estimate_firebrowse()
     logger.debug("determining high-quality genes")

@@ -15,6 +15,4 @@ nice_to_weirds = {
     "T": ["T.cell", "T cell"],
 }
 
-weird_to_nice = {
-    weird: nice for nice in nice_to_weirds for weird in nice_to_weirds[nice]
-}
+weird_to_nice = {weird: nice for nice in nice_to_weirds for weird in nice_to_weirds[nice]}

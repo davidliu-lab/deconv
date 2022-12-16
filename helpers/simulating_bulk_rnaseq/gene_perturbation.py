@@ -16,9 +16,7 @@ def select_100_genes_densely_expressed_in_malignant(
     df_scrnaseq: pd.DataFrame, df_sc_metadata: pd.DataFrame, rng: np.random.Generator
 ) -> pd.Index:
     is_malignant_cell = df_sc_metadata[helpers.columns.CELL_TYPE] == "Malignant"
-    malignant_single_cell_ids = df_sc_metadata[is_malignant_cell][
-        helpers.columns.SINGLE_CELL_ID
-    ]
+    malignant_single_cell_ids = df_sc_metadata[is_malignant_cell][helpers.columns.SINGLE_CELL_ID]
     malignant_scrnaseq = df_scrnaseq[malignant_single_cell_ids]
     logger.debug("shape of malignant_scrnaseq: %s", malignant_scrnaseq.shape)
     gene_sparsity_in_malignant_cells = (malignant_scrnaseq == 0).mean(axis="columns")
@@ -35,9 +33,7 @@ def select_100_genes_at_least_somewhat_expressed_in_malignant(
     df_scrnaseq: pd.DataFrame, df_sc_metadata: pd.DataFrame, rng: np.random.Generator
 ) -> pd.Index:
     is_malignant_cell = df_sc_metadata[helpers.columns.CELL_TYPE] == "Malignant"
-    malignant_single_cell_ids = df_sc_metadata[is_malignant_cell][
-        helpers.columns.SINGLE_CELL_ID
-    ]
+    malignant_single_cell_ids = df_sc_metadata[is_malignant_cell][helpers.columns.SINGLE_CELL_ID]
     malignant_scrnaseq = df_scrnaseq[malignant_single_cell_ids]
     gene_sparsity_in_malignant_cells = (malignant_scrnaseq == 0).mean(axis="columns")
     genes_in_malignant_cells = gene_sparsity_in_malignant_cells.where(lambda x: x < 0.9).dropna()
@@ -52,9 +48,7 @@ def perturb_scrnaseq_gene_expression(
     scaling_factor: float,
 ) -> pd.DataFrame:
     df = df_scrnaseq.copy()
-    cells = df_scrnaseq_metadata[
-        df_scrnaseq_metadata[helpers.columns.CELL_TYPE] == cell_type
-    ].index
+    cells = df_scrnaseq_metadata[df_scrnaseq_metadata[helpers.columns.CELL_TYPE] == cell_type].index
     assert len(cells) > 0
     df.loc[genes, cells] *= scaling_factor
     return df
