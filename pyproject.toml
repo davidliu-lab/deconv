@@ -21,6 +21,9 @@ exclude = '(\.virtual_documents|\.ipynb_checkpoints|2\.1\ -\ run\ csx.*|2\ -\ ru
 max-line-length = 88
 disable = [
   "line-too-long",
+  "missing-function-docstring",
+  "missing-class-docstring",
+  "missing-module-docstring",
 ]
 
 [tool.pylint.BASIC]
