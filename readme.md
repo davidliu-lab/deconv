@@ -1,5 +1,20 @@
 # installation and machine setup
 
+## install visual studio code
+
+see https://code.visualstudio.com/docs/setup/linux#_installation
+
+```shell
+curl -L https://go.microsoft.com/fwlink/?LinkID=760868 --output visual_studio_code.deb
+sudo apt install ./visual_studio_code.deb
+```
+
+and develop from a remote host (https://code.visualstudio.com/docs/remote/vscode-server)
+
+```shell
+code tunnel --accept-server-license-terms
+```
+
 ## os dependencies
 
 ### a conda installation
