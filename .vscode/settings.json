@@ -11,5 +11,6 @@
     "isort.check": true,
     "isort.logLevel": "warn",
     "python.analysis.autoImportCompletions": true,
-    "python.analysis.autoSearchPaths": true
+    "python.analysis.autoSearchPaths": true,
+    "files.autoSave": "onFocusChange"
 }
