@@ -1,14 +1,15 @@
 {
     "editor.fontSize": 14,
     "editor.formatOnSave": true,
+    "editor.formatOnPaste": false,
     "explorer.excludeGitIgnore": true,
     "github.copilot.autocomplete.enable": true,
-    "github.copilot.enable": {
-        "python": true,
-        "markdown": true
-    },
     "python.defaultInterpreterPath": "/opt/conda/bin/python",
     "python.linting.enabled": true,
     "python.linting.pylintEnabled": true,
-    "python.sortImports.path": "isort"
+    "python.formatting.provider": "black",
+    "isort.check": true,
+    "isort.logLevel": "warn",
+    "python.analysis.autoImportCompletions": true,
+    "python.analysis.autoSearchPaths": true
 }
