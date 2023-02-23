@@ -4,33 +4,29 @@ channels:
   - defaults
 dependencies:
   - altair>=4
-  - black-jupyter=22.6.0
-  - dask
+  - black-jupyter>=22.6.0  # 23.1.0
+  # - dagster=1.1.19
+  # - dagster-pandas
+  - dask  # 2023.2.0
   - docker-py
   - flake8>=4.0.1
   - flit>=3.4
-  - gcsfs
+  - gcsfs  # 2023.1.0
   - google-cloud-bigquery
   - google-cloud-storage
   - ipywidgets<8  # github.com/plotly/plotly.py/issues/3686
   - jupyter  # includes ipykernel, nbformat
   - matplotlib
-  - opentelemetry-api
-  - opentelemetry-instrumentation
-  - pandas=1.5.*
-  - pandas-profiling
+  - pandas>=1.5
   - pip
   - plotly>=5.6
-  - pyarrow
+  - pyarrow>=8
   - pylint>=2.14.5
   - python>=3.10
   - scikit-learn
   - scipy
   - seaborn
-  - universal_pathlib=0.0.19
+  - universal_pathlib>=0.0.19  # 0.0.21
   - pip:
-    - GEOparse
-    - gsea-api
     - isort
     - kaleido
-    - rope
