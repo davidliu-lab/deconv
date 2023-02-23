@@ -12,5 +12,11 @@
     "isort.logLevel": "warn",
     "python.analysis.autoImportCompletions": true,
     "python.analysis.autoSearchPaths": true,
-    "files.autoSave": "onFocusChange"
+    "files.autoSave": "onFocusChange",
+    "files.watcherExclude": {
+        "**/.git/objects/**": true,
+        "**/.git/subtree-cache/**": true,
+        "**/node_modules/*/**": true,
+        "**/_build/**": true
+    }
 }
