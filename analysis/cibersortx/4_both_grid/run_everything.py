@@ -11,7 +11,7 @@ from helpers import datasets
 from helpers.simulating_bulk_rnaseq import perturb_malignant_fractions
 from helpers.simulating_bulk_rnaseq.gene_perturbation import (
     select_100_genes_at_least_somewhat_expressed_in_malignant,
-    perturb_scrnaseq_gene_expression
+    perturb_scrnaseq_gene_expression,
 )
 from helpers.simulating_bulk_rnaseq.stuff_for_everything import simulate_data
 from helpers.useful_small_things import make_a_nice_timestamp_of_now
@@ -62,6 +62,8 @@ if __name__ == "__main__":
         (0.55, 0.85),
     ]
 
+    pd.DataFrame(genes_to_perturb).to_csv(root_results / "genes_perturbed.csv", index=False)
+
     for run_id, malignant_fraction_mean_pair, log2_fc in itertools.product(
         range(10), malignant_fraction_mean_pairs, malignant_log2_fold_changes
     ):
@@ -75,7 +77,6 @@ if __name__ == "__main__":
         logger.debug("experiment_path: %s", experiment_path)
         rng = np.random.default_rng(seed=next(seed_counter))
         logger.debug("starting experiment")
-        pd.DataFrame(genes_to_perturb).to_csv(experiment_path / "genes_perturbed.csv", index=False)
         logger.debug("perturbing gene expression")
         sc_rnaseq_perturbed = perturb_scrnaseq_gene_expression(
             sc_rnaseq,
