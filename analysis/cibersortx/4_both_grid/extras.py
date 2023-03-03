@@ -1,15 +1,21 @@
 import logging
+import re
 
+import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-import re
 import upath
 
-import pyarrow as pa
-import dask.dataframe as dd
+import sklearn
+import sklearn.metrics
+
 
 logger = logging.getLogger(__name__)
+
+
+def f():
+    return 22
 
 
 def get_parquet_paths(path_root: upath.UPath) -> list[upath.UPath]:
@@ -81,8 +87,15 @@ def load_gene_stats_malignant_cibersortx(path_root: upath.UPath):
         df[column_name] = s
 
     # add gene_perturbed column
+    path_genes_perturbed = (
+        upath.UPath(
+            "gs://liulab/differential_composition_and_expression/20230224_07h54m40s"
+        )
+        / "genes_perturbed.csv"
+    )
     genes_perturbed = pd.read_csv(
-        path_root / "genes_perturbed.csv", index_col=0
+        path_genes_perturbed,
+        index_col=0,
     )
     df["gene_perturbed"] = df["gene_symbol"].isin(genes_perturbed.index)
 
@@ -158,4 +171,104 @@ def make_volcano_grid_density_contour(
     )
     fig.update_xaxes(range=[-2, 2])
     fig.update_yaxes(range=[0, 6])
+    return fig
+
+
+def calculate_precision_and_recall(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    - Computes precision and recall using the column "-log10_pval" as the score.
+    - Uses sklearn.metrics.precision_recall_curve
+    """
+    df = df.reset_index()
+
+    def compute_curve(df: pd.DataFrame) -> pd.DataFrame:
+        precision, recall, thresholds = sklearn.metrics.precision_recall_curve(
+            y_true=df["gene_perturbed"],
+            probas_pred=df["pval"],
+        )
+        # extend thresholds by one to include infinity
+        thresholds = np.append(thresholds, np.inf)
+        return pd.DataFrame(
+            {
+                "precision": precision,
+                "recall": recall,
+                "thresholds": thresholds,
+            }
+        )
+
+    dfg = df.groupby(["malignant_means", "log2_fc", "run_id"])
+    df = dfg.apply(compute_curve)
+    return df
+
+
+def calculate_roc(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    - Computes precision and recall using the column "-log10_pval" as the score.
+    - Uses sklearn.metrics.precision_recall_curve
+    """
+    df = df.reset_index()
+
+    def compute_curve(df: pd.DataFrame) -> pd.DataFrame:
+        fpr, tpr, thresholds = sklearn.metrics.roc_curve(
+            y_true=df["gene_perturbed"],
+            y_score=df["-log10_pval"],
+        )
+        # extend thresholds by one to include infinity
+        # thresholds = np.append(thresholds, np.inf)
+        logger.debug(
+            "shapes: %s, %s, %s", fpr.shape, tpr.shape, thresholds.shape
+        )
+        return pd.DataFrame(
+            {
+                "fpr": fpr,
+                "tpr": tpr,
+                "thresholds": thresholds,
+            }
+        )
+
+    dfg = df.groupby(["malignant_means", "log2_fc", "run_id"])
+    df = dfg.apply(compute_curve)
+    return df
+
+
+def plot_roc(df: pd.DataFrame) -> go.Figure:
+    df = df.reset_index()
+    fig = px.line(
+        df,
+        x="fpr",
+        y="tpr",
+        labels={"x": "False Positive Rate", "y": "True Positive Rate"},
+        facet_col="malignant_means",
+        facet_row="log2_fc",
+        hover_data=["thresholds"],
+        color="run_id",
+    )
+    fig.add_shape(type="line", line=dict(dash="dash"), x0=0, x1=1, y0=0, y1=1)
+    fig.update_xaxes(constrain="domain", dtick=0.2)
+    fig.update_yaxes(scaleanchor="x", scaleratio=1, dtick=0.2)
+    fig.update_xaxes(range=[0, 1])
+    fig.update_yaxes(range=[0, 1])
+    fig.update_layout(
+        title="ROC Curve",
+    )
+    return fig
+
+
+def plot_precision_recall_curve(df: pd.DataFrame) -> go.Figure:
+    df = df.reset_index()
+    fig = px.line(
+        df,
+        x="recall",
+        y="precision",
+        labels={"x": "Recall", "y": "Precision"},
+        facet_col="malignant_means",
+        facet_row="log2_fc",
+        hover_data=["thresholds"],
+        color="run_id",
+    )
+    fig.update_xaxes(range=[0, 1])
+    fig.update_yaxes(range=[0, 1])
+    fig.update_layout(
+        title="Precision-Recall Curve",
+    )
     return fig
