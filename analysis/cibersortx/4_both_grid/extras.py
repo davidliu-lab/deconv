@@ -1,3 +1,4 @@
+from functools import partial
 import logging
 import re
 
@@ -12,10 +13,6 @@ import sklearn.metrics
 
 
 logger = logging.getLogger(__name__)
-
-
-def f():
-    return 22
 
 
 def get_parquet_paths(path_root: upath.UPath) -> list[upath.UPath]:
@@ -36,8 +33,7 @@ def extract_from_path(path: str, var_name: str) -> str:
 
 def extract_vars_from_path(path: str) -> list[tuple[str, str]]:
     # extract the variables from the path
-    vars_ = re.findall(r"(\w+)=(\w+)", path)
-    return vars_
+    return re.findall(r"(\w+)=(\w+)", path)
 
 
 def test_extract_vars_from_path():
@@ -69,7 +65,7 @@ orderings = {
 }
 
 
-def load_gene_stats_malignant_cibersortx(path_root: upath.UPath):
+def load_gene_stats(path_root: upath.UPath):
     parquet_paths = get_parquet_paths(path_root)
     df = pd.concat(
         {str(path): pd.read_parquet(path) for path in parquet_paths},
@@ -78,10 +74,10 @@ def load_gene_stats_malignant_cibersortx(path_root: upath.UPath):
 
     for column_name in ["malignant_means", "log2_fc", "run_id"]:
         s = df.index.get_level_values("path").map(
-            lambda path: extract_from_path(path, column_name)
+            partial(extract_from_path, var_name=column_name)
         )
         if column_name in orderings:
-            logger.debug(f"Setting ordering for %s", column_name)
+            logger.debug("Setting ordering for %s", column_name)
             dtype = pd.CategoricalDtype(orderings[column_name], ordered=True)
             s = s.astype(dtype)
         df[column_name] = s
