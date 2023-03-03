@@ -3,30 +3,37 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - altair>=4
-  - black-jupyter>=22.6.0  # 23.1.0
-  # - dagster=1.1.19
-  # - dagster-pandas
-  - dask  # 2023.2.0
+  - altair=4.2.2
+  - black-jupyter=23.1.0
+  - dask=2023.3.0
   - docker-py
-  - flake8>=4.0.1
-  - flit>=3.4
+  - flake8=6.0.0
+  - flit=3.8.0
   - gcsfs  # 2023.1.0
   - google-cloud-bigquery
   - google-cloud-storage
   - ipywidgets<8  # github.com/plotly/plotly.py/issues/3686
   - jupyter  # includes ipykernel, nbformat
-  - matplotlib
-  - pandas>=1.5
+  - matplotlib=3.7.0
+  - pandas=1.5.3
   - pip
-  - plotly>=5.6
-  - pyarrow>=8
-  - pylint>=2.14.5
-  - python>=3.10
+  - plotly=5.13.1
+  - pyarrow=11.0.0
+  - pylint=2.16.3
+  - pytest=7.2.1
+  - python=3.11.0
+  - python-duckdb=0.7.1
   - scikit-learn
   - scipy
   - seaborn
-  - universal_pathlib>=0.0.19  # 0.0.21
+  - universal_pathlib=0.0.21
   - pip:
+    # - "dagit==1.1.21"
+    # - "dagster==1.1.21"
+    - dagit
+    - dagster
+    - dagster-pandas
+    - dagster-gcp
+    - dagster-gcp-pandas
     - isort
     - kaleido
