@@ -88,7 +88,7 @@ if __name__ == "__main__":
         sc_rnaseq,
         sc_metadata,
     ) = datasets.jerby_arnon.load_scrnaseq_and_filter_genes()
-    sc_rnaseq = sc_rnaseq.iloc[::100, :]  # faster debug
+    # sc_rnaseq = sc_rnaseq.iloc[::100, :]  # faster debug
     f_tcga_skcm_mets = datasets.tcga_skcm.load_fractions_mets_only()
     logger.debug(
         "shapes: %s, %s, %s",
@@ -129,7 +129,7 @@ if __name__ == "__main__":
         fractions_list, bulk_rnaseq_list = [], []
         for name, mean_malignant_value in zip(["a", "b"], malignant_fraction_mean_pair):
             log2_fc = log2_fc if name == "b" else 0.0
-            bulk_rnaseq, fractions, cell_type_geps = construct_dataset(
+            fractions, bulk_rnaseq, cell_type_geps = construct_dataset(
                 sc_rnaseq,
                 sc_metadata,
                 f_tcga_skcm_mets,
@@ -159,7 +159,7 @@ if __name__ == "__main__":
 
         logger.debug("computing stats for bulk rna-seq")
         logger.debug("computing stats and saving to %s", experiment_path / "deg_analysis")
-        gene_stats_bulk = compute_stats(bulk_rnaseq_all, "low", "high")
+        gene_stats_bulk = compute_stats(bulk_rnaseq_all, "a", "b")
         gene_stats_bulk["perturbed"] = gene_stats_bulk["gene_symbol"].isin(genes_to_perturb)
         gene_stats_bulk.to_parquet(experiment_path / "deg_analysis" / "gene_stats_bulk.parquet")
 
@@ -175,7 +175,7 @@ if __name__ == "__main__":
             .set_index("gene_symbol")
             .compute()
         )
-        gene_stats_malignant_cibersortx = compute_stats(rnaseq_malignant_cibersortx, "low", "high")
+        gene_stats_malignant_cibersortx = compute_stats(rnaseq_malignant_cibersortx, "a", "b")
         gene_stats_malignant_cibersortx["perturbed"] = False
         gene_stats_malignant_cibersortx.to_parquet(
             experiment_path / "deg_analysis" / "gene_stats_malignant_cibersortx.parquet"
