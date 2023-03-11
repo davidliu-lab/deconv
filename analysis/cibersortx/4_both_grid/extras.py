@@ -15,10 +15,12 @@ import sklearn.metrics
 logger = logging.getLogger(__name__)
 
 
+def f():
+    return 3
+
+
 def get_parquet_paths(path_root: upath.UPath) -> list[upath.UPath]:
-    paths = path_root.glob(
-        "**/deg_analysis/gene_stats_malignant_cibersortx.parquet"
-    )
+    paths = path_root.glob("**/deg_analysis/gene_stats_malignant_cibersortx.parquet")
     paths = map(str, paths)
     # paths = filter(re.compile(r".*run_id=0[0-2].*").match, paths)
     paths = sorted(paths)
@@ -29,6 +31,11 @@ def get_parquet_paths(path_root: upath.UPath) -> list[upath.UPath]:
 def extract_from_path(path: str, var_name: str) -> str:
     _ = path.split(var_name + "=")[1]
     return _.split("/")[0]
+
+
+def test_extract_from_path():
+    extract_from_path("thing/a=10", "b")
+    assert False, "didn't fail"
 
 
 def extract_vars_from_path(path: str) -> list[tuple[str, str]]:
@@ -43,50 +50,39 @@ def test_extract_vars_from_path():
     assert result == expectation
 
 
-orderings = {
-    "malignant_means": [
-        "0.71,0.71",
-        "0.7,0.72",
-        "0.65,0.75",
-        "0.6,0.8",
-        "0.55,0.85",
-    ],
-    "log2_fc": [
-        "-1.50",
-        "-1.00",
-        "-0.50",
-        "-0.25",
-        "0.00",
-        "0.25",
-        "0.50",
-        "1.00",
-        "1.50",
-    ],
+ordering_functions = {
+    "log2_fc": float,
+    "malignant_means": lambda x: "0.715,0.715" if x == "None,None" else x,
 }
 
 
 def load_gene_stats(path_root: upath.UPath):
     parquet_paths = get_parquet_paths(path_root)
+    logger.debug(parquet_paths)
     df = pd.concat(
         {str(path): pd.read_parquet(path) for path in parquet_paths},
         names=["path", "index"],
     )
 
     for column_name in ["malignant_means", "log2_fc", "run_id"]:
-        s = df.index.get_level_values("path").map(
-            partial(extract_from_path, var_name=column_name)
-        )
-        if column_name in orderings:
+        try:
+            s = df.index.get_level_values("path").map(
+                partial(extract_from_path, var_name=column_name)
+            )
+        except IndexError:
+            logger.debug("skipping %s because not found", column_name)
+            continue
+        if column_name in ordering_functions:
             logger.debug("Setting ordering for %s", column_name)
-            dtype = pd.CategoricalDtype(orderings[column_name], ordered=True)
+            values = s.unique()
+            values = sorted(values, key=ordering_functions[column_name])
+            dtype = pd.CategoricalDtype(values, ordered=True)
             s = s.astype(dtype)
         df[column_name] = s
 
     # add gene_perturbed column
     path_genes_perturbed = (
-        upath.UPath(
-            "gs://liulab/differential_composition_and_expression/20230224_07h54m40s"
-        )
+        upath.UPath("gs://liulab/differential_composition_and_expression/20230224_07h54m40s")
         / "genes_perturbed.csv"
     )
     genes_perturbed = pd.read_csv(
@@ -94,6 +90,7 @@ def load_gene_stats(path_root: upath.UPath):
         index_col=0,
     )
     df["gene_perturbed"] = df["gene_symbol"].isin(genes_perturbed.index)
+    # df["gene_perturbed"] = df["gene_perturbed"] and df["log2_fc"].astype(float).abs() > 0
 
     df = df.set_index(
         [
@@ -105,6 +102,8 @@ def load_gene_stats(path_root: upath.UPath):
         ]
     )
     df = df.sort_index()
+    # for name in ordering_functions:
+    #     df = df.sort_index(level=name, key=ordering_functions[name])
     return df
 
 
@@ -197,22 +196,18 @@ def calculate_precision_and_recall(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def calculate_roc(df: pd.DataFrame) -> pd.DataFrame:
+def calculate_roc(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
     - Computes precision and recall using the column "-log10_pval" as the score.
-    - Uses sklearn.metrics.precision_recall_curve
+    - Uses sklearn.metrics.roc_curve
     """
     df = df.reset_index()
+    dfg = df.groupby(["malignant_means", "log2_fc", "run_id"])
 
-    def compute_curve(df: pd.DataFrame) -> pd.DataFrame:
+    def compute_curve_for_group(df: pd.DataFrame) -> pd.DataFrame:
         fpr, tpr, thresholds = sklearn.metrics.roc_curve(
             y_true=df["gene_perturbed"],
             y_score=df["-log10_pval"],
-        )
-        # extend thresholds by one to include infinity
-        # thresholds = np.append(thresholds, np.inf)
-        logger.debug(
-            "shapes: %s, %s, %s", fpr.shape, tpr.shape, thresholds.shape
         )
         return pd.DataFrame(
             {
@@ -222,9 +217,15 @@ def calculate_roc(df: pd.DataFrame) -> pd.DataFrame:
             }
         )
 
-    dfg = df.groupby(["malignant_means", "log2_fc", "run_id"])
-    df = dfg.apply(compute_curve)
-    return df
+    def compute_roc_auc_score_for_group(df: pd.DataFrame) -> pd.DataFrame:
+        return sklearn.metrics.roc_auc_score(
+            y_true=df["gene_perturbed"],
+            y_score=df["-log10_pval"],
+        )
+
+    roc_curves = dfg.apply(compute_curve_for_group)
+    roc_auc_scores = dfg.apply(compute_roc_auc_score_for_group)
+    return roc_curves, roc_auc_scores
 
 
 def plot_roc(df: pd.DataFrame) -> go.Figure:

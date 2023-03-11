@@ -176,7 +176,7 @@ if __name__ == "__main__":
             .compute()
         )
         gene_stats_malignant_cibersortx = compute_stats(rnaseq_malignant_cibersortx, "a", "b")
-        gene_stats_malignant_cibersortx["perturbed"] = False
+        gene_stats_malignant_cibersortx["perturbed"] = gene_stats_malignant_cibersortx["gene_symbol"].isin(genes_to_perturb)
         gene_stats_malignant_cibersortx.to_parquet(
             experiment_path / "deg_analysis" / "gene_stats_malignant_cibersortx.parquet"
         )
