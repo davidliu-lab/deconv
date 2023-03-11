@@ -248,6 +248,8 @@ def plot_roc(df: pd.DataFrame) -> go.Figure:
     fig.update_layout(
         title="ROC Curve",
     )
+    # remove variable name from facet labeel
+    fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
     return fig
 
 
