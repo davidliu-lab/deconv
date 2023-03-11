@@ -16,12 +16,8 @@ import sklearn.metrics
 logger = logging.getLogger(__name__)
 
 
-def f():
-    return 3
-
-
 def get_parquet_paths(path_root: upath.UPath) -> list[upath.UPath]:
-    paths = path_root.glob("**/deg_analysis/gene_stats_malignant_cibersortx.parquet")
+    paths = path_root.glob("**/deg_analysis/gene_stats_*")
     paths = map(str, paths)
     # paths = filter(re.compile(r".*run_id=0[0-2].*").match, paths)
     paths = sorted(paths)
@@ -35,8 +31,8 @@ def extract_from_path(path: str, var_name: str) -> str:
 
 
 def test_extract_from_path():
-    extract_from_path("thing/a=10", "b")
-    assert False, "didn't fail"
+    result = extract_from_path("thing/a=10", "a")
+    assert result == "10"
 
 
 def extract_vars_from_path(path: str) -> list[tuple[str, str]]:
@@ -48,6 +44,18 @@ def test_extract_vars_from_path():
     test_path = "thing1=0/a=1,b=2/foo=bar/thing.parquet"
     result = extract_vars_from_path(test_path)
     expectation = [("thing1", "0"), ("a", "1"), ("b", "2"), ("foo", "bar")]
+    assert result == expectation
+
+
+def extract_origin_from_path(path: str) -> str:
+    # extract the substring between "gene_stats_" and ".parquet"
+    return re.findall(r"gene_stats_(.+)\.parquet", path)[0]
+
+
+def test_extract_origin_from_path():
+    test_path = "/foo=bar/gene_stats_thing.parquet"
+    result = extract_origin_from_path(test_path)
+    expectation = "thing"
     assert result == expectation
 
 
@@ -81,7 +89,10 @@ def load_gene_stats(path_root: upath.UPath):
             s = s.astype(dtype)
         df[column_name] = s
 
-    # add gene_perturbed column
+    # add "origin" column
+    df["origin"] = df.index.get_level_values("path").map(extract_origin_from_path)
+
+    # add "gene_perturbed" column
     path_genes_perturbed = (
         upath.UPath("gs://liulab/differential_composition_and_expression/20230224_07h54m40s")
         / "genes_perturbed.csv"
@@ -95,6 +106,7 @@ def load_gene_stats(path_root: upath.UPath):
 
     df = df.set_index(
         [
+            "origin",
             "malignant_means",
             "log2_fc",
             "run_id",
