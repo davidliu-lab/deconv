@@ -1,4 +1,5 @@
 from functools import partial
+import itertools
 import logging
 import re
 
@@ -169,33 +170,6 @@ def make_volcano_grid_density_contour(
     return fig
 
 
-def calculate_precision_and_recall(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    - Computes precision and recall using the column "-log10_pval" as the score.
-    - Uses sklearn.metrics.precision_recall_curve
-    """
-    df = df.reset_index()
-
-    def compute_curve(df: pd.DataFrame) -> pd.DataFrame:
-        precision, recall, thresholds = sklearn.metrics.precision_recall_curve(
-            y_true=df["gene_perturbed"],
-            probas_pred=df["pval"],
-        )
-        # extend thresholds by one to include infinity
-        thresholds = np.append(thresholds, np.inf)
-        return pd.DataFrame(
-            {
-                "precision": precision,
-                "recall": recall,
-                "thresholds": thresholds,
-            }
-        )
-
-    dfg = df.groupby(["malignant_means", "log2_fc", "run_id"])
-    df = dfg.apply(compute_curve)
-    return df
-
-
 def calculate_roc(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
     - Computes precision and recall using the column "-log10_pval" as the score.
@@ -205,19 +179,25 @@ def calculate_roc(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     dfg = df.groupby(["malignant_means", "log2_fc", "run_id"])
 
     def compute_curve_for_group(df: pd.DataFrame) -> pd.DataFrame:
-        fpr, tpr, thresholds = sklearn.metrics.roc_curve(
+        # fpr, tpr, thresholds = sklearn.metrics.roc_curve(
+        #     y_true=df["gene_perturbed"],
+        #     y_score=df["-log10_pval"],
+        # )
+        # return pd.DataFrame(
+        #     {
+        #         "fpr": fpr,
+        #         "tpr": tpr,
+        #         "thresholds": thresholds,
+        #     }
+        # )
+        data = {}
+        data["fpr"], data["tpr"], data["thresholds"] = sklearn.metrics.roc_curve(
             y_true=df["gene_perturbed"],
             y_score=df["-log10_pval"],
         )
-        return pd.DataFrame(
-            {
-                "fpr": fpr,
-                "tpr": tpr,
-                "thresholds": thresholds,
-            }
-        )
+        return pd.DataFrame.from_records(data)
 
-    def compute_roc_auc_score_for_group(df: pd.DataFrame) -> pd.DataFrame:
+    def compute_roc_auc_score_for_group(df: pd.DataFrame) -> float:
         return sklearn.metrics.roc_auc_score(
             y_true=df["gene_perturbed"],
             y_score=df["-log10_pval"],
@@ -248,9 +228,39 @@ def plot_roc(df: pd.DataFrame) -> go.Figure:
     fig.update_layout(
         title="ROC Curve",
     )
-    # remove variable name from facet labeel
+    # remove variable name from facet label
     fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
+    # add dashed diagonal line in each plot
+    for row, col in itertools.product(*fig._get_subplot_rows_columns()):
+        fig.add_shape(type="line", line=dict(dash="dash"), x0=0, x1=1, y0=0, y1=1, row=row, col=col)
     return fig
+
+
+def calculate_precision_and_recall(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    - Computes precision and recall using the column "-log10_pval" as the score.
+    - Uses sklearn.metrics.precision_recall_curve
+    """
+    df = df.reset_index()
+
+    def compute_curve(df: pd.DataFrame) -> pd.DataFrame:
+        precision, recall, thresholds = sklearn.metrics.precision_recall_curve(
+            y_true=df["gene_perturbed"],
+            probas_pred=df["pval"],
+        )
+        # extend thresholds by one to include infinity
+        thresholds = np.append(thresholds, np.inf)
+        return pd.DataFrame(
+            {
+                "precision": precision,
+                "recall": recall,
+                "thresholds": thresholds,
+            }
+        )
+
+    dfg = df.groupby(["malignant_means", "log2_fc", "run_id"])
+    df = dfg.apply(compute_curve)
+    return df
 
 
 def plot_precision_recall_curve(df: pd.DataFrame) -> go.Figure:
