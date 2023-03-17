@@ -12,6 +12,7 @@ dependencies:
   - gcsfs  # 2023.1.0
   - google-cloud-bigquery
   - google-cloud-storage
+  # - ipython-sql  # for duckdb in jupyter
   - ipywidgets<8  # github.com/plotly/plotly.py/issues/3686
   - jupyter  # includes ipykernel, nbformat
   - matplotlib=3.7.0
@@ -30,10 +31,12 @@ dependencies:
   - pip:
     # - "dagit==1.1.21"
     # - "dagster==1.1.21"
-    - dagit
-    - dagster
-    - dagster-pandas
-    - dagster-gcp
-    - dagster-gcp-pandas
+    # - dagit
+    # - dagster
+    # - dagster-pandas
+    # - dagster-gcp
+    # - dagster-gcp-pandas
     - isort
     - kaleido
+
+# conda search --outdated
