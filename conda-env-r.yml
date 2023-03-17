@@ -1,0 +1,12 @@
+name: r-base
+channels:
+  - conda-forge
+dependencies:
+  - mamba
+  - r-renv=0.16.0
+
+# want...
+# - plotly
+# - formatter? import sorter?
+# - linter?
+# - language server?
