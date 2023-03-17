@@ -4,7 +4,7 @@
     "editor.formatOnPaste": false,
     "explorer.excludeGitIgnore": true,
     "github.copilot.autocomplete.enable": true,
-    "python.defaultInterpreterPath": "/opt/conda/bin/python",
+    "python.defaultInterpreterPath": "/opt/conda/envs/deconv/bin/python",
     "python.linting.enabled": true,
     "python.linting.pylintEnabled": true,
     "python.formatting.provider": "black",
