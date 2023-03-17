@@ -102,7 +102,8 @@ def load_gene_stats(path_root: upath.UPath):
         index_col=0,
     )
     df["gene_perturbed"] = df["gene_symbol"].isin(genes_perturbed.index)
-    # df["gene_perturbed"] = df["gene_perturbed"] and df["log2_fc"].astype(float).abs() > 0
+    # if log2_fc is 0, then gene_perturbed should be False
+    df["gene_perturbed"] = df["gene_perturbed"] & df["log2_fc"].astype(float).abs() > 0
 
     df = df.set_index(
         [
@@ -211,10 +212,13 @@ def calculate_roc(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
         return pd.DataFrame.from_records(data)
 
     def compute_roc_auc_score_for_group(df: pd.DataFrame) -> float:
-        return sklearn.metrics.roc_auc_score(
-            y_true=df["gene_perturbed"],
-            y_score=df["classification_score"],
-        )
+        try:
+            return sklearn.metrics.roc_auc_score(
+                y_true=df["gene_perturbed"],
+                y_score=df["classification_score"],
+            )
+        except ValueError:
+            return np.nan
 
     dfg = df.groupby(["malignant_means", "log2_fc", "run_id"])
     roc_curves = dfg.apply(compute_curve_for_group)
