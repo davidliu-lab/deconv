@@ -18,5 +18,10 @@
         "**/.git/subtree-cache/**": true,
         "**/node_modules/*/**": true,
         "**/_build/**": true
-    }
+    },
+    "python.testing.pytestArgs": [
+        "helpers"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true
 }
