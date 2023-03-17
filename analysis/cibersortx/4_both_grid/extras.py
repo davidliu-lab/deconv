@@ -14,6 +14,7 @@ import sklearn.metrics
 
 
 logger = logging.getLogger(__name__)
+print("loading extras module")
 
 
 def get_parquet_paths(path_root: upath.UPath) -> list[upath.UPath]:
@@ -91,8 +92,6 @@ def load_gene_stats(path_root: upath.UPath):
     # add "origin" column
     df["origin"] = df.index.get_level_values("path").map(extract_origin_from_path)
 
-    # add "classification_score" column
-    df["classification_score"] = df["-log10_pval_signed"] * np.sign(df["log2_fc"].astype(float))
     # add "gene_perturbed" column
     path_genes_perturbed = (
         upath.UPath("gs://liulab/differential_composition_and_expression/20230224_07h54m40s")
@@ -189,13 +188,17 @@ def make_volcano_grid_density_contour(
     return fig
 
 
+def compute_classification_score(df: pd.DataFrame) -> pd.Series:
+    return df["-log10_pval"] * np.sign(df["log2_fold_change"]) * np.sign(df["log2_fc"].astype(float))
+
+
 def calculate_roc(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
     - Computes precision and recall using the column "-log10_pval" as the score.
     - Uses sklearn.metrics.roc_curve
     """
     df = df.reset_index()
-    dfg = df.groupby(["malignant_means", "log2_fc", "run_id"])
+    df["classification_score"] = compute_classification_score(df)
 
     def compute_curve_for_group(df: pd.DataFrame) -> pd.DataFrame:
         data = {}
@@ -211,6 +214,7 @@ def calculate_roc(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
             y_score=df["classification_score"],
         )
 
+    dfg = df.groupby(["malignant_means", "log2_fc", "run_id"])
     roc_curves = dfg.apply(compute_curve_for_group)
     roc_auc_scores = dfg.apply(compute_roc_auc_score_for_group)
     return roc_curves, roc_auc_scores
@@ -228,13 +232,19 @@ def plot_roc(df: pd.DataFrame) -> go.Figure:
         hover_data=["thresholds"],
         color="run_id",
     )
-    fig.add_shape(type="line", line=dict(dash="dash"), x0=0, x1=1, y0=0, y1=1)
-    fig.update_xaxes(constrain="domain", dtick=0.2)
-    fig.update_yaxes(scaleanchor="x", scaleratio=1, dtick=0.2)
-    fig.update_xaxes(range=[0, 1])
-    fig.update_yaxes(range=[0, 1])
+    fig.update_xaxes(
+        range=[0, 1],
+        constrain="domain",
+        dtick=0.2,
+    )
+    fig.update_yaxes(
+        range=[0, 1],
+        scaleanchor="x",
+        scaleratio=1,
+        dtick=0.2,
+    )
     fig.update_layout(
-        title="ROC Curve",
+        title="ROC Curves",
     )
     # remove variable name from facet label
     fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
@@ -250,6 +260,7 @@ def calculate_precision_and_recall(df: pd.DataFrame) -> pd.DataFrame:
     - Uses sklearn.metrics.precision_recall_curve
     """
     df = df.reset_index()
+    df["classification_score"] = compute_classification_score(df)
 
     def compute_curve(df: pd.DataFrame) -> pd.DataFrame:
         precision, recall, thresholds = sklearn.metrics.precision_recall_curve(
@@ -283,8 +294,17 @@ def plot_precision_recall_curve(df: pd.DataFrame) -> go.Figure:
         hover_data=["thresholds"],
         color="run_id",
     )
-    fig.update_xaxes(range=[0, 1])
-    fig.update_yaxes(range=[0, 1])
+    fig.update_xaxes(
+        range=[0, 1],
+        constrain="domain",
+        dtick=0.2,
+    )
+    fig.update_yaxes(
+        range=[0, 1],
+        scaleanchor="x",
+        scaleratio=1,
+        dtick=0.2,
+    )
     fig.update_layout(
         title="Precision-Recall Curve",
     )
