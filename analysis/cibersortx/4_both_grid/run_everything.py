@@ -1,6 +1,5 @@
 import itertools
 import logging
-from typing import Union
 
 import dask.dataframe as dd
 import numpy as np
@@ -36,46 +35,46 @@ def compute_stats(
     return gene_stats
 
 
-def construct_dataset(
-    sc_rnaseq: pd.DataFrame,
-    sc_metadata: pd.DataFrame,
-    fractions_to_sample_from: pd.DataFrame,
-    genes_to_perturb: pd.Index,
-    log2_fc: Union[float, None],
-    mean_malignant_value: Union[float, None],
-    rng: np.random.Generator,
-    n: int,
-    name: str,
-):
-    if log2_fc:
-        sc_rnaseq = perturb_scrnaseq_gene_expression(
-            sc_rnaseq,
-            sc_metadata,
-            "Malignant",
-            genes_to_perturb,
-            scaling_factor=2.0**log2_fc,
-        )
-    if mean_malignant_value:
-        fractions_to_sample_from = perturb_malignant_fractions(
-            fractions_to_sample_from, mean_malignant_value
-        )
-    else:
-        fractions_to_sample_from = fractions_to_sample_from
-    fractions, bulk_rnaseq, cell_type_geps = simulate_data(
-        sc_rnaseq,
-        sc_metadata,
-        fractions_to_sample_from,
-        rng,
-        n,
-        name,
-    )
-    return fractions, bulk_rnaseq, cell_type_geps
+# def construct_dataset(
+#     sc_rnaseq: pd.DataFrame,
+#     sc_metadata: pd.DataFrame,
+#     fractions_to_sample_from: pd.DataFrame,
+#     genes_to_perturb: pd.Index,
+#     log2_fc: Union[float, None],
+#     mean_malignant_value: Union[float, None],
+#     rng: np.random.Generator,
+#     n: int,
+#     name: str,
+# ):
+#     logger.debug("constructing dataset for %s, %s, %s", log2_fc, mean_malignant_value, name)
+#     if log2_fc:
+#         logger.debug("making perturbed scRNA-seq")
+#         sc_rnaseq = perturb_scrnaseq_gene_expression(
+#             sc_rnaseq,
+#             sc_metadata,
+#             "Malignant",
+#             genes_to_perturb,
+#             scaling_factor=2.0**log2_fc,
+#         )
+#     if mean_malignant_value:
+#         logger.debug("making perturbed fractions_to_sample_from")
+#         fractions_to_sample_from = perturb_malignant_fractions(
+#             fractions_to_sample_from, mean_malignant_value
+#         )
+#     return simulate_data(
+#         sc_rnaseq,
+#         sc_metadata,
+#         fractions_to_sample_from,
+#         rng,
+#         n,
+#         name,
+#     )
 
 
 if __name__ == "__main__":
     helpers.logging.configure_logging()
     logger.setLevel("DEBUG")
-    n = 50  # samples per group
+    N = 50  # samples per group
     root_results = UPath(
         f"gs://liulab/differential_composition_and_expression/{make_a_nice_timestamp_of_now()}"
     )
@@ -99,7 +98,7 @@ if __name__ == "__main__":
     genes_to_perturb = select_100_genes_at_least_somewhat_expressed_in_malignant(
         sc_rnaseq, sc_metadata, rng
     )
-    malignant_log2_fold_changes = np.array([-1.5, -1.0, -0.5, 0.0, 0.5, 1.0, 1.5])
+    malignant_log2_fc_group_b_values = np.array([-1.5, -1.0, -0.5, 0.0, 0.5, 1.0, 1.5])
     malignant_fraction_mean_pairs = [
         (0.55, 0.85),
         (0.65, 0.75),
@@ -111,35 +110,60 @@ if __name__ == "__main__":
         (0.85, 0.55),
     ]
     pd.DataFrame(genes_to_perturb).to_csv(root_results / "genes_perturbed.csv", index=False)
-    for run_id, malignant_fraction_mean_pair, log2_fc in itertools.product(
-        range(5), malignant_fraction_mean_pairs, malignant_log2_fold_changes
+    for run_id, malignant_fraction_mean_pair, log2_fc_group_b in itertools.product(
+        range(5), malignant_fraction_mean_pairs, malignant_log2_fc_group_b_values
     ):
         logger.debug("starting experiment")
-        malignant_means_str = ",".join(map(str, malignant_fraction_mean_pair))
         experiment_path = (
             root_results
             / f"experiment_id={next(experiment_counter):03d}"
-            / f"malignant_means={malignant_means_str}"
-            / f"log2_fc={log2_fc:4.2f}"
+            / "malignant_means={0},{1}".format(*malignant_fraction_mean_pair)
+            / f"log2_fc={log2_fc_group_b:4.2f}"
             / f"run_id={run_id:02d}"
         )
         logger.debug("experiment_path: %s", experiment_path)
-        rng = np.random.default_rng(seed=next(seed_counter))
         logger.debug("perturbing gene expression")
         fractions_list, bulk_rnaseq_list = [], []
         for name, mean_malignant_value in zip(["a", "b"], malignant_fraction_mean_pair):
-            log2_fc = log2_fc if name == "b" else 0.0
-            fractions, bulk_rnaseq, cell_type_geps = construct_dataset(
-                sc_rnaseq,
+            rng = np.random.default_rng(seed=next(seed_counter))
+            log2_fc = log2_fc_group_b if name == "b" else 0.0
+            if log2_fc:
+                logger.debug("making perturbed scRNA-seq")
+                sc_rnaseq_to_sample_from = perturb_scrnaseq_gene_expression(
+                    sc_rnaseq,
+                    sc_metadata,
+                    "Malignant",
+                    genes_to_perturb,
+                    scaling_factor=2.0**log2_fc,
+                )
+            else:
+                sc_rnaseq_to_sample_from = sc_rnaseq
+            if mean_malignant_value:
+                logger.debug("making perturbed fractions_to_sample_from")
+                fractions_to_sample_from = perturb_malignant_fractions(
+                    f_tcga_skcm_mets, mean_malignant_value
+                )
+            else:
+                fractions_to_sample_from = f_tcga_skcm_mets
+            fractions, bulk_rnaseq, cell_type_geps = simulate_data(
+                sc_rnaseq_to_sample_from,
                 sc_metadata,
-                f_tcga_skcm_mets,
-                genes_to_perturb,
-                log2_fc,
-                mean_malignant_value,
+                fractions_to_sample_from,
                 rng,
-                n,
+                N,
                 name,
             )
+            # fractions, bulk_rnaseq, cell_type_geps = construct_dataset(
+            #     sc_rnaseq,
+            #     sc_metadata,
+            #     f_tcga_skcm_mets,
+            #     genes_to_perturb,
+            #     log2_fc,
+            #     mean_malignant_value,
+            #     rng,
+            #     n,
+            #     name,
+            # )
             logger.debug("saving data to %s", experiment_path)
             cell_type_geps.to_parquet(experiment_path / name / "cell_type_geps.parquet")
             bulk_rnaseq.to_parquet(experiment_path / name / "bulk_rnaseq.parquet")
@@ -162,6 +186,7 @@ if __name__ == "__main__":
         gene_stats_bulk = compute_stats(bulk_rnaseq_all, "a", "b")
         gene_stats_bulk["perturbed"] = gene_stats_bulk["gene_symbol"].isin(genes_to_perturb)
         gene_stats_bulk.to_parquet(experiment_path / "deg_analysis" / "gene_stats_bulk.parquet")
+        gene_stats_bulk.to_parquet(experiment_path / "deg_analysis" / "bulk" / "gene_stats.parquet")
 
         logger.debug("computing stats for malignant rna-seq inferred by CIBERSORTx")
         pattern = experiment_path / "cibersortx" / "**" / "*Malignant*txt"
@@ -176,7 +201,12 @@ if __name__ == "__main__":
             .compute()
         )
         gene_stats_malignant_cibersortx = compute_stats(rnaseq_malignant_cibersortx, "a", "b")
-        gene_stats_malignant_cibersortx["perturbed"] = gene_stats_malignant_cibersortx["gene_symbol"].isin(genes_to_perturb)
+        gene_stats_malignant_cibersortx["perturbed"] = gene_stats_malignant_cibersortx[
+            "gene_symbol"
+        ].isin(genes_to_perturb)
         gene_stats_malignant_cibersortx.to_parquet(
             experiment_path / "deg_analysis" / "gene_stats_malignant_cibersortx.parquet"
+        )
+        gene_stats_malignant_cibersortx.to_parquet(
+            experiment_path / "deg_analysis" / "malignant_cibersortx" / "gene_stats.parquet"
         )

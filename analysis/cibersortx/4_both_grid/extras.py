@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_parquet_paths(path_root: upath.UPath) -> list[upath.UPath]:
-    paths = path_root.glob("**/deg_analysis/gene_stats_*")
+    paths = path_root.glob("**/gene_stats_*")
     paths = map(str, paths)
     # paths = filter(re.compile(r".*run_id=0[0-2].*").match, paths)
     paths = sorted(paths)
@@ -55,8 +55,7 @@ def extract_origin_from_path(path: str) -> str:
 def test_extract_origin_from_path():
     test_path = "/foo=bar/gene_stats_thing.parquet"
     result = extract_origin_from_path(test_path)
-    expectation = "thing"
-    assert result == expectation
+    assert result == "thing"
 
 
 ordering_functions = {
@@ -143,11 +142,17 @@ def make_volcano_grid_scatter(df: pd.DataFrame) -> go.Figure:
         facet_row="log2_fc",
         # hover_name="gene_symbol",
         color="gene_perturbed",
+        # use marker symbols "." and "*" for "gene_perturbed" values of False and True
+        # respectively
+        symbol="gene_perturbed",
+        symbol_map={False: "circle", True: "x"},
     )
     # set marker size to 1
     fig.update_traces(marker_size=1)
     fig.update_xaxes(range=[-2, 2])
     fig.update_yaxes(range=[0, 6])
+    # remove variable name from facet label
+    fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
     return fig
 
 
@@ -179,6 +184,8 @@ def make_volcano_grid_density_contour(
     )
     fig.update_xaxes(range=[-2, 2])
     fig.update_yaxes(range=[0, 6])
+    # remove variable name from facet label
+    fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
     return fig
 
 
