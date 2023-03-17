@@ -189,7 +189,9 @@ def make_volcano_grid_density_contour(
 
 
 def compute_classification_score(df: pd.DataFrame) -> pd.Series:
-    return df["-log10_pval"] * np.sign(df["log2_fold_change"]) * np.sign(df["log2_fc"].astype(float))
+    sign_observed_log2_fc = np.sign(df["log2_fold_change"]).replace({0: 1})
+    sign_dist_log2_fc = np.sign(df["log2_fc"].astype(float)).replace({0: 1})
+    return df["-log10_pval"] * sign_dist_log2_fc * sign_observed_log2_fc
 
 
 def calculate_roc(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -245,6 +247,7 @@ def plot_roc(df: pd.DataFrame) -> go.Figure:
     )
     fig.update_layout(
         title="ROC Curves",
+        showlegend=False,
     )
     # remove variable name from facet label
     fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
@@ -307,6 +310,7 @@ def plot_precision_recall_curve(df: pd.DataFrame) -> go.Figure:
     )
     fig.update_layout(
         title="Precision-Recall Curve",
+        showlegend=False,
     )
     # remove variable name from facet label
     fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
