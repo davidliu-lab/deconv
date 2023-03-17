@@ -91,6 +91,8 @@ def load_gene_stats(path_root: upath.UPath):
     # add "origin" column
     df["origin"] = df.index.get_level_values("path").map(extract_origin_from_path)
 
+    # add "classification_score" column
+    df["classification_score"] = df["-log10_pval_signed"] * np.sign(df["log2_fc"].astype(float))
     # add "gene_perturbed" column
     path_genes_perturbed = (
         upath.UPath("gs://liulab/differential_composition_and_expression/20230224_07h54m40s")
@@ -114,8 +116,6 @@ def load_gene_stats(path_root: upath.UPath):
         ]
     )
     df = df.sort_index()
-    # for name in ordering_functions:
-    #     df = df.sort_index(level=name, key=ordering_functions[name])
     return df
 
 
@@ -138,8 +138,8 @@ def make_volcano_grid_scatter(df: pd.DataFrame) -> go.Figure:
         df,
         x="log2_fold_change",
         y="-log10_pval",
-        facet_col="malignant_means",
-        facet_row="log2_fc",
+        facet_col="log2_fc",
+        facet_row="malignant_means",
         # hover_name="gene_symbol",
         color="gene_perturbed",
         # use marker symbols "." and "*" for "gene_perturbed" values of False and True
@@ -177,8 +177,8 @@ def make_volcano_grid_density_contour(
         df,
         x="log2_fold_change",
         y="-log10_pval",
-        facet_col="malignant_means",
-        facet_row="log2_fc",
+        facet_col="log2_fc",
+        facet_row="malignant_means",
         # hover_name="gene_symbol",
         # color="gene_perturbed",
     )
@@ -198,28 +198,17 @@ def calculate_roc(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     dfg = df.groupby(["malignant_means", "log2_fc", "run_id"])
 
     def compute_curve_for_group(df: pd.DataFrame) -> pd.DataFrame:
-        # fpr, tpr, thresholds = sklearn.metrics.roc_curve(
-        #     y_true=df["gene_perturbed"],
-        #     y_score=df["-log10_pval"],
-        # )
-        # return pd.DataFrame(
-        #     {
-        #         "fpr": fpr,
-        #         "tpr": tpr,
-        #         "thresholds": thresholds,
-        #     }
-        # )
         data = {}
         data["fpr"], data["tpr"], data["thresholds"] = sklearn.metrics.roc_curve(
             y_true=df["gene_perturbed"],
-            y_score=df["-log10_pval"],
+            y_score=df["classification_score"],
         )
         return pd.DataFrame.from_records(data)
 
     def compute_roc_auc_score_for_group(df: pd.DataFrame) -> float:
         return sklearn.metrics.roc_auc_score(
             y_true=df["gene_perturbed"],
-            y_score=df["-log10_pval"],
+            y_score=df["classification_score"],
         )
 
     roc_curves = dfg.apply(compute_curve_for_group)
@@ -234,8 +223,8 @@ def plot_roc(df: pd.DataFrame) -> go.Figure:
         x="fpr",
         y="tpr",
         labels={"x": "False Positive Rate", "y": "True Positive Rate"},
-        facet_col="malignant_means",
-        facet_row="log2_fc",
+        facet_col="log2_fc",
+        facet_row="malignant_means",
         hover_data=["thresholds"],
         color="run_id",
     )
@@ -265,7 +254,7 @@ def calculate_precision_and_recall(df: pd.DataFrame) -> pd.DataFrame:
     def compute_curve(df: pd.DataFrame) -> pd.DataFrame:
         precision, recall, thresholds = sklearn.metrics.precision_recall_curve(
             y_true=df["gene_perturbed"],
-            probas_pred=df["pval"],
+            probas_pred=df["classification_score"],
         )
         # extend thresholds by one to include infinity
         thresholds = np.append(thresholds, np.inf)
@@ -289,8 +278,8 @@ def plot_precision_recall_curve(df: pd.DataFrame) -> go.Figure:
         x="recall",
         y="precision",
         labels={"x": "Recall", "y": "Precision"},
-        facet_col="malignant_means",
-        facet_row="log2_fc",
+        facet_col="log2_fc",
+        facet_row="malignant_means",
         hover_data=["thresholds"],
         color="run_id",
     )
@@ -299,4 +288,6 @@ def plot_precision_recall_curve(df: pd.DataFrame) -> go.Figure:
     fig.update_layout(
         title="Precision-Recall Curve",
     )
+    # remove variable name from facet label
+    fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
     return fig
