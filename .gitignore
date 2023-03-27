@@ -3,10 +3,9 @@ nohup*
 *credentials*
 *results*
 data
-_build
 
-# Created by https://www.toptal.com/developers/gitignore/api/python,r,macos,jupyternotebooks,visualstudiocode,images,web
-# Edit at https://www.toptal.com/developers/gitignore?templates=python,r,macos,jupyternotebooks,visualstudiocode,images,web
+# Created by https://www.toptal.com/developers/gitignore/api/python,r,macos,jupyternotebooks,visualstudiocode,images,web,text,nohup
+# Edit at https://www.toptal.com/developers/gitignore?templates=python,r,macos,jupyternotebooks,visualstudiocode,images,web,text,nohup
 
 ### Images ###
 # JPEG
@@ -119,6 +118,9 @@ Temporary Items
 ### macOS Patch ###
 # iCloud generated files
 *.icloud
+
+### Nohup ###
+nohup.out
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
@@ -286,6 +288,9 @@ poetry.toml
 # ruff
 .ruff_cache/
 
+# LSP config files
+pyrightconfig.json
+
 ### R ###
 # History files
 .Rhistory
@@ -341,6 +346,16 @@ rsconnect/
 # R package: bookdown caching files
 /*_files/
 
+### Text ###
+*.doc
+*.docx
+*.msg
+*.pages
+*.rtf
+*.txt
+*.wpd
+*.wps
+
 ### VisualStudioCode ###
 .vscode/*
 !.vscode/settings.json
@@ -375,4 +390,4 @@ rsconnect/
 *.wat
 *.xhtml
 
-# End of https://www.toptal.com/developers/gitignore/api/python,r,macos,jupyternotebooks,visualstudiocode,images,web
+# End of https://www.toptal.com/developers/gitignore/api/python,r,macos,jupyternotebooks,visualstudiocode,images,web,text,nohup
