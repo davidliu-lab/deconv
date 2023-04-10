@@ -438,18 +438,17 @@ def plot_metric_by_threshold(
     )
     # add vertical line at x=1.0
     if score_column.startswith("-log10_pval_adjusted_bh"):
-        fig.add_shape(
-            type="line",
-            x0=1.0,
-            y0=0,
-            x1=1.0,
-            y1=1,
-            line=dict(
-                color="black",
-                width=4,
-                dash="dot",
-            ),
-        )
+        for row, col in fig._get_subplot_coordinates():
+            fig.add_shape(
+                type="line",
+                x0=1.0,
+                y0=0,
+                x1=1.0,
+                y1=1,
+                line=dict(color="black", width=2, dash="dot"),
+                row=row,
+                col=col,
+            )
     fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
     fig = _util_remove_excess_axis_titles(fig)
     return fig
