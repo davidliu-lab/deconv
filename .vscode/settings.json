@@ -23,5 +23,6 @@
         "helpers"
     ],
     "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true
+    "python.testing.pytestEnabled": true,
+    "r.rpath.mac": "/Users/william/.pyenv/versions/miniforge3/envs/r/bin/R"
 }

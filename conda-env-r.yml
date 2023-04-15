@@ -1,11 +1,20 @@
-name: r-base
+name: r
 channels:
   - conda-forge
 dependencies:
-  - mamba
-  - r-renv=0.16.0
+  - r-base
+  # - r-duckdb  # no arm64 build
+  - r-essentials
+  - r-irkernel
+  - r-knitr
+  - r-lintr
+  - r-recommended
+  - r-reticulate
+  - r-tidyverse
+  - r-renv>=0.17
+  # - r-pak  # fails. see https://github.com/r-lib/pak/issues/480  # - r-pak  # not installable on mac?
 
-# want...
+# maybe also:
 # - plotly
 # - formatter? import sorter?
 # - linter?

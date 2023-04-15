@@ -26,4 +26,3 @@ dependencies:
   - pyupgrade
   - pip:
     - git+https://github.com/choldgraf/jupyter-http-server
-  - r-renv=0.16.0
