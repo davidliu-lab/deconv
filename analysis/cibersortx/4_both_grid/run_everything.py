@@ -35,42 +35,6 @@ def compute_stats(
     return gene_stats
 
 
-# def construct_dataset(
-#     sc_rnaseq: pd.DataFrame,
-#     sc_metadata: pd.DataFrame,
-#     fractions_to_sample_from: pd.DataFrame,
-#     genes_to_perturb: pd.Index,
-#     log2_fc: Union[float, None],
-#     mean_malignant_value: Union[float, None],
-#     rng: np.random.Generator,
-#     n: int,
-#     name: str,
-# ):
-#     logger.debug("constructing dataset for %s, %s, %s", log2_fc, mean_malignant_value, name)
-#     if log2_fc:
-#         logger.debug("making perturbed scRNA-seq")
-#         sc_rnaseq = perturb_scrnaseq_gene_expression(
-#             sc_rnaseq,
-#             sc_metadata,
-#             "Malignant",
-#             genes_to_perturb,
-#             scaling_factor=2.0**log2_fc,
-#         )
-#     if mean_malignant_value:
-#         logger.debug("making perturbed fractions_to_sample_from")
-#         fractions_to_sample_from = perturb_malignant_fractions(
-#             fractions_to_sample_from, mean_malignant_value
-#         )
-#     return simulate_data(
-#         sc_rnaseq,
-#         sc_metadata,
-#         fractions_to_sample_from,
-#         rng,
-#         n,
-#         name,
-#     )
-
-
 if __name__ == "__main__":
     helpers.logging.configure_logging()
     logger.setLevel("DEBUG")
@@ -101,12 +65,18 @@ if __name__ == "__main__":
     malignant_log2_fc_group_b_values = np.array([-1.5, -1.0, -0.5, 0.0, 0.5, 1.0, 1.5])
     malignant_fraction_mean_pairs = [
         (0.55, 0.85),
+        (0.57, 0.83),
+        (0.6, 0.8),
+        (0.63, 0.77),
         (0.65, 0.75),
         (0.7, 0.72),
         (None, None),
         (0.71, 0.71),
         (0.72, 0.7),
         (0.75, 0.65),
+        (0.77, 0.63),
+        (0.8, 0.6),
+        (0.83, 0.57),
         (0.85, 0.55),
     ]
     pd.DataFrame(genes_to_perturb).to_csv(root_results / "genes_perturbed.csv", index=False)
@@ -153,17 +123,6 @@ if __name__ == "__main__":
                 N,
                 name,
             )
-            # fractions, bulk_rnaseq, cell_type_geps = construct_dataset(
-            #     sc_rnaseq,
-            #     sc_metadata,
-            #     f_tcga_skcm_mets,
-            #     genes_to_perturb,
-            #     log2_fc,
-            #     mean_malignant_value,
-            #     rng,
-            #     n,
-            #     name,
-            # )
             logger.debug("saving data to %s", experiment_path)
             cell_type_geps.to_parquet(experiment_path / name / "cell_type_geps.parquet")
             bulk_rnaseq.to_parquet(experiment_path / name / "bulk_rnaseq.parquet")

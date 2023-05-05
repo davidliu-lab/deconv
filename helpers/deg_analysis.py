@@ -6,9 +6,9 @@ import pandas as pd
 import plotly.basedatatypes
 import plotly.express as px
 import plotly.graph_objects as go
-from plotly.subplots import make_subplots
 import scipy.stats
 from pandas.core.groupby.generic import SeriesGroupBy
+from plotly.subplots import make_subplots
 from statsmodels.stats.multitest import multipletests
 
 logger = logging.getLogger(__name__)
@@ -29,7 +29,9 @@ def add_multipletests_stats(df: pd.DataFrame) -> pd.DataFrame:
     # multiple hypothesis testing with benjamini-hochberg
     for alpha in alphas:
         significance_column = f"significant_bh_fdr={alpha:.2f}"
-        df[significance_column] = multipletests(df["pval"], alpha=alpha, method="fdr_bh")[0]
+        reject, pvals_corrected = multipletests(df["pval"], alpha=alpha, method="fdr_bh")[0:2]
+        df[significance_column] = reject
+        df["pval_adjusted_bh"] = pvals_corrected
         n_signif_results = df[significance_column].sum()
         pval_threshold_str = f"pval_threshold_fdr={alpha:.2f}"
         df.attrs[pval_threshold_str] = (n_signif_results + 1) * alpha / len(df)
@@ -60,6 +62,8 @@ def compute_stats(
                 # "pval_ttest": scipy.stats.ttest_ind(series_1, series_2).pvalue,
                 "fold_change": fold_change,
                 "sparsity_overall": sparsity_overall,
+                "expression_mean_1": series_1.mean(),
+                "expression_mean_2": series_2.mean(),
             }
         )
         return results

@@ -1,9 +1,8 @@
-from cgitb import reset
 import itertools
 import logging
 import re
 from functools import partial
-from turtle import width
+from typing import Union
 
 import numpy as np
 import pandas as pd
@@ -66,8 +65,21 @@ ordering_functions = {
 }
 
 
-def load_gene_stats(path_root: upath.UPath):
-    parquet_paths = get_parquet_paths(path_root)
+def load_gene_stats(path_or_paths: Union[upath.UPath, list[upath.UPath]]) -> pd.DataFrame:
+    if isinstance(path_or_paths, list):
+        logger.debug("Loading from multiple paths: %s", path_or_paths)
+        parquet_paths = [
+            parquet_path
+            for path_root in path_or_paths
+            for parquet_path in get_parquet_paths(path_root)
+        ]
+        path_root = path_or_paths[0]
+    else:
+        path_root = path_or_paths
+        logger.debug("Loading from single path: %s", path_root)
+        parquet_paths = get_parquet_paths(path_root)
+    logger.debug("Loading %d parquet files", len(parquet_paths))
+    # parquet_paths = parquet_paths[::29]
     df = pd.concat(
         {str(path): pd.read_parquet(path) for path in parquet_paths},
         names=["path", "index"],
