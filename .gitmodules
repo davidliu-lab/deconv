@@ -1,0 +1,3 @@
+[submodule "bayesprism/BayesPrism"]
+	path = bayesprism/BayesPrism
+	url = https://github.com/Danko-Lab/BayesPrism
