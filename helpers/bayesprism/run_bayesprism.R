@@ -1,14 +1,50 @@
-suppressWarnings(library(BayesPrism))
+library("logger")
+library("optparse")
 
+# define the option parser
+option_list <- list(
+  make_option(
+    opt_str = "--reference_sc_rnaseq_uri",
+    dest = "reference_sc_rnaseq_uri"
+  ),
+  make_option(
+    opt_str = "--reference_sc_rnaseq_annotations_uri",
+    dest = "reference_sc_rnaseq_annotations_uri",
+  ),
+  make_option(
+    opt_str = "--bulk_rnaseq_uri",
+    dest = "bulk_rnaseq_uri"
+  )
+)
+# parse the command line arguments
+opt_parser <- OptionParser(option_list = option_list)
+opt <- parse_args(opt_parser)
+
+read_data <- function(path_uri) {
+  # log message about reading from path_uri with level DEBUG
+  log_info("Loading data from ", path_uri)
+  library("arrow")
+  library("fs")
+  library("readr")
+
+  # Check the file extension to determine the file type
+  thing <- path(fs::path(path_uri))
+  log_info("thing: ", thing)
+  file_extension <- tools::file_ext(path_uri)
+  if (file_extension == "csv") {
+    log_info("Read the data from a CSV file")
+    # data <- read.csv()
+  } else if (file_extension == "parquet") {
+    log_info("Read the data from a Parquet file")
+    data <- arrow::read_parquet(path(fs::path(path_uri)))
+  } else {
+    log_info("Handle unsupported file types")
+    stop(paste0("Unsupported file type: ", file_extension))
+  }
+  return(data)
+}
 load("./BayesPrism/tutorial.dat/tutorial.gbm.rdata")
 ls()
-
-dim(bk.dat)
-#> [1]   169 60483
-head(rownames(bk.dat))
-#> [1] "TCGA-06-2563-01A-01R-1849-01" "TCGA-06-0749-01A-01R-1849-01" "TCGA-06-5418-01A-01R-1849-01" "TCGA-06-0211-01B-01R-1849-01" "TCGA-19-2625-01A-01R-1850-01" "TCGA-19-4065-02A-11R-2005-01"
-head(colnames(bk.dat))
-#> [1] "ENSG00000000003.13" "ENSG00000000005.5"  "ENSG00000000419.11" "ENSG00000000457.12" "ENSG00000000460.15" "ENSG00000000938.11"
 
 # bk.dat: The sample-by-gene raw count matrix of bulk RNA-seq expression.
 # rownames are bulk sample IDs, while colnames are gene names/IDs.
@@ -19,6 +55,11 @@ head(rownames(bk.dat))
 head(colnames(bk.dat))
 #> [1] "ENSG00000000003.13" "ENSG00000000005.5"  "ENSG00000000419.11" "ENSG00000000457.12" "ENSG00000000460.15" "ENSG00000000938.11"
 
+bulk_rnaseq_matrix <- read_data(opt$bulk_rnaseq_uri)
+dim(bulk_rnaseq_matrix)
+head(rownames(bulk_rnaseq_matrix))
+head(colnames(bulk_rnaseq_matrix))
+
 # sc.dat: The cell-by-gene raw count matrix of bulk RNA-seq expression.
 # rownames are bulk cell IDs, while colnames are gene names/IDs.
 dim(sc.dat)
@@ -27,11 +68,30 @@ head(rownames(sc.dat))
 #> [1] "PJ016.V3" "PJ016.V4" "PJ016.V5" "PJ016.V6" "PJ016.V7" "PJ016.V8"
 head(colnames(sc.dat))
 
+reference_sc_rnaseq_matrix <- read_data(opt$reference_sc_rnaseq_uri)
+dim(reference_sc_rnaseq_matrix)
+head(rownames(reference_sc_rnaseq_matrix))
+head(colnames(reference_sc_rnaseq_matrix))
+
 sort(table(cell.type.labels))
 
 sort(table(cell.state.labels))
 
 table(cbind.data.frame(cell.state.labels, cell.type.labels))
+
+# exit status 0
+quit(status = 0)
+
+data_reference_scrnaseq <- read_data(opt$_)
+dim(data_reference_scrnaseq)
+data_reference_scrnaseq_annotations <- read_data(opt$_)
+data_bulkrnaseq <- read_data(opt$bulk_rnaseq_uri)
+
+# print data shape
+dim(data_reference_scrnaseq)
+dim(data_reference_scrnaseq_annotations)
+dim(data_bulkrnaseq)
+
 
 plot.cor.phi(
   input = sc.dat,
@@ -115,6 +175,13 @@ sc.dat.filtered.pc.sig <- select.marker(
 )
 
 dim(sc.dat.filtered.pc.sig)
+
+library("BayesPrism")
+# print the functions in BayesPrism
+ls("package:BayesPrism")
+
+# exit the program with error code 0
+quit(status = 0)
 
 myPrism <- new.prism(
   reference = sc.dat.filtered.pc,
