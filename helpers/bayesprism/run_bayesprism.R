@@ -1,5 +1,6 @@
 library("logger")
 library("optparse")
+library("tidyverse")
 
 # define the option parser
 option_list <- list(
@@ -21,30 +22,25 @@ opt_parser <- OptionParser(option_list = option_list)
 opt <- parse_args(opt_parser)
 
 read_data <- function(path_uri) {
-  # log message about reading from path_uri with level DEBUG
   log_info("Loading data from ", path_uri)
   library("arrow")
-  library("fs")
-  library("readr")
-
-  # Check the file extension to determine the file type
-  thing <- path(fs::path(path_uri))
-  log_info("thing: ", thing)
-  file_extension <- tools::file_ext(path_uri)
-  if (file_extension == "csv") {
-    log_info("Read the data from a CSV file")
-    # data <- read.csv()
-  } else if (file_extension == "parquet") {
-    log_info("Read the data from a Parquet file")
-    data <- arrow::read_parquet(path(fs::path(path_uri)))
-  } else {
-    log_info("Handle unsupported file types")
-    stop(paste0("Unsupported file type: ", file_extension))
-  }
+  log_info("Read the data from a Parquet file")
+  data <- arrow::read_parquet(file = path_uri)
   return(data)
 }
+
+bulk_rnaseq_matrix <- read_data(opt$bulk_rnaseq_uri)
+bulk_rnaseq_matrix <- bulk_rnaseq_matrix %>% column_to_rownames(var="gene_symbol")
+bulk_rnaseq_matrix <- t(bulk_rnaseq_matrix)
+dim(bulk_rnaseq_matrix)
+head(rownames(bulk_rnaseq_matrix))
+head(colnames(bulk_rnaseq_matrix))
+
 load("./BayesPrism/tutorial.dat/tutorial.gbm.rdata")
 ls()
+
+# print hello world
+print("Hello world!")
 
 # bk.dat: The sample-by-gene raw count matrix of bulk RNA-seq expression.
 # rownames are bulk sample IDs, while colnames are gene names/IDs.
@@ -55,10 +51,10 @@ head(rownames(bk.dat))
 head(colnames(bk.dat))
 #> [1] "ENSG00000000003.13" "ENSG00000000005.5"  "ENSG00000000419.11" "ENSG00000000457.12" "ENSG00000000460.15" "ENSG00000000938.11"
 
-bulk_rnaseq_matrix <- read_data(opt$bulk_rnaseq_uri)
-dim(bulk_rnaseq_matrix)
-head(rownames(bulk_rnaseq_matrix))
-head(colnames(bulk_rnaseq_matrix))
+typeof(bk.dat)
+typeof(bulk_rnaseq_matrix)
+str(bk.dat)
+str(bulk_rnaseq_matrix)
 
 # sc.dat: The cell-by-gene raw count matrix of bulk RNA-seq expression.
 # rownames are bulk cell IDs, while colnames are gene names/IDs.
@@ -141,9 +137,7 @@ sc.dat.filtered <- cleanup.genes(
   exp.cells = 5
 )
 
-
 dim(sc.dat.filtered)
-
 
 # note this function only works for human data. For other species, you are advised to make plots by yourself.
 plot.bulk.vs.sc(
@@ -157,6 +151,10 @@ sc.dat.filtered.pc <- select.gene.type(
   sc.dat.filtered,
   gene.type = "protein_coding"
 )
+
+dim(sc.dat.filtered.pc)
+head(rownames(sc.dat.filtered.pc))
+head(colnames(sc.dat.filtered.pc))
 
 diff.exp.stat <- get.exp.stat(
   sc.dat = sc.dat[, colSums(sc.dat > 0) > 3], # filter genes to reduce memory use
@@ -184,8 +182,10 @@ ls("package:BayesPrism")
 quit(status = 0)
 
 myPrism <- new.prism(
-  reference = sc.dat.filtered.pc,
-  mixture = bk.dat,
+  # reference = sc.dat.filtered.pc,
+  reference = reference_sc_rnaseq,
+  # mixture = bk.dat,
+  mixture = bulk_rnaseq_matrix,
   input.type = "count.matrix",
   cell.type.labels = cell.type.labels,
   cell.state.labels = cell.state.labels,

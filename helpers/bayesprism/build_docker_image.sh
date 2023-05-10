@@ -2,6 +2,10 @@
 
 docker build --progress=plain --tag grisaitis/bayesprism .
 
+python -m helpers.bayesprism.example
+
+exit(0)
+
 # list files in current working directory
 docker run \
     --rm \
@@ -9,10 +13,10 @@ docker run \
     --workdir /bayesprism \
     grisaitis/bayesprism
 
-# exit
-exit(0)
-    --entrypoint ls \
-    -la
+
+    # --entrypoint ls \
+    # -la
+
 
 docker run \
     --rm \
