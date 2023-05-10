@@ -21,18 +21,21 @@ def load_jerby_arnon(ref_genome="hg19", units="tpm") -> tuple[pd.DataFrame, pd.D
         raise NotImplementedError
 
 
-def load_jerby_arnon_hg19_tpm() -> tuple[pd.DataFrame, pd.DataFrame]:
+def load_jerby_arnon_hg19_tpm(subset=False) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Load Jerby-Arnon scRNA-seq data (hg19 tpm) from GEO (GSE115978)
 
     :return: sc_hg19_tpm, metadata
     """
     logger.debug("loading Jerby-Arnon scRNA-seq data")
+    if subset:
+        kwargs = {"skiprows": lambda i: i % 25}
+    else:
+        kwargs = {"engine": "pyarrow"}
     sc_hg19_tpm = (
         pd.read_csv(
             "gs://liulab/ftp/GSE115978/GSE115978_tpm.csv",
             index_col=0,
-            engine="pyarrow",
-            # skiprows=lambda i: i % 25,
+            **kwargs,
         )
         .rename_axis(index=columns.GENE_SYMBOL, columns=columns.SINGLE_CELL_ID)
         .sort_index(axis="columns")
