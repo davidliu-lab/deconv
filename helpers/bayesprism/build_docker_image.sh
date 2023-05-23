@@ -2,9 +2,16 @@
 
 docker build --progress=plain --tag grisaitis/bayesprism .
 
+# run this from python:
+docker run --rm -v $(pwd):/bayesprism grisaitis/bayesprism \
+  --sc_rnaseq_uri 
+  --sc_rnaseq_cell_types_uri 
+  --sc_rnaseq_cell_states_uri 
+  --bulk_rnaseq_uri 
+
+exit()
 python -m helpers.bayesprism.example
 
-exit(0)
 
 # list files in current working directory
 docker run \

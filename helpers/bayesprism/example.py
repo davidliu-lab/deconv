@@ -6,7 +6,7 @@ from upath.implementations.cloud import GCSPath
 import helpers
 from helpers.useful_small_things import make_a_nice_timestamp_of_now
 
-from . import run_and_save_results
+from helpers.bayesprism import run_and_save_results
 
 helpers.logging.configure_logging()
 logging.getLogger("helpers").setLevel("DEBUG")
