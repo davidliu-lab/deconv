@@ -1,7 +1,6 @@
 figures
 nohup*
 *credentials*
-*results*
 data
 
 # Created by https://www.toptal.com/developers/gitignore/api/python,r,macos,jupyternotebooks,visualstudiocode,images,web,text,nohup
