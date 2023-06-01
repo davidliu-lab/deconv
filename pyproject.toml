@@ -23,7 +23,12 @@ disable = [
   "missing-function-docstring",
   "missing-class-docstring",
   "missing-module-docstring",
+  "protected-access",  # e.g. go.Figure._get_subplot_coordinates
+  "use-dict-literal",
 ]
+
+[tool.pylint.design]
+max-locals = 25
 
 [tool.pylint.BASIC]
 variable-rgx = '^[a-z][a-z0-9]*((_[a-z0-9]+)*)?$'
