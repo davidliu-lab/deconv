@@ -8,8 +8,8 @@ import helpers
 from helpers import datasets
 from helpers.simulating_bulk_rnaseq import creating_mixtures
 from helpers.simulating_bulk_rnaseq.gene_perturbation import (
-    select_100_genes_at_least_somewhat_expressed_in_malignant,
     perturb_scrnaseq_gene_expression,
+    select_100_genes_at_least_somewhat_expressed_in_malignant,
 )
 
 logger = logging.getLogger(__name__)

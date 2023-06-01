@@ -7,13 +7,11 @@ from upath import UPath
 
 import helpers
 from helpers import datasets
-from helpers.simulating_bulk_rnaseq.gene_perturbation import (
-    select_100_genes_at_least_somewhat_expressed_in_malignant,
-    # select_100_genes,
-    # select_100_genes_densely_expressed_in_malignant,
-    perturb_scrnaseq_gene_expression,
-)
 from helpers.simulating_bulk_rnaseq import simulate_data
+from helpers.simulating_bulk_rnaseq.gene_perturbation import (  # select_100_genes,; select_100_genes_densely_expressed_in_malignant,
+    perturb_scrnaseq_gene_expression,
+    select_100_genes_at_least_somewhat_expressed_in_malignant,
+)
 from helpers.useful_small_things import make_a_nice_timestamp_of_now
 
 logger = logging.getLogger(__name__)
