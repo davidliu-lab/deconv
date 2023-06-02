@@ -1,7 +1,7 @@
 import logging
 
-import pyarrow.dataset as ds
 import pyarrow as pa
+import pyarrow.dataset as ds
 
 logger = logging.getLogger(__name__)
 
