@@ -108,14 +108,7 @@ def load_gene_stats(path_or_paths: Union[upath.UPath, list[upath.UPath]]) -> pd.
     gene_perturbation_was_nonzero = df["log2_fc"].astype(float).abs() > 0
     df["gene_perturbed"] = gene_in_perturbation_list & gene_perturbation_was_nonzero
 
-    # add signed p-value fields
-    sign_observed_log2_fc = np.sign(df["log2_fold_change"].fillna(0)).replace({0: 1})
-    sign_dist_log2_fc = np.sign(df["log2_fc"].astype(float)).replace({0: 1})
-    # df["-log10_pval_signed"] already exists
-    # df["-log10_pval_signed"] = df["-log10_pval"] * sign_observed_log2_fc
-    df["-log10_pval_signed_directional"] = (
-        df["-log10_pval"] * sign_dist_log2_fc * sign_observed_log2_fc
-    )
+    df["-log10_pval_signed_directional"] = get_neg_log10_pval_signed_directional(df)
 
     df = df.set_index(
         [
@@ -133,6 +126,15 @@ def load_gene_stats(path_or_paths: Union[upath.UPath, list[upath.UPath]]) -> pd.
     df_pval_adjusted = compute_pval_adjusted_fields(df)
     df = add_pval_adjusted_fields(df, df_pval_adjusted)
     return df
+
+
+def get_neg_log10_pval_signed_directional(df: pd.DataFrame) -> pd.Series:
+    # add signed p-value fields
+    sign_observed_log2_fc = np.sign(df["log2_fold_change"].fillna(0)).replace({0: 1})
+    sign_dist_log2_fc = np.sign(df["log2_fc"].astype(float)).replace({0: 1})
+    # df["-log10_pval_signed"] already exists
+    # df["-log10_pval_signed"] = df["-log10_pval"] * sign_observed_log2_fc
+    return df["-log10_pval"] * sign_dist_log2_fc * sign_observed_log2_fc
 
 
 def check_gene_stats(df_gene_stats: pd.DataFrame):
@@ -166,19 +168,30 @@ def compute_pval_adjusted_for_group(df: pd.DataFrame) -> pd.DataFrame:
     )
 
 
-def compute_pval_adjusted_fields(df_gene_stats: pd.DataFrame) -> pd.DataFrame:
+def compute_pval_adjusted_fields(
+    df_gene_stats: pd.DataFrame, groupby_fields: list[str] = None
+) -> pd.DataFrame:
     observed_log2_fc = df_gene_stats["log2_fold_change"].fillna(0)
     sign_observed_log2_fc = np.sign(observed_log2_fc).replace({0: 1})
-    dist_log2_fc = df_gene_stats.index.to_frame()["log2_fc"].astype(float)
+    if "gene_symbol" in df_gene_stats.index.names:
+        dist_log2_fc = df_gene_stats.index.to_frame()["log2_fc"].astype(float)
+        # get list of every index level name except "gene_symbol"
+        if groupby_fields is None:
+            groupby_fields = [x for x in df_gene_stats.index.names if x != "gene_symbol"]
+    else:
+        dist_log2_fc = df_gene_stats["log2_fc"]
+        if groupby_fields is None:
+            raise ValueError(
+                "groupby_fields must be specified if index doesn't have partition keys"
+            )
     sign_dist_log2_fc = np.sign(dist_log2_fc).replace({0: 1})
-    # get list of every index level name except "gene_symbol"
-    groupby_fields = [x for x in df_gene_stats.index.names if x != "gene_symbol"]
+    # assert only 1 and/or -1 in sign_dist_log2_fc
+    assert set(sign_dist_log2_fc.unique()).union({-1, 1}) == {1, -1}
     logger.debug("Grouping by %s", groupby_fields)
     # don't prepend groupby fields to the resulting index
     dfg = df_gene_stats.groupby(groupby_fields, group_keys=False)
     # sanity check - assert size of each group is 5000
-    logger.debug("Each group's size: %s", dfg.size())
-    # assert (dfg.size() == 16063).all(), "Each group should have 16063 genes"
+    logger.debug("Counts of group sizes: %s", dfg.size().value_counts())
     df_pval_adjusted = dfg.apply(compute_pval_adjusted_for_group)
     assert df_gene_stats.index.equals(df_pval_adjusted.index), "Index of result is different"
     df_pval_adjusted["pval_adjusted_bh_signed"] = (
@@ -205,3 +218,13 @@ def add_pval_adjusted_fields(
     additional_fields = df_pval_adjusted[fields]
     logger.debug("adding fields %s", list(additional_fields.columns))
     return df_gene_stats.join(additional_fields, how="inner", validate="1:1")
+
+
+def add_more_pval_fields(df: pd.DataFrame) -> pd.DataFrame:
+    df = df.copy()
+    df["-log10_pval_signed_directional"] = get_neg_log10_pval_signed_directional(df)
+    df_pval_adjusted = compute_pval_adjusted_fields(
+        df, ["origin", "malignant_means", "log2_fc", "run_id"]
+    )
+    df = add_pval_adjusted_fields(df, df_pval_adjusted)
+    return df

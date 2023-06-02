@@ -6,6 +6,7 @@ import plotly.basedatatypes
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+from regex import F
 
 from helpers.deg_analysis.computing_pvals_with_fdr import calculate_pval_threshold
 from helpers.deg_analysis.plotting_utils import _util_remove_excess_axis_titles
@@ -311,28 +312,39 @@ def add_fdr_lines(fig, gene_stats, horizontal=True, alpha_values=(0.1, 0.25)):
     return fig
 
 
-def make_volcano_grid_scatter(df: pd.DataFrame) -> go.Figure:
-    fields_to_groupby = list(filter(lambda x: x != "run_id", df.index.names))
-    fields_to_groupby.append("gene_perturbed")
-    logger.debug("Grouping by %s", fields_to_groupby)
-    dfg = df.groupby(fields_to_groupby)
-    logger.debug("Groups have sizes %s", dfg.size())
-    fields_to_aggregate = [
-        "log2_fold_change",
-        "-log10_pval",
-        "-log10_pval_adjusted_bh",
-        "significant_bh_fdr=0.10",
-    ]
+def make_volcano_grid_scatter(
+    df: pd.DataFrame,
+    groupby_cols: list[str] = [],
+    pval_col: str = "-log10_pval_adjusted_bh",
+    perturbed_col: str = "gene_perturbed",
+) -> go.Figure:
+    fields = set(df.columns) | set(df.index.names)
+    assert pval_col in fields, f"{pval_col} not in {fields}"
+    assert perturbed_col in fields, f"{perturbed_col} not in {fields}"
+    if groupby_cols:
+        assert all([col in fields for col in groupby_cols])
+        assert perturbed_col in groupby_cols, f"{perturbed_col} not in {groupby_cols}"
+    else:
+        if len(df.index.names) < 2:
+            raise ValueError("dataframe doesn't have index levels; specify groupby_cols")
+        groupby_cols = list(filter(lambda x: x != "run_id", df.index.names))
+        groupby_cols.append(perturbed_col)
+    logger.debug("Grouping by %s", groupby_cols)
+    dfg = df.groupby(groupby_cols)
+    logger.debug("Distribution of group sizes %s", dfg.size().value_counts())
+    fields_to_aggregate = ["log2_fold_change", pval_col]
     df = dfg[fields_to_aggregate].median()
+    logger.debug("plotting df with shape %s", df.shape)
     fig = px.scatter(
         df.reset_index(),
         x="log2_fold_change",
-        y="-log10_pval_adjusted_bh",
+        y=pval_col,
         facet_col="log2_fc",
         facet_row="malignant_means",
-        color="gene_perturbed",
-        symbol="gene_perturbed",
+        color=perturbed_col,
+        symbol=perturbed_col,
         symbol_map={False: "circle", True: "x"},
+        hover_name="gene_symbol",
     )
     fig.update_traces(marker_size=1)
     fig.update_xaxes(range=[-2, 2])
@@ -340,6 +352,10 @@ def make_volcano_grid_scatter(df: pd.DataFrame) -> go.Figure:
     fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
     fig = _util_remove_excess_axis_titles(fig)
     fig.update_layout(width=1000, height=1000)
+    # overlay legend on top right
+    fig.update_layout(
+        legend=dict(yanchor="top", y=0.95, xanchor="right", x=0.95),
+    )
     return fig
 
 
