@@ -1,6 +1,6 @@
 import logging
 
-format_string = "%(asctime)s %(process)d/%(threadName)s %(name)s %(levelname)s\n%(message)s"
+format_string = "%(asctime)s %(process)d/%(threadName)s %(name)s %(levelname)s %(message)s"
 formatter = logging.Formatter(format_string)
 
 
