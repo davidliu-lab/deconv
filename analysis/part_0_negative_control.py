@@ -1,3 +1,8 @@
+# %%[markdown]
+# # Analysis - negative control
+# goals
+# - demonstrate no false discoveries after correction
+
 # %%
 # imports, logging, configuration
 import logging
@@ -62,9 +67,10 @@ fig = px.histogram(
     df_gene_stats,
     x="log2_fold_change",
     facet_col="origin",
-    nbins=100,
+    nbins=500,
     histnorm="percent",
 )
+fig.update_layout(title="Distribution of between-group fold changes in gene expression")
 fig.update_xaxes(range=[-10, 10])
 fig.update_yaxes(range=[0, 100])
 fig.update_layout(width=800, height=400)
@@ -148,7 +154,6 @@ fig.show(renderer="png", scale=2)
 # %%
 # skipping ROC curves.. not possible for no perturbation
 # for each run (DGE in bulk and CIBERSORTx-inferred malignant GEPs)
-"""
 fig = px.line(
     df_curves.reset_index(),
     "fpr",
@@ -162,18 +167,23 @@ fig = plotting_curves.format_curves_fig(fig)
 fig = plotting_utils.remove_variable_names_from_facet_axis_titles(fig)
 fig.update_layout(width=800, height=500)
 # fig.show(renderer="png", scale=2)
-"""
+None
 
 # %%
-# plot_curves(
-#     df_curves.reset_index(),
-#     facet_col="origin",
-#     facet_row=None,
-#     simplify_facet_titles=False,
-# )
+plot_curves(
+    df_curves.reset_index(),
+    facet_col="origin",
+    facet_row=None,
+    simplify_facet_titles=False,
+)
+None
+
+# %% [markdown]
+# plot of FPR by BH-adjusted p-value
+# - doesn't really add anything
+# - volcano plots show this more clearly
 
 # %%
-# plot FPR by BH-adjusted p-value
 fig = plot_metric_by_threshold(
     df_curves=df_curves.query("origin == 'malignant_cibersortx'"),
     metric_column="fpr",
@@ -210,7 +220,7 @@ fig.update_layout(legend=dict(xanchor="right", yanchor="top", y=0.95, x=0.95))
 fig.show(width=800, height=500, renderer="png", scale=5)
 
 # %%
-# volcano plots for all cell types (CIBERSORTx-inferred)
+# nice to have - volcano plots for all cell types (CIBERSORTx-inferred)
 
 # create pyarrow dataset for GEP data
 
