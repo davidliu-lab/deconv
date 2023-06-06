@@ -8,6 +8,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from regex import F
 
+from helpers.deg_analysis import plotting_utils
 from helpers.deg_analysis.computing_pvals_with_fdr import calculate_pval_threshold
 from helpers.deg_analysis.plotting_utils import _util_remove_excess_axis_titles
 
@@ -39,7 +40,7 @@ def make_volcano_figure(df_stats: pd.DataFrame, perturbed: bool = False):
         fig.add_hline(
             y=-np.log10(pval_threshold),
             line_dash="dot",
-            annotation_text=f"FDR = {alpha:.2f}",
+            annotation_text=f"FDR={alpha:.2f}",
             annotation_position="top left",
         )
     return fig
@@ -115,7 +116,7 @@ def make_volcano_figure_2(df_stats: pd.DataFrame) -> go.Figure:
         fig.add_hline(
             y=-np.log10(pval_threshold),
             line_dash="dot",
-            annotation_text=f"FDR = {alpha:.2f}",
+            annotation_text=f"FDR={alpha:.2f}",
             annotation_position="top left",
         )
     return fig
@@ -275,7 +276,7 @@ def make_volcano_facets(gene_stats: pd.DataFrame, horizontal: bool = True) -> go
     return fig
 
 
-def add_fdr_lines(fig, gene_stats, horizontal=True, alpha_values=(0.1, 0.25)):
+def add_fdr_lines_old(fig, gene_stats, horizontal=True, alpha_values=(0.1, 0.25)):
     experiments = gene_stats["experiment_name"].unique()
     n_experiments = len(experiments)
     for k, experiment_name in enumerate(experiments):
@@ -304,7 +305,7 @@ def add_fdr_lines(fig, gene_stats, horizontal=True, alpha_values=(0.1, 0.25)):
                 fig.add_hline(
                     y=-np.log10(pval_threshold),
                     line_dash="dot",
-                    annotation_text=f"FDR = {alpha:.2f}",
+                    annotation_text=f"FDR={alpha:.2f}",
                     annotation_position="top left" if alpha == 0.1 else "bottom left",
                     row=row_number,
                     col=column_number,
@@ -317,6 +318,11 @@ def make_volcano_grid_scatter(
     groupby_cols: list[str] = [],
     pval_col: str = "-log10_pval_adjusted_bh",
     perturbed_col: str = "gene_perturbed",
+    facet_col: str = "log2_fc",
+    facet_row: str = "malignant_means",
+    simplify_facet_titles: bool = True,
+    with_fdr_lines: bool = True,
+    marker_color: str = "",
 ) -> go.Figure:
     fields = set(df.columns) | set(df.index.names)
     assert pval_col in fields, f"{pval_col} not in {fields}"
@@ -335,23 +341,28 @@ def make_volcano_grid_scatter(
     fields_to_aggregate = ["log2_fold_change", pval_col]
     df = dfg[fields_to_aggregate].median()
     logger.debug("plotting df with shape %s", df.shape)
+    if not marker_color:
+        marker_color = perturbed_col
     fig = px.scatter(
         df.reset_index(),
         x="log2_fold_change",
         y=pval_col,
-        facet_col="log2_fc",
-        facet_row="malignant_means",
-        color=perturbed_col,
+        facet_col=facet_col,
+        facet_row=facet_row,
+        color=marker_color,
         symbol=perturbed_col,
         symbol_map={False: "circle", True: "x"},
         hover_name="gene_symbol",
     )
-    fig.update_traces(marker_size=1)
+    fig.update_traces(marker_size=5)
     fig.update_xaxes(range=[-2, 2])
     fig.update_yaxes(range=[0, 6])
-    fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
-    fig = _util_remove_excess_axis_titles(fig)
-    fig.update_layout(width=1000, height=1000)
+    if simplify_facet_titles:
+        fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
+        fig = _util_remove_excess_axis_titles(fig)
+    if with_fdr_lines:
+        fig = plotting_utils.add_fdr_lines(fig, axis="y")
+    fig.update_layout(width=800, height=500)
     # overlay legend on top right
     fig.update_layout(
         legend=dict(yanchor="top", y=0.95, xanchor="right", x=0.95),

@@ -27,7 +27,50 @@ def _get_groupby(df: pd.DataFrame) -> DataFrameGroupBy:
     return df.groupby(groupby_fields)
 
 
-def calculate_roc(
+def calculate_all_curves(
+    df: pd.DataFrame,
+    score_col: str,
+    perturbed_col: str = "gene_perturbed",
+) -> pd.DataFrame:
+    """Calculate fpr, tpr, fnr, tnr curves for each group in df"""
+    assert df[perturbed_col].dtype == bool, df[perturbed_col].dtype
+    dfg = _get_groupby(df)
+
+    def compute_curves_for_group(df: pd.DataFrame) -> pd.DataFrame:
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            fpr, tpr, scores = sklearn.metrics.roc_curve(
+                y_true=df[perturbed_col],
+                y_score=df[score_col],
+            )
+            n_actual_positives = df[perturbed_col].sum()
+            tp = tpr * n_actual_positives
+            fn = n_actual_positives - tp
+            fp = fpr * (len(df) - n_actual_positives)
+            tn = len(df) - n_actual_positives - fp
+            if n_actual_positives != 0:
+                assert np.allclose(tp + fn, n_actual_positives), tp + fn
+                assert np.allclose(tpr, tp / (tp + fn))
+            assert np.allclose(fp + tn, len(df) - n_actual_positives), fp + tn
+            return pd.DataFrame(
+                {
+                    score_col: scores,
+                    "fpr": fpr,
+                    "tpr": tpr,
+                    "precision": tp / (tp + fp),
+                    "recall": tpr,
+                    "fp": fp,
+                    "tp": tp,
+                    "fn": fn,
+                    "tn": tn,
+                }
+            )
+
+    logger.debug("calculating curves of classifier metrics with %s", score_col)
+    return dfg.apply(compute_curves_for_group)
+
+
+def calculate_roc_curves(
     df: pd.DataFrame,
     score_col: str,
     perturbed_col: str = "gene_perturbed",
@@ -59,7 +102,7 @@ def calculate_roc(
     return roc_curves, roc_auc_scores
 
 
-def calculate_precision_and_recall(
+def calculate_precision_and_recall_curves(
     df: pd.DataFrame,
     score_col: str,
     perturbed_col: str = "gene_perturbed",
@@ -141,7 +184,7 @@ def compute_scores(df: pd.DataFrame, perturbed_col: str) -> pd.DataFrame:
 
 def compute_all_curves_and_metrics(
     df: pd.DataFrame, signed_directional: bool = True
-) -> tuple[pd.DataFrame, ...]:
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     if signed_directional:
         score_column_roc = "-log10_pval_signed_directional"
         score_column_precision = "-log10_pval_adjusted_bh_signed_directional"
@@ -149,12 +192,12 @@ def compute_all_curves_and_metrics(
         score_column_roc = "-log10_pval"
         score_column_precision = "-log10_pval_adjusted_bh"
 
-    df_roc_curves, _ = calculate_roc(
+    df_roc_curves, _ = calculate_roc_curves(
         df,
         score_column_roc,
         perturbed_col="perturbed",
     )
-    df_precision_recall_curves, _ = calculate_precision_and_recall(
+    df_precision_recall_curves, _ = calculate_precision_and_recall_curves(
         df,
         score_column_precision,
         perturbed_col="perturbed",

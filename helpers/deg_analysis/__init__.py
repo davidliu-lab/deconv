@@ -1,3 +1,4 @@
+from . import plotting_utils
 from .computing_classifier_roc_precion_recall import *
 from .computing_pvals_with_fdr import *
 from .plotting_classifier_roc_precion_recall import *

@@ -38,7 +38,7 @@ if __name__ == "__main__":
     logger.setLevel("DEBUG")
     logging.getLogger("helpers").setLevel("DEBUG")
     logging.getLogger("helpers.deg_analysis").setLevel("INFO")
-    logging.basicConfig(format=helpers.logging.format_string)
+    logging.basicConfig(format=helpers.logging.LOGGING_FORMAT)
     genes_perturbed = pd.read_csv(
         "gs://liulab/simulated/perturbed_malignant_expression/20221015_21h52m40s/genes_perturbed.csv"
     )["gene_symbol"]

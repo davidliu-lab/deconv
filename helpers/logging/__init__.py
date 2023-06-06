@@ -1,1 +1,1 @@
-from .configuring_logging import configure_logging, format_string, formatter
+from .configuring_logging import LOGGING_FORMAT, configure_logging, formatter

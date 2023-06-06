@@ -169,7 +169,7 @@ def compute_pval_adjusted_for_group(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def compute_pval_adjusted_fields(
-    df_gene_stats: pd.DataFrame, groupby_fields: list[str] = None
+    df_gene_stats: pd.DataFrame, groupby_fields: list[str] = []
 ) -> pd.DataFrame:
     observed_log2_fc = df_gene_stats["log2_fold_change"].fillna(0)
     sign_observed_log2_fc = np.sign(observed_log2_fc).replace({0: 1})

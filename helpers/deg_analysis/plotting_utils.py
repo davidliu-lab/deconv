@@ -1,6 +1,7 @@
 import logging
 import statistics
 
+import numpy as np
 import plotly.graph_objects as go
 
 logger = logging.getLogger(__name__)
@@ -19,4 +20,34 @@ def _util_remove_excess_axis_titles(fig: go.Figure) -> go.Figure:
             fig.update_yaxes(title_text="", row=row, col=col)
         if col != middle_col:
             fig.update_xaxes(title_text="", row=row, col=col)
+    return fig
+
+
+def remove_variable_names_from_facet_axis_titles(fig: go.Figure) -> go.Figure:
+    return fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
+
+
+def add_fdr_lines(
+    fig: go.Figure,
+    alpha: float = 0.1,
+    log_scale: bool = True,
+    axis: str = "x",
+) -> go.Figure:
+    """Add FDR lines to a figure"""
+    if log_scale:
+        value = -np.log10(alpha)
+    else:
+        value = alpha
+    for row, col in fig._get_subplot_coordinates():
+        # annotation is float with no trailing zeros
+        kwargs = dict(
+            line_dash="dot",
+            annotation_text=f"FDR={alpha}",
+            row=row,
+            col=col,
+        )
+        if axis == "x":
+            fig.add_vline(x=value, **kwargs)
+        elif axis == "y":
+            fig.add_hline(y=value, **kwargs)
     return fig
