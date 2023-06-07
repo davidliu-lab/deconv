@@ -9,7 +9,7 @@ from plotly.subplots import make_subplots
 from regex import F
 
 from helpers.deg_analysis import plotting_utils
-from helpers.deg_analysis.computing_pvals_with_fdr import calculate_pval_threshold
+from helpers.deg_analysis.pvals_with_fdr import calculate_pval_threshold
 from helpers.deg_analysis.plotting_utils import _util_remove_excess_axis_titles
 
 logger = logging.getLogger(__name__)
@@ -317,6 +317,7 @@ def make_volcano_grid_scatter(
     df: pd.DataFrame,
     groupby_cols: list[str] = [],
     pval_col: str = "-log10_pval_adjusted_bh",
+    hover_data: list[str] = [],
     perturbed_col: str = "gene_perturbed",
     facet_col: str = "log2_fc",
     facet_row: str = "malignant_means",
@@ -338,13 +339,13 @@ def make_volcano_grid_scatter(
     logger.debug("Grouping by %s", groupby_cols)
     dfg = df.groupby(groupby_cols)
     logger.debug("Distribution of group sizes %s", dfg.size().value_counts())
-    fields_to_aggregate = ["log2_fold_change", pval_col]
-    df = dfg[fields_to_aggregate].median()
-    logger.debug("plotting df with shape %s", df.shape)
+    fields_to_aggregate = ["log2_fold_change", pval_col] + hover_data
+    df_to_plot = dfg[fields_to_aggregate].median()
+    logger.debug("plotting df_to_plot with shape %s", df_to_plot.shape)
     if not marker_color:
         marker_color = perturbed_col
     fig = px.scatter(
-        df.reset_index(),
+        df_to_plot.reset_index(),
         x="log2_fold_change",
         y=pval_col,
         facet_col=facet_col,
@@ -353,6 +354,7 @@ def make_volcano_grid_scatter(
         symbol=perturbed_col,
         symbol_map={False: "circle", True: "x"},
         hover_name="gene_symbol",
+        hover_data=hover_data,
     )
     fig.update_traces(marker_size=5)
     fig.update_xaxes(range=[-2, 2])

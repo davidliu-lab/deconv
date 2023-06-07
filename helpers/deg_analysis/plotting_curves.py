@@ -38,7 +38,7 @@ def plot_curves(
     return fig
 
 
-def plot_precision_recall_curve(df_curves: pd.DataFrame) -> go.Figure:
+def plot_precision_recall_curves(df_curves: pd.DataFrame) -> go.Figure:
     return plot_curves(
         df_curves,
         x="recall",
@@ -92,6 +92,8 @@ def plot_metric_by_threshold(
     score_column: str,
     metric_column: str,
     simplify_facet_titles: bool = True,
+    facet_col: str = "log2_fc",
+    facet_row: str = "malignant_means",
 ) -> go.Figure:
     fig = px.line(
         df_curves.reset_index(),
@@ -99,8 +101,8 @@ def plot_metric_by_threshold(
         y=metric_column,
         color="run_id",
         markers=True,
-        facet_col="log2_fc",
-        facet_row="malignant_means",
+        facet_col=facet_col,
+        facet_row=facet_row,
     )
     # add vertical line at FDR alpha=0.1
     if score_column.startswith("-log10_pval_adjusted_bh"):

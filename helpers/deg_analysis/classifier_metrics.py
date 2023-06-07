@@ -1,3 +1,8 @@
+"""
+Functions for computing classifier metrics (ROC, PR, etc.) from a dataframe of
+gene-level statistics.
+"""
+
 import logging
 import warnings
 
@@ -24,7 +29,12 @@ def _get_groupby(df: pd.DataFrame) -> DataFrameGroupBy:
     else:
         groupby_fields = ["origin", "malignant_means", "log2_fc", "run_id"]
     logger.debug("grouping by %s", groupby_fields)
-    return df.groupby(groupby_fields)
+    return df.groupby(
+        groupby_fields,
+        # these just remove all index levels, don't include index defined inside groupby.apply
+        # group_keys=True,
+        # as_index=False,
+    )
 
 
 def calculate_all_curves(
@@ -44,17 +54,26 @@ def calculate_all_curves(
                 y_score=df[score_col],
             )
             n_actual_positives = df[perturbed_col].sum()
-            tp = tpr * n_actual_positives
-            fn = n_actual_positives - tp
+            if n_actual_positives == 0:
+                tp = np.zeros_like(tpr)
+                fn = np.zeros_like(tpr)
+            else:
+                tp = tpr * n_actual_positives
+                fn = n_actual_positives - tp
             fp = fpr * (len(df) - n_actual_positives)
             tn = len(df) - n_actual_positives - fp
             if n_actual_positives != 0:
                 assert np.allclose(tp + fn, n_actual_positives), tp + fn
                 assert np.allclose(tpr, tp / (tp + fn))
             assert np.allclose(fp + tn, len(df) - n_actual_positives), fp + tn
-            return pd.DataFrame(
+            # assert no NaNs, infinities, etc.
+            assert np.all(np.isfinite(tp))
+            assert np.all(np.isfinite(fp))
+            assert np.all(np.isfinite(fn))
+            assert np.all(np.isfinite(tn))
+            result = pd.DataFrame(
                 {
-                    score_col: scores,
+                    # score_col: scores,
                     "fpr": fpr,
                     "tpr": tpr,
                     "precision": tp / (tp + fp),
@@ -63,11 +82,17 @@ def calculate_all_curves(
                     "tp": tp,
                     "fn": fn,
                     "tn": tn,
-                }
+                },
+                index=pd.Index(scores, name=score_col),
             )
+        # result = result.rename_axis(index="ordering")
+        # result = result.set_index(score_col)
+        return result
 
     logger.debug("calculating curves of classifier metrics with %s", score_col)
-    return dfg.apply(compute_curves_for_group)
+    df_result = dfg.apply(compute_curves_for_group)
+    df_result = df_result.astype({"fp": int, "tp": int, "fn": int, "tn": int})
+    return df_result
 
 
 def calculate_roc_curves(
@@ -163,13 +188,13 @@ def compute_scores(df: pd.DataFrame, perturbed_col: str) -> pd.DataFrame:
         except ValueError:
             roc_auc = np.nan
         data = {
+            "roc_auc": roc_auc,
             "precision": precision,
             "recall": recall,
-            "roc_auc": roc_auc,
-            "true_pos_count": np.sum(y_true & y_pred),
-            "false_pos_count": np.sum(~y_true & y_pred),
-            "true_neg_count": np.sum(~y_true & ~y_pred),
-            "false_neg_count": np.sum(y_true & ~y_pred),
+            "tp": np.sum(y_true & y_pred),
+            "fp": np.sum(~y_true & y_pred),
+            "tn": np.sum(~y_true & ~y_pred),
+            "fn": np.sum(y_true & ~y_pred),
         }
         return pd.Series(data)
 
