@@ -1,0 +1,16 @@
+black[jupyter]
+flit
+git+https://github.com/choldgraf/jupyter-http-server
+isort
+jupyter-book
+jupyter-server-proxy
+jupyterlab-miami-nights
+jupyterlab-code-formatter
+jupyterlab-lsp
+jupyterlab-markup
+mdformat
+nbqa
+orjson
+plotly>=5
+python-lsp-server
+pyupgrade
