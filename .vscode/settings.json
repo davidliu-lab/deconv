@@ -25,5 +25,6 @@
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
     "r.rpath.linux": "/opt/conda/envs/r-base/bin/R",
-    "r.rpath.mac": "/Users/william/.pyenv/versions/miniforge3/envs/r/bin/R"
+    "r.rpath.mac": "/Users/william/.pyenv/versions/miniforge3/envs/r/bin/R",
+    "python.analysis.typeCheckingMode": "basic"
 }
