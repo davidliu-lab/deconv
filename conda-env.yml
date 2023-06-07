@@ -46,5 +46,6 @@ dependencies:
     - kaleido
     - jupysql
     - psycopg2  # for duckdb in jupyter
+    - git+https://github.com/fsspec/gdrivefs@c42ecea
 
 # conda search --outdated
