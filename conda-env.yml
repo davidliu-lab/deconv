@@ -42,6 +42,7 @@ dependencies:
     - dagster-gcp-pandas
     - dagster-k8s
     - dagster-docker
+    - duckdb-engine
     - isort
     - kaleido
     - jupysql
