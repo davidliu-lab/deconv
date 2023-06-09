@@ -12,7 +12,7 @@
     ```
   - use tunneling to develop from a remote host (https://code.visualstudio.com/docs/remote/vscode-server)
     ```shell
-    code tunnel --accept-server-license-terms
+    code tunnel --accept-server-license-terms --log debug
     ```
 - git aliases
     ```shell
@@ -40,9 +40,7 @@
 
 ```shell
 mamba env create --file conda-env.yml
-
 mamba env update --file conda-env.yml
-
 mamba activate deconv
 ```
 
