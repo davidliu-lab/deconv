@@ -12,5 +12,7 @@ mdformat
 nbqa
 orjson
 plotly>=5
+pylint
+pytest
 python-lsp-server
 pyupgrade
