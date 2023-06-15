@@ -6,5 +6,5 @@ from . import (
     plotting_utils,
     plotting_volcanos,
     postprocessing_gene_stats_fields,
-    pvals_with_fdr,
+    stats_testing_with_fdr,
 )

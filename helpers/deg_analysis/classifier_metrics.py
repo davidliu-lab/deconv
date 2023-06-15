@@ -2,9 +2,9 @@
 Functions for computing classifier metrics (ROC, PR, etc.) from a dataframe of
 gene-level statistics.
 """
-from itertools import groupby
 import logging
 import warnings
+from itertools import groupby
 
 import numpy as np
 import pandas as pd
@@ -28,6 +28,7 @@ def get_metrics_for_threshold(
     score_col: str = "-log10_pval_adjusted_bh_signed_directional",
 ):
     """Get TPR, FPR, precision, recall, etc. for a given threshold and score column."""
+
     def compute_stuff(df) -> pd.Series:
         y_true = df["perturbed"]
         y_pred = df[score_col] >= threshold

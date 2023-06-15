@@ -161,7 +161,6 @@ df_curves = classifier_metrics_old.calculate_all_curves(
 df_scores = classifier_metrics_old.compute_scores(df_gene_stats, perturbed_col="perturbed")
 
 
-
 # %%
 # FPR curves
 fig = px.line(

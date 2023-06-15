@@ -31,7 +31,9 @@ def compute_stats(
     )
     rnaseq = rnaseq.stack(["group_id", "sample_id"])
     rnaseq_groupby = rnaseq.groupby("gene_symbol")
-    gene_stats = helpers.deg_analysis.compute_stats(rnaseq_groupby, "group_id", group_1, group_2)
+    gene_stats = helpers.deg_analysis.stats_testing_with_fdr.compute_stats(
+        rnaseq_groupby, "group_id", group_1, group_2
+    )
     return gene_stats
 
 
@@ -42,7 +44,7 @@ if __name__ == "__main__":
     root_results = UPath(
         f"gs://liulab/differential_composition_and_expression/{make_a_nice_timestamp_of_now()}"
     )
-    seed_counter = itertools.count()
+    seed_counter = itertools.count(start=10000)
     experiment_counter = itertools.count()
     rng = np.random.default_rng(seed=next(seed_counter))
 
@@ -64,36 +66,50 @@ if __name__ == "__main__":
     )
     malignant_log2_fc_group_b_values = np.array([-1.5, -1.0, -0.5, 0.0, 0.5, 1.0, 1.5])
     malignant_fraction_mean_pairs = [
-        (0.55, 0.85),
-        (0.57, 0.83),
-        (0.6, 0.8),
-        (0.63, 0.77),
-        (0.65, 0.75),
-        (0.7, 0.72),
         (None, None),
+        (0.55, 0.85),
+        (0.6, 0.8),
+        (0.65, 0.75),
+        (0.75, 0.65),
+        (0.8, 0.6),
+        (0.85, 0.55),
+        (0.7, 0.9),
+        (0.5, 0.7),
+        (0.57, 0.83),
+        (0.63, 0.77),
+        (0.7, 0.72),
         (0.71, 0.71),
         (0.72, 0.7),
-        (0.75, 0.65),
         (0.77, 0.63),
-        (0.8, 0.6),
         (0.83, 0.57),
-        (0.85, 0.55),
     ]
     pd.DataFrame(genes_to_perturb).to_csv(root_results / "genes_perturbed.csv", index=False)
     for run_id, malignant_fraction_mean_pair, log2_fc_group_b in itertools.product(
-        range(5), malignant_fraction_mean_pairs, malignant_log2_fc_group_b_values
+        range(20), malignant_fraction_mean_pairs, malignant_log2_fc_group_b_values
     ):
+        experiment_id = next(experiment_counter)
+        experiment_dict = {
+            "experiment_id": experiment_id,
+            # "malignant_mean_group_a": malignant_fraction_mean_pair[0],
+            # "malignant_mean_group_b": malignant_fraction_mean_pair[1],
+            "malignant_means": "{0},{1}".format(*malignant_fraction_mean_pair),
+            "log2_fc": log2_fc_group_b,
+            "run_id": run_id,
+        }
         logger.debug("starting experiment")
-        experiment_path = (
+        cibersortx_outputs_path = (
             root_results
-            / f"experiment_id={next(experiment_counter):03d}"
+            / "cibersortx_outputs"
+            / f"experiment_id={experiment_id:03d}"
+            # / f"malignant_mean_group_a={malignant_fraction_mean_pair[0]}"
+            # / f"malignant_mean_group_b={malignant_fraction_mean_pair[1]}"
             / "malignant_means={0},{1}".format(*malignant_fraction_mean_pair)
             / f"log2_fc={log2_fc_group_b:4.2f}"
             / f"run_id={run_id:02d}"
         )
-        logger.debug("experiment_path: %s", experiment_path)
+        # logger.debug("experiment_path: %s", experiment_path)
         logger.debug("perturbing gene expression")
-        fractions_list, bulk_rnaseq_list = [], []
+        fractions_list, bulk_rnaseq_list, cell_type_geps_list = [], [], []
         for name, mean_malignant_value in zip(["a", "b"], malignant_fraction_mean_pair):
             rng = np.random.default_rng(seed=next(seed_counter))
             log2_fc = log2_fc_group_b if name == "b" else 0.0
@@ -123,32 +139,50 @@ if __name__ == "__main__":
                 N,
                 name,
             )
-            logger.debug("saving data to %s", experiment_path)
-            cell_type_geps.to_parquet(experiment_path / name / "cell_type_geps.parquet")
-            bulk_rnaseq.to_parquet(experiment_path / name / "bulk_rnaseq.parquet")
-            fractions.to_parquet(experiment_path / name / "fractions.parquet")
+            logger.debug("saving data")
+            # cell_type_geps.to_parquet(experiment_path / name / "cell_type_geps.parquet")
+            dataframes = {
+                "cell_type_geps": cell_type_geps,
+                "fractions": fractions,
+                "bulk_rnaseq": bulk_rnaseq,
+            }
+            for dataset_name, df in dataframes.items():
+                df = df.assign(**experiment_dict)
+                df = df.assign(**{"name": name})
+                partition_cols = list(experiment_dict.keys()) + ["name"]
+                df.to_parquet(
+                    path=root_results / dataset_name,
+                    engine="pyarrow",
+                    partition_cols=partition_cols,
+                )
+            cell_type_geps_list.append(cell_type_geps)
             fractions_list.append(fractions)
             bulk_rnaseq_list.append(bulk_rnaseq)
 
         logger.debug("running cibersortx")
         bulk_rnaseq_all = pd.concat(bulk_rnaseq_list, axis=1)
         fractions_all = pd.concat(fractions_list, axis=0)
-        logger.debug("running cibersortx; saving to %s", experiment_path / "cibersortx")
+        logger.debug("running cibersortx; saving to %s", cibersortx_outputs_path)
         helpers.running_cibersortx.hires_only.run_and_upload_from_dataframes(
             bulk_rnaseq_all,
             fractions_all,
-            experiment_path / "cibersortx",
+            cibersortx_outputs_path,
         )
 
         logger.debug("computing stats for bulk rna-seq")
-        logger.debug("computing stats and saving to %s", experiment_path / "deg_analysis")
+        # logger.debug("computing stats and saving to %s", experiment_path / "deg_analysis")
         gene_stats_bulk = compute_stats(bulk_rnaseq_all, "a", "b")
         gene_stats_bulk["perturbed"] = gene_stats_bulk["gene_symbol"].isin(genes_to_perturb)
-        gene_stats_bulk.to_parquet(experiment_path / "deg_analysis" / "gene_stats_bulk.parquet")
-        gene_stats_bulk.to_parquet(experiment_path / "deg_analysis" / "bulk" / "gene_stats.parquet")
+        gene_stats_bulk = gene_stats_bulk.assign(**experiment_dict)
+        gene_stats_bulk = gene_stats_bulk.assign(**{"origin": "bulk"})
+        gene_stats_bulk.to_parquet(
+            path=root_results / "deg_analysis",
+            engine="pyarrow",
+            partition_cols=list(experiment_dict.keys()) + ["origin"],
+        )
 
         logger.debug("computing stats for malignant rna-seq inferred by CIBERSORTx")
-        pattern = experiment_path / "cibersortx" / "**" / "*Malignant*txt"
+        pattern = cibersortx_outputs_path / "**" / "*Malignant*txt"
         logger.debug(
             "reading cibersortx inferred rnaseq for malignant cells from %s",
             pattern,
@@ -163,9 +197,13 @@ if __name__ == "__main__":
         gene_stats_malignant_cibersortx["perturbed"] = gene_stats_malignant_cibersortx[
             "gene_symbol"
         ].isin(genes_to_perturb)
-        gene_stats_malignant_cibersortx.to_parquet(
-            experiment_path / "deg_analysis" / "gene_stats_malignant_cibersortx.parquet"
+        gene_stats_malignant_cibersortx = gene_stats_malignant_cibersortx.assign(**experiment_dict)
+        gene_stats_malignant_cibersortx = gene_stats_malignant_cibersortx.assign(
+            **{"origin": "malignant_cibersortx"}
         )
         gene_stats_malignant_cibersortx.to_parquet(
-            experiment_path / "deg_analysis" / "malignant_cibersortx" / "gene_stats.parquet"
+            path=root_results / "deg_analysis",
+            engine="pyarrow",
+            partition_cols=list(experiment_dict.keys()) + ["origin"],
+            # experiment_path / "deg_analysis" / "gene_stats_malignant_cibersortx.parquet"
         )

@@ -7,7 +7,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-from helpers.deg_analysis.pvals_with_fdr import calculate_pval_threshold
+from helpers.deg_analysis.stats_testing_with_fdr import calculate_pval_threshold
 
 logger = logging.getLogger(__name__)
 
