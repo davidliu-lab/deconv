@@ -1,20 +1,14 @@
-# %%[markdown]
-# # Analysis - negative control
-# goals
-# - demonstrate no false discoveries after correction
-
 # %%
 # imports, logging, configuration
 import logging
 
 import duckdb
 import plotly.express as px
+from IPython.core.interactiveshell import InteractiveShell
 
 import helpers
 from helpers.deg_analysis import plotting_curves, plotting_utils
-from helpers.deg_analysis.classifier_metrics import (
-    calculate_all_curves,
-)
+from helpers.deg_analysis.classifier_metrics import calculate_all_curves
 from helpers.deg_analysis.plotting_curves import plot_curves, plot_metric_by_threshold
 from helpers.deg_analysis.plotting_utils import add_fdr_lines
 from helpers.deg_analysis.plotting_volcanos import make_volcano_grid_scatter
@@ -25,6 +19,16 @@ from helpers.running_cibersortx.loading_results import (
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(format=helpers.logging.FORMAT, level="INFO")
+
+
+# %%
+# ipython magics
+if InteractiveShell.initialized():
+    ipython = InteractiveShell.instance()
+    ipython.run_line_magic("load_ext", "autoreload")
+    ipython.run_line_magic("autoreload", "2")
+    ipython.run_line_magic("sql", "duckdb:///:default:")
+
 
 # %%
 # load data
@@ -80,7 +84,7 @@ fig.show(renderer="png", scale=2)
 # volcano plot: DGE for both origins
 fig = make_volcano_grid_scatter(
     df=df_gene_stats,
-    groupby_cols=["origin", "malignant_means", "log2_fc", "gene_symbol", "perturbed", "run_id"],
+    aggregate_by=["origin", "malignant_means", "log2_fc", "gene_symbol", "perturbed", "run_id"],
     perturbed_col="perturbed",
     facet_col="origin",
     pval_col="-log10_pval_adjusted_bh",
@@ -98,7 +102,7 @@ fig.show(width=800, height=500, renderer="png", scale=2)
 fig = make_volcano_grid_scatter(
     # df=df_gene_stats.query("origin == 'bulk'"),
     df=df_gene_stats,
-    groupby_cols=["origin", "malignant_means", "log2_fc", "gene_symbol", "perturbed", "run_id"],
+    aggregate_by=["origin", "malignant_means", "log2_fc", "gene_symbol", "perturbed", "run_id"],
     perturbed_col="perturbed",
     pval_col="-log10_pval_adjusted_bh",
     simplify_facet_titles=False,
@@ -114,7 +118,7 @@ fig.update_layout(
 
 fig = make_volcano_grid_scatter(
     df=df_gene_stats.query("origin == 'malignant_cibersortx'"),
-    groupby_cols=["origin", "malignant_means", "log2_fc", "gene_symbol", "perturbed", "run_id"],
+    aggregate_by=["origin", "malignant_means", "log2_fc", "gene_symbol", "perturbed", "run_id"],
     perturbed_col="perturbed",
     pval_col="-log10_pval_adjusted_bh",
     simplify_facet_titles=False,
@@ -130,7 +134,7 @@ fig.update_layout(
 
 fig = make_volcano_grid_scatter(
     df=df_gene_stats.query("origin == 'malignant_cibersortx'"),
-    groupby_cols=["origin", "malignant_means", "log2_fc", "gene_symbol", "perturbed", "run_id"],
+    aggregate_by=["origin", "malignant_means", "log2_fc", "gene_symbol", "perturbed", "run_id"],
     perturbed_col="perturbed",
     facet_col="run_id",
     pval_col="-log10_pval_adjusted_bh",

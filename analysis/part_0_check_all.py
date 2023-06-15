@@ -8,15 +8,10 @@
 import logging
 
 import duckdb
-import plotly.express as px
 
 import helpers
-from helpers.deg_analysis import displaying_tables, plotting_curves, plotting_utils
-from helpers.deg_analysis import plotting_volcanos
+from helpers.deg_analysis import displaying_tables, plotting_curves, plotting_volcanos
 from helpers.deg_analysis.classifier_metrics import calculate_all_curves
-from helpers.deg_analysis.plotting_curves import plot_curves, plot_metric_by_threshold
-from helpers.deg_analysis.plotting_utils import add_fdr_lines
-from helpers.deg_analysis.plotting_volcanos import make_volcano_grid_scatter
 from helpers.deg_analysis.postprocessing_gene_stats_fields import add_more_pval_fields
 from helpers.running_cibersortx.loading_results import (
     get_arrow_dataset_for_deg_analysis_results,
@@ -73,7 +68,7 @@ df_curves_pval_adjusted_bh_signed_directional = calculate_all_curves(
     score_col="-log10_pval_adjusted_bh_signed_directional",
     perturbed_col="perturbed",
 )
-_, _, df_scores = helpers.deg_analysis.compute_all_curves_and_metrics(
+_, _, df_scores = helpers.deg_analysis.classifier_metrics.compute_all_curves_and_metrics(
     df_gene_stats, signed_directional=True
 )
 
@@ -143,7 +138,7 @@ fig.show(renderer="png", scale=2)
 fig = plotting_volcanos.make_volcano_grid_scatter(
     df_gene_stats,
     perturbed_col="perturbed",
-    groupby_cols=["origin", "malignant_means", "log2_fc", "gene_symbol", "perturbed"],
+    aggregate_by=["origin", "malignant_means", "log2_fc", "gene_symbol", "perturbed"],
 )
 # 1000 x 1500
 fig.update_layout(width=1000, height=1500)

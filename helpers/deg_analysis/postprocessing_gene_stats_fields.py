@@ -221,6 +221,9 @@ def add_pval_adjusted_fields(
 
 
 def add_more_pval_fields(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Add signed_directional and -log10 pval fields
+    """
     df = df.copy()
     df["-log10_pval_signed_directional"] = get_neg_log10_pval_signed_directional(df)
     df_pval_adjusted = compute_pval_adjusted_fields(

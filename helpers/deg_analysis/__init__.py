@@ -1,5 +1,6 @@
 from . import (
     classifier_metrics,
+    classifier_metrics_old,
     displaying_tables,
     plotting_curves,
     plotting_utils,

@@ -1,12 +1,12 @@
-import itertools
 import logging
 
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+from numpy import add
 
 from helpers.deg_analysis import plotting_utils
-from helpers.deg_analysis.plotting_utils import _util_remove_excess_axis_titles
+from helpers.deg_analysis.plotting_utils import remove_excess_facet_axis_titles
 
 logger = logging.getLogger(__name__)
 
@@ -104,15 +104,29 @@ def plot_metric_by_threshold(
         facet_col=facet_col,
         facet_row=facet_row,
     )
+    fig = format_metric_by_threshold_figure(
+        fig,
+        add_fdr_lines=score_column.startswith("-log10_pval_adjusted_bh"),
+        simplify_facet_titles=simplify_facet_titles,
+    )
+    return fig
+
+
+def format_metric_by_threshold_figure(
+    fig: go.Figure,
+    add_fdr_lines: bool = True,
+    simplify_facet_titles: bool = True,
+) -> go.Figure:
     # add vertical line at FDR alpha=0.1
-    if score_column.startswith("-log10_pval_adjusted_bh"):
-        fig.update_xaxes(range=[-2, 10])
+    if add_fdr_lines:
+        fig.update_xaxes(range=[-1, 6])
         plotting_utils.add_fdr_lines(fig, alpha=0.1, axis="x")
     if simplify_facet_titles:
         fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
-        fig = _util_remove_excess_axis_titles(fig)
+        fig = remove_excess_facet_axis_titles(fig)
     fig.update_layout(
         legend=dict(yanchor="top", y=0.95, xanchor="right", x=0.95),
     )
     fig.update_yaxes(range=[0, 1])
+    fig.update_layout(width=800, height=400)
     return fig

@@ -22,14 +22,19 @@ def make_score_table(scores: pd.Series, cmap: str = "RdBu") -> pd.DataFrame:
         return df
 
 
-def make_score_table_with_stddev(scores: pd.Series, cmap: str = "RdBu") -> pd.DataFrame:
+def make_score_table_with_stddev(
+    values: pd.Series,
+    cmap: str = "RdBu",
+    index: str = "malignant_means",
+    columns: str = "log2_fc",
+) -> pd.DataFrame:
     aggfuncs = ["mean", "std"]
-    aggregations = scores.groupby(["malignant_means", "log2_fc"]).agg(func=aggfuncs)
+    aggregations = values.groupby([index, columns]).agg(func=aggfuncs)
     means_and_stddevs = aggregations.apply(
         lambda row: f"{row['mean']:4.2f}±{row['std']:4.2f}", axis="columns"
     )
-    df_means = aggregations["mean"].unstack("log2_fc")
-    df_means_and_stddevs = means_and_stddevs.unstack("log2_fc")
+    df_means = aggregations["mean"].unstack(columns)
+    df_means_and_stddevs = means_and_stddevs.unstack(columns)
     return df_means_and_stddevs.style.background_gradient(
         cmap=cmap, axis=None, vmin=-0.5, vmax=1.5, gmap=df_means
     )

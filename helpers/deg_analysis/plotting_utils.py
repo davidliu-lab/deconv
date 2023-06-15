@@ -7,7 +7,7 @@ import plotly.graph_objects as go
 logger = logging.getLogger(__name__)
 
 
-def _util_remove_excess_axis_titles(fig: go.Figure) -> go.Figure:
+def remove_excess_facet_axis_titles(fig: go.Figure) -> go.Figure:
     # remove axis titles from all subplots... except the middle one
 
     coordinates = list(fig._get_subplot_coordinates())
