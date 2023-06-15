@@ -16,10 +16,10 @@ from helpers.deg_analysis import (
     plotting_utils,
     plotting_volcanos,
 )
-from helpers.deg_analysis.postprocessing_gene_stats_fields import add_more_pval_fields
-from helpers.running_cibersortx.loading_results import (
+from helpers.deg_analysis.loading_results import (
     get_arrow_dataset_for_deg_analysis_results,
 )
+from helpers.deg_analysis.postprocessing_gene_stats_fields import add_more_pval_fields
 
 # %%
 # ipython magics

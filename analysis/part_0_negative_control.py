@@ -9,13 +9,13 @@ from IPython.core.interactiveshell import InteractiveShell
 import helpers
 from helpers.deg_analysis import plotting_curves, plotting_utils
 from helpers.deg_analysis.classifier_metrics import calculate_all_curves
+from helpers.deg_analysis.loading_results import (
+    get_arrow_dataset_for_deg_analysis_results,
+)
 from helpers.deg_analysis.plotting_curves import plot_curves, plot_metric_by_threshold
 from helpers.deg_analysis.plotting_utils import add_fdr_lines
 from helpers.deg_analysis.plotting_volcanos import make_volcano_grid_scatter
 from helpers.deg_analysis.postprocessing_gene_stats_fields import add_more_pval_fields
-from helpers.running_cibersortx.loading_results import (
-    get_arrow_dataset_for_deg_analysis_results,
-)
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(format=helpers.logging.FORMAT, level="INFO")

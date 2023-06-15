@@ -13,7 +13,7 @@ new_base = GCSPath("gs://liulab/differential_composition_and_expression/copied")
 
 thread_pool = ThreadPoolExecutor(max_workers=10)
 
-import google.cloud.storage as storage
+from google.cloud import storage
 
 bucket_liulab = storage.Client().bucket("liulab")
 

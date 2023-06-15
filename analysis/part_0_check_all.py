@@ -11,11 +11,14 @@ import duckdb
 
 import helpers
 from helpers.deg_analysis import displaying_tables, plotting_curves, plotting_volcanos
-from helpers.deg_analysis.classifier_metrics import calculate_all_curves
-from helpers.deg_analysis.postprocessing_gene_stats_fields import add_more_pval_fields
-from helpers.running_cibersortx.loading_results import (
+from helpers.deg_analysis.classifier_metrics_old import (
+    calculate_all_curves,
+    compute_all_curves_and_metrics,
+)
+from helpers.deg_analysis.loading_results import (
     get_arrow_dataset_for_deg_analysis_results,
 )
+from helpers.deg_analysis.postprocessing_gene_stats_fields import add_more_pval_fields
 
 logging.basicConfig(format=helpers.logging.FORMAT, level="INFO")
 logger = logging.getLogger(__name__)
@@ -68,9 +71,7 @@ df_curves_pval_adjusted_bh_signed_directional = calculate_all_curves(
     score_col="-log10_pval_adjusted_bh_signed_directional",
     perturbed_col="perturbed",
 )
-_, _, df_scores = helpers.deg_analysis.classifier_metrics.compute_all_curves_and_metrics(
-    df_gene_stats, signed_directional=True
-)
+_, _, df_scores = compute_all_curves_and_metrics(df_gene_stats, signed_directional=True)
 
 
 # %%

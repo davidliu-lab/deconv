@@ -4,20 +4,11 @@ gene-level statistics.
 """
 import logging
 import warnings
-from itertools import groupby
 
 import numpy as np
 import pandas as pd
-import sklearn
-import sklearn.metrics
 from pandas.core.groupby.generic import DataFrameGroupBy
-from sklearn.metrics import (
-    precision_recall_curve,
-    precision_recall_fscore_support,
-    precision_score,
-    roc_auc_score,
-    roc_curve,
-)
+from sklearn.metrics import roc_curve
 
 logger = logging.getLogger(__name__)
 

@@ -3,7 +3,6 @@ import logging
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-from numpy import add
 
 from helpers.deg_analysis import plotting_utils
 from helpers.deg_analysis.plotting_utils import remove_excess_facet_axis_titles
