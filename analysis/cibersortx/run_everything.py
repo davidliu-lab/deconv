@@ -41,11 +41,36 @@ if __name__ == "__main__":
     helpers.logging.configure_logging()
     logger.setLevel("DEBUG")
     N = 50  # samples per group
+    malignant_log2_fc_group_b_values = np.array([0.0, -1.5, -1.0, -0.5, 0.5, 1.0, 1.5])
+    malignant_fraction_mean_pairs = [
+        (None, None),
+        (0.55, 0.85),
+        (0.6, 0.8),
+        (0.65, 0.75),
+        (0.55, 0.65),
+        (0.75, 0.85),
+        (0.75, 0.65),
+        (0.8, 0.6),
+        (0.85, 0.55),
+        (0.7, 0.9),
+        (0.5, 0.7),
+        (0.57, 0.83),
+        (0.63, 0.77),
+        (0.7, 0.72),
+        (0.71, 0.71),
+        (0.72, 0.7),
+        (0.77, 0.63),
+        (0.83, 0.57),
+    ]
+    experiments = list(itertools.product(
+        malignant_log2_fc_group_b_values, malignant_fraction_mean_pairs, range(20),
+    ))
+    from pprint import pprint
+    pprint(experiments)
     root_results = UPath(
         f"gs://liulab/differential_composition_and_expression/{make_a_nice_timestamp_of_now()}"
     )
-    seed_counter = itertools.count(start=10000)
-    experiment_counter = itertools.count()
+    seed_counter = itertools.count()
     rng = np.random.default_rng(seed=next(seed_counter))
 
     logger.debug("reading source data")
@@ -61,35 +86,18 @@ if __name__ == "__main__":
         sc_metadata.shape,
         f_tcga_skcm_mets.shape,
     )
-    genes_to_perturb = select_100_genes_at_least_somewhat_expressed_in_malignant(
-        sc_rnaseq, sc_metadata, rng
-    )
-    malignant_log2_fc_group_b_values = np.array([-1.5, -1.0, -0.5, 0.0, 0.5, 1.0, 1.5])
-    malignant_fraction_mean_pairs = [
-        (None, None),
-        (0.55, 0.85),
-        (0.6, 0.8),
-        (0.65, 0.75),
-        (0.75, 0.65),
-        (0.8, 0.6),
-        (0.85, 0.55),
-        (0.7, 0.9),
-        (0.5, 0.7),
-        (0.57, 0.83),
-        (0.63, 0.77),
-        (0.7, 0.72),
-        (0.71, 0.71),
-        (0.72, 0.7),
-        (0.77, 0.63),
-        (0.83, 0.57),
-    ]
+    # gsutil -m cp -r \
+    # gs://liulab/differential_composition_and_expression/20230505_21h41m44s/"
+    # gs://liulab/differential_composition_and_expression/main
+
+    old_runs = UPath("gs://liulab/differential_composition_and_expression/20230505_21h41m44s")
+    genes_to_perturb = pd.read_csv(old_runs / "genes_perturbed.csv", index_col=0).index
+    # genes_to_perturb = select_100_genes_at_least_somewhat_expressed_in_malignant(
+    #     sc_rnaseq, sc_metadata, rng
+    # )
     pd.DataFrame(genes_to_perturb).to_csv(root_results / "genes_perturbed.csv", index=False)
-    for run_id, malignant_fraction_mean_pair, log2_fc_group_b in itertools.product(
-        range(20), malignant_fraction_mean_pairs, malignant_log2_fc_group_b_values
-    ):
-        experiment_id = next(experiment_counter)
+    for log2_fc_group_b, malignant_fraction_mean_pair, run_id in experiments:
         experiment_dict = {
-            "experiment_id": experiment_id,
             # "malignant_mean_group_a": malignant_fraction_mean_pair[0],
             # "malignant_mean_group_b": malignant_fraction_mean_pair[1],
             "malignant_means": "{0},{1}".format(*malignant_fraction_mean_pair),
@@ -100,14 +108,18 @@ if __name__ == "__main__":
         cibersortx_outputs_path = (
             root_results
             / "cibersortx_outputs"
-            / f"experiment_id={experiment_id:03d}"
             # / f"malignant_mean_group_a={malignant_fraction_mean_pair[0]}"
             # / f"malignant_mean_group_b={malignant_fraction_mean_pair[1]}"
             / "malignant_means={0},{1}".format(*malignant_fraction_mean_pair)
             / f"log2_fc={log2_fc_group_b:4.2f}"
             / f"run_id={run_id:02d}"
         )
-        # logger.debug("experiment_path: %s", experiment_path)
+        # skip task if outputs exist
+        # if cibersortx_outputs_path.exists():
+        #     logger.debug("skipping experiment with params %s", json.dumps(experiment_dict))
+        #     continue
+
+        logger.debug("experiment_dict: %s", experiment_dict)
         logger.debug("perturbing gene expression")
         fractions_list, bulk_rnaseq_list, cell_type_geps_list = [], [], []
         for name, mean_malignant_value in zip(["a", "b"], malignant_fraction_mean_pair):
