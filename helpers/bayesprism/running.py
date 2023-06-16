@@ -31,7 +31,7 @@ def run(
     # this approach...
     #   - avoids auth issues with docker
     with tempfile.TemporaryDirectory() as tmp_dir:
-        tmp_path = upath.Path(tmp_dir)
+        tmp_path = upath.UPath(tmp_dir)
         format_sc_rnaseq(df_sc_rnaseq, df_sc_rnaseq_annotations).write_parquet(
             tmp_path / "sc_rnaseq.parquet"
         )
