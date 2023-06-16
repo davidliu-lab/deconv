@@ -4,6 +4,8 @@ import pandas as pd
 
 logger = logging.getLogger(__name__)
 
+print("loading module", __file__, __name__)
+
 
 def make_score_table(scores: pd.Series, cmap: str = "RdBu") -> pd.DataFrame:
     # if some float type
@@ -28,10 +30,10 @@ def make_score_table_with_stddev(
     index: str = "malignant_means",
     columns: str = "log2_fc",
 ) -> pd.DataFrame:
-    aggfuncs = ["mean", "std"]
+    aggfuncs = ["mean", "std", len]
     aggregations = values.groupby([index, columns]).agg(func=aggfuncs)
     means_and_stddevs = aggregations.apply(
-        lambda row: f"{row['mean']:4.2f}±{row['std']:4.2f}", axis="columns"
+        lambda row: f"{row['mean']:4.2f}±{row['std']:4.2f} (n={int(row['len'])})", axis="columns"
     )
     df_means = aggregations["mean"].unstack(columns)
     df_means_and_stddevs = means_and_stddevs.unstack(columns)

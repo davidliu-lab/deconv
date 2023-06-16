@@ -1,17 +1,15 @@
 # %%
-# imports
+# imports, ipython magics, logging
 import logging
 
 import duckdb
-import numpy as np
-import pandas as pd
 import plotly.express as px
 from IPython.core.interactiveshell import InteractiveShell
 
 import helpers
 from helpers.deg_analysis import (
     classifier_metrics,
-    classifier_metrics_old,
+    displaying_tables,
     plotting_curves,
     plotting_utils,
     plotting_volcanos,
@@ -21,16 +19,12 @@ from helpers.deg_analysis.loading_results import (
 )
 from helpers.deg_analysis.postprocessing_gene_stats_fields import add_more_pval_fields
 
-# %%
-# ipython magics
 if InteractiveShell.initialized():
     ipython = InteractiveShell.instance()
     ipython.run_line_magic("load_ext", "autoreload")
     ipython.run_line_magic("autoreload", "2")
     ipython.run_line_magic("sql", "duckdb:///:default:")
 
-# %%
-# logging
 logging.basicConfig(level="INFO", format=helpers.logging.FORMAT)
 logging.getLogger("duckdb").setLevel("INFO")
 logging.getLogger("helpers").setLevel("DEBUG")
@@ -41,7 +35,8 @@ logger.setLevel("DEBUG")
 # %%
 # make arrow dataset
 deg_analysis_results = get_arrow_dataset_for_deg_analysis_results(
-    "gs://liulab/differential_composition_and_expression/copied/20230505_21h41m44s/deg_analysis/"
+    # "gs://liulab/differential_composition_and_expression/copied/20230505_21h41m44s/deg_analysis/"
+    "gs://liulab/differential_composition_and_expression/20230615_01h18m52s/deg_analysis/"
 )
 
 # %%
@@ -68,8 +63,25 @@ WHERE
     --AND run_id in (0, 1)
 ;
 """
-df_gene_stats = duckdb.sql(query_text).df()  # query with "duckdb:///:default:"
+df_gene_stats = duckdb.sql(query_text).df()
 df_gene_stats = add_more_pval_fields(df_gene_stats)
+
+# %%
+# compute fpr manually from gene_stats for alpha = 0.1
+df_table = classifier_metrics.get_metrics_for_alphas(
+    df_gene_stats,
+    ["malignant_means", "log2_fc", "run_id"],
+    [0.05, 0.1, 0.25],
+)
+
+# %%
+
+displaying_tables.make_score_table_with_stddev(
+    df_table["fp"],
+    cmap="Blues",
+    index="malignant_means",
+    columns="alpha",
+)
 
 
 # %%
@@ -80,18 +92,7 @@ score_col = "-log10_pval_signed_directional"
 df_curves = classifier_metrics.get_curves_with_all_pvals(
     df_gene_stats, groupby_cols, "perturbed", score_col
 )
-df_curves
 
-
-# %%
-# compute fpr manually from gene_stats for alpha = 0.1
-alpha = 0.1
-
-classifier_metrics.get_metrics_for_threshold(
-    df_gene_stats.groupby(["malignant_means", "run_id"]),
-    threshold=-1.0 * np.log10(alpha),
-    score_col="-log10_pval_adjusted_bh_signed_directional",
-)
 
 # %%
 # volcano plots
@@ -110,12 +111,14 @@ fig = px.scatter(
     hover_name="gene_symbol",
     hover_data=["-log10_pval"],
     facet_col="malignant_means",
-    facet_col_wrap=5,
+    facet_col_wrap=4,
+    title="Volcano plots",
 )
 fig = plotting_volcanos.format_volcano_figure(fig, marker_size=2)
-fig.update_layout(width=800, height=400)
+fig.update_layout(width=1000, height=800)
 # fig.show(renderer="png", scale=2)
 fig
+
 
 # %%
 # plot curves
@@ -132,36 +135,6 @@ plotting_utils.remove_excess_facet_axis_titles(fig)
 
 
 # %%
-# table of "fp" at alpha = 0.05, 0.1, 0.2
-
-df_table
-
-
-# %%
-helpers.deg_analysis.displaying_tables.make_score_table_with_stddev(
-    df_table["fp"],
-    cmap="Blues",
-    index="malignant_means",
-    columns="alpha",
-)
-
-
-# %%
-# compute curves, old style
-df_curves_signed_directional = classifier_metrics_old.calculate_all_curves(
-    df_gene_stats,
-    score_col="-log10_pval_adjusted_bh_signed_directional",
-    perturbed_col="perturbed",
-)
-df_curves = classifier_metrics_old.calculate_all_curves(
-    df_gene_stats,
-    score_col="-log10_pval_adjusted_bh",
-    perturbed_col="perturbed",
-)
-df_scores = classifier_metrics_old.compute_scores(df_gene_stats, perturbed_col="perturbed")
-
-
-# %%
 # FPR curves
 fig = px.line(
     df_curves_signed_directional.reset_index(),
@@ -173,37 +146,6 @@ fig = px.line(
 )
 fig = plotting_curves.format_metric_by_threshold_figure(fig)
 fig.show(renderer="png", scale=2)
-
-
-# %%
-# FP at FDR alpha=0.1
-# FP at FDR alpha=0.1
-helpers.deg_analysis.displaying_tables.make_score_table_with_stddev(
-    df_scores["fp"],
-    cmap="Blues",
-)
-
-
-# %%
-# FP count at FDR alpha=0.1, using -log10_pval_adjusted_bh_signed_directional
-classifier_metrics.get_metrics_at_threshold(
-    df_curves_signed_directional,
-    groupby=df_curves_signed_directional.index.names[:-1],
-    score="-log10_pval_adjusted_bh_signed_directional",
-    threshold=1.0,
-    metrics=["fp", "tn", "fpr"],
-)
-
-
-# %%
-# FP count at FDR alpha=0.1, using -log10_pval_adjusted_bh
-classifier_metrics.get_metrics_at_threshold(
-    df_scores,
-    groupby=df_scores.index.names[:-1],
-    score="-log10_pval_adjusted_bh",
-    threshold=1.0,
-    metrics=["fp", "tn", "fpr"],
-)
 
 
 # %%
