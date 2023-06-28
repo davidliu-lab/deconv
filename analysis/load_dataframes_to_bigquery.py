@@ -20,17 +20,20 @@ from helpers.deg_analysis.loading_results import (
     get_arrow_dataset_for_deg_analysis_results,
 )
 from helpers.deg_analysis.postprocessing_gene_stats_fields import add_more_pval_fields
+from helpers.logging.configuring_logging import EasternTimeFormatter
 
 logger = logging.getLogger(__name__)
 
 
-def load_deg_results(df_gene_stats: pd.DataFrame, client: bigquery.Client, table_id: str):
+def load_deg_results(
+    df_gene_stats: pd.DataFrame, client: bigquery.Client, table_id: str
+) -> bigquery.LoadJob:
     job_config = bigquery.LoadJobConfig(
         schema=[
             bigquery.SchemaField("log2_fc", bigquery.enums.SqlTypeNames.FLOAT64),
             bigquery.SchemaField("run_id", bigquery.enums.SqlTypeNames.INTEGER),
         ],
-        write_disposition="WRITE_TRUNCATE",  # overwrite
+        # write_disposition="WRITE_TRUNCATE",  # overwrite
     )
     logger.debug("creating job to load dataframe to bigquery")
     job = client.load_table_from_dataframe(
@@ -40,8 +43,13 @@ def load_deg_results(df_gene_stats: pd.DataFrame, client: bigquery.Client, table
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO, format=helpers.logging.FORMAT)
+    handler = logging.StreamHandler()
+    LOGGING_FORMAT = "%(asctime)s %(levelname)s %(name)s %(message)s"
+    handler.setFormatter(logging.Formatter(LOGGING_FORMAT, datefmt="%I:%M:%S %p"))
+    logging.getLogger().addHandler(handler)
+    logger.setLevel("DEBUG")
     logging.getLogger("helpers").setLevel("DEBUG")
+    logging.getLogger("google.cloud").setLevel("DEBUG")
     client = bigquery.Client()
     gene_stats_arrow_dataset = (
         helpers.deg_analysis.loading_results.get_arrow_dataset_for_deg_analysis_results(
@@ -80,8 +88,23 @@ FROM gene_stats_arrow_dataset
     df_gene_stats = df_gene_stats.rename(columns=lambda x: x.replace("-log10", "neg_log10"))
     # rename column "significant_bh_fdr=0.10" to "significant_bh_fdr"
     df_gene_stats = df_gene_stats.rename(columns={"significant_bh_fdr=0.10": "significant_bh_fdr"})
-    logger.debug("calling load_deg_results")
-    job = load_deg_results(df_gene_stats, client, "deconv.deg_analysis_results")
-    logger.info("waiting for job to finish")
-    print(job.result())
-    logger.info("job finished")
+
+    # doesn't work, runs out of memory
+    # logger.debug("calling load_deg_results")
+    # job = load_deg_results(df_gene_stats, client, "deconv.deg_analysis_results")
+    # logger.info("waiting for job to finish")
+    # print(job.result())
+    # logger.info("job finished")
+
+    # upload data 1GB at a time
+    rows_per_chunk = 16063 * 4296 // 24  # integer division
+    assert rows_per_chunk * 24 == 16063 * 4296
+    start = 0
+    while start < len(df_gene_stats):
+        end = start + rows_per_chunk
+        logger.info(f"uploading rows {start} to {end} of {len(df_gene_stats)}")
+        job = load_deg_results(df_gene_stats.iloc[start:end], client, "deconv.deg_analysis_results")
+        logger.info("waiting for job to finish")
+        print(job.result())
+        logger.info("job finished")
+        start = end
