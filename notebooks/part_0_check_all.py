@@ -8,9 +8,15 @@
 import logging
 
 import duckdb
+import numpy as np
 
 import helpers
-from helpers.deg_analysis import displaying_tables, plotting_curves, plotting_volcanos
+from helpers.deg_analysis import (
+    classifier_metrics,
+    displaying_tables,
+    plotting_curves,
+    plotting_volcanos,
+)
 from helpers.deg_analysis.classifier_metrics_old import (
     calculate_all_curves,
     compute_all_curves_and_metrics,
@@ -28,7 +34,8 @@ logging.getLogger("helpers.deg_analysis").setLevel("DEBUG")
 # %%
 # load data
 deg_analysis_results = get_arrow_dataset_for_deg_analysis_results(
-    "gs://liulab/differential_composition_and_expression/copied/20230505_21h41m44s/deg_analysis/"
+    # "gs://liulab/differential_composition_and_expression/copied/20230505_21h41m44s/deg_analysis/"
+    "gs://liulab/differential_composition_and_expression/20230616_03h34m20s/deg_analysis/"
 )
 
 query_text = """
@@ -61,21 +68,25 @@ df_gene_stats = add_more_pval_fields(df_gene_stats)
 # %%
 # compute curves
 
-df_curves_pval_signed_directional = calculate_all_curves(
-    df_gene_stats,
-    score_col="-log10_pval_signed_directional",
-    perturbed_col="perturbed",
-)
-df_curves_pval_adjusted_bh_signed_directional = calculate_all_curves(
-    df_gene_stats,
+alpha = 0.1
+
+df_table = classifier_metrics.get_metrics_for_threshold(
+    df_gene_stats.groupby(["malignant_means", "log2_fc", "run_id"]),
+    threshold=-1.0 * np.log10(alpha),
     score_col="-log10_pval_adjusted_bh_signed_directional",
-    perturbed_col="perturbed",
 )
-_, _, df_scores = compute_all_curves_and_metrics(df_gene_stats, signed_directional=True)
 
 
 # %%
-displaying_tables.make_score_table_with_stddev(df_scores["roc_auc"], "RdBu")
+# displaying_tables.make_score_table_with_stddev(df_scores["roc_auc"], "RdBu")
+displaying_tables.make_score_table_with_stddev(
+    df_table["precision"],
+    cmap="Blues",
+    index="malignant_means",
+    columns="log2_fc",
+    vmin=0,
+    vmax=1,
+)
 
 
 # %%

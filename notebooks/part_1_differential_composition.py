@@ -36,8 +36,13 @@ logger.setLevel("DEBUG")
 # make arrow dataset
 deg_analysis_results = get_arrow_dataset_for_deg_analysis_results(
     # "gs://liulab/differential_composition_and_expression/copied/20230505_21h41m44s/deg_analysis/"
-    "gs://liulab/differential_composition_and_expression/20230615_01h18m52s/deg_analysis/"
+    # "gs://liulab/differential_composition_and_expression/20230615_01h18m52s/deg_analysis/"
+    "gs://liulab/differential_composition_and_expression/20230616_03h34m20s/deg_analysis/"
 )
+
+# %%
+helpers.deg_analysis.loading_results.sanity_check_dataset(deg_analysis_results)
+
 
 # %%
 # query arrow dataset
@@ -81,6 +86,8 @@ displaying_tables.make_score_table_with_stddev(
     cmap="Blues",
     index="malignant_means",
     columns="alpha",
+    vmin=0,
+    vmax=None,
 )
 
 
@@ -93,6 +100,27 @@ df_curves = classifier_metrics.get_curves_with_all_pvals(
     df_gene_stats, groupby_cols, "perturbed", score_col
 )
 
+
+# %%
+# plot curves
+fig = px.line(
+    df_curves.reset_index(),
+    x="-log10_pval_adjusted_bh_signed_directional",
+    y="fp",
+    facet_col="malignant_means",
+    color="run_id",
+    hover_data=["fp", "fpr"],
+)
+fig = plotting_utils.add_fdr_lines(fig, alpha=0.1)
+fig = plotting_utils.remove_excess_facet_axis_titles(fig)
+# plotting_curves.format_curves_fig(fig)
+fig.update_xaxes(
+    range=[0, 1],
+    constrain="domain",
+    dtick=0.2,
+)
+fig.update_layout(width=800, height=300)
+fig.show()
 
 # %%
 # volcano plots
@@ -110,74 +138,11 @@ fig = px.scatter(
     y="-log10_pval_adjusted_bh",
     hover_name="gene_symbol",
     hover_data=["-log10_pval"],
-    facet_col="malignant_means",
+    facet_col="origin",
     facet_col_wrap=4,
-    title="Volcano plots",
+    facet_row="malignant_means",
+    title="Volcano plots: with differential composition, without differential expression",
 )
 fig = plotting_volcanos.format_volcano_figure(fig, marker_size=2)
-fig.update_layout(width=1000, height=800)
-# fig.show(renderer="png", scale=2)
-fig
-
-
-# %%
-# plot curves
-fig = px.line(
-    df_curves.reset_index(),
-    x="-log10_pval_adjusted_bh_signed_directional",
-    y="fpr",
-    facet_col="malignant_means",
-    color="run_id",
-    hover_data=["fp", "fpr"],
-)
-plotting_utils.add_fdr_lines(fig, alpha=0.1)
-plotting_utils.remove_excess_facet_axis_titles(fig)
-
-
-# %%
-# FPR curves
-fig = px.line(
-    df_curves_signed_directional.reset_index(),
-    x="-log10_pval_adjusted_bh_signed_directional",
-    y="fpr",
-    color="run_id",
-    markers=True,
-    facet_col="malignant_means",
-)
-fig = plotting_curves.format_metric_by_threshold_figure(fig)
-fig.show(renderer="png", scale=2)
-
-
-# %%
-# PPV curves for different levels of differential composition
-fig = plotting_curves.plot_metric_by_threshold(
-    df_curves,
-    score_column="-log10_pval_adjusted_bh_signed_directional",
-    metric_column="precision",
-    facet_col="malignant_means",
-    facet_row=None,
-)
-# 1000 x 500
-fig.update_layout(width=1000, height=500)
-# png
-fig.show(renderer="png", scale=2)
-
-
-# %%
-# volcano plots for different levels of differential composition
-
-# from helpers.deg_analysis import plotting_volcanos
-
-# fig = plotting_volcanos.make_volcano_grid_scatter(
-#     df_gene_stats,
-#     aggregate_by=["origin", "malignant_means", "log2_fc", "gene_symbol", "perturbed"],
-#     pval_col="-log10_pval_adjusted_bh",
-#     perturbed_col="perturbed",
-#     facet_col="malignant_means",
-#     facet_row=None,
-#     marker_color="perturbed",
-# )
-# # 1000 x 500
-# fig.update_layout(width=1000, height=500)
-# # png
-# fig.show(renderer="png", scale=2)
+fig.update_layout(width=800, height=2000)
+fig.show()

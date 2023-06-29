@@ -62,10 +62,15 @@ if __name__ == "__main__":
         (0.77, 0.63),
         (0.83, 0.57),
     ]
-    experiments = list(itertools.product(
-        malignant_log2_fc_group_b_values, malignant_fraction_mean_pairs, range(20),
-    ))
+    experiments = list(
+        itertools.product(
+            malignant_log2_fc_group_b_values,
+            malignant_fraction_mean_pairs,
+            range(20),
+        )
+    )
     from pprint import pprint
+
     pprint(experiments)
     root_results = UPath(
         f"gs://liulab/differential_composition_and_expression/{make_a_nice_timestamp_of_now()}"
